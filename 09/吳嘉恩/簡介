@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>吳嘉恩 | 個人簡介</title>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --accent-color: #3498db;
+            --bg-color: #f4f7f6;
+            --text-color: #333;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+        }
+
+        header {
+            background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+            color: white;
+            padding: 3rem 1rem;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        .card {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+            margin-bottom: 2rem;
+        }
+
+        h1 { margin: 0; font-size: 2.5rem; }
+        h2 { color: var(--primary-color); border-bottom: 2px solid var(--accent-color); padding-bottom: 5px; }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .info-item b { color: var(--accent-color); }
+
+        .tag-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .tag {
+            background: #e1f0fa;
+            color: #2980b9;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: bold;
+        }
+
+        .contact-btn {
+            display: inline-block;
+            background: var(--accent-color);
+            color: white;
+            padding: 10px 20px;
+            text-decoration: none;
+            border-radius: 5px;
+            transition: background 0.3s;
+        }
+
+        .contact-btn:hover {
+            background: #2980b9;
+        }
+
+        footer {
+            text-align: center;
+            padding: 2rem;
+            font-size: 0.9rem;
+            color: #777;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>吳嘉恩</h1>
+    <p>國立金門大學資訊工程學系 | 學生</p>
+</header>
+
+<div class="container">
+    <section class="card">
+        <h2>個人基本資料</h2>
+        <div class="info-grid">
+            <div class="info-item">
+                <p><b>就讀學校：</b><br>國立金門大學</p>
+            </div>
+            <div class="info-item">
+                <p><b>電子郵件：</b><br><a href="mailto:s111410509@studrnt.nqu.edu.tw">s111410509@studrnt.nqu.edu.tw</a></p>
+            </div>
+        </div>
+    </section>
+
+    <section class="card">
+        <h2>專長與核心技能</h2>
+        <div class="tag-container">
+            <span class="tag">羽球 (Badminton)</span>
+            <span class="tag">C / C++ 程式設計</span>
+            <span class="tag">SQL 資料庫管理</span>
+            <span class="tag">Linux 系統操作</span>
+            <span class="tag">同步計數器設計</span>
+        </div>
+    </section>
+
+    <section class="card">
+        <h2>個人興趣</h2>
+        <ul>
+            <li><strong>戶外運動：</strong> 熱愛羽球及各式體育活動，享受流汗的快感。</li>
+            <li><strong>技術探索：</strong> 喜歡研究 Linux 系統與自動化腳本編寫。</li>
+            <li><strong>電玩動漫：</strong> 閒暇時會遊玩 <em>Valorant</em> 或 <em>原神</em>，也是《SPY×FAMILY》的粉絲。</li>
+            <li><strong>學術鑽研：</strong> 對古典文學分析及微積分運算亦有濃厚興趣。</li>
+        </ul>
+    </section>
+
+    <div style="text-align: center;">
+        <a href="mailto:s111410509@studrnt.nqu.edu.tw" class="contact-btn">與我聯繫</a>
+    </div>
+</div>
+
+<footer>
+    <p>&copy; 2026 吳嘉恩 Wu Chia-en. 版權所有.</p>
+</footer>
+
+</body>
+</html>
