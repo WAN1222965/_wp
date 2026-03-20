@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>現代化 Input 展示問卷</title>
+    <style>
+        :root {
+            --primary-color: #4a90e2;
+            --bg-color: #f4f7f6;
+            --text-color: #333;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            justify-content: center;
+            padding: 40px 20px;
+        }
+
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            max-width: 600px;
+            width: 100%;
+        }
+
+        h2 {
+            text-align: center;
+            color: var(--primary-color);
+            margin-bottom: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        /* 統一美化各種 Input */
+        input[type="text"],
+        input[type="email"],
+        input[type="password"],
+        input[type="tel"],
+        input[type="url"],
+        input[type="number"],
+        input[type="date"],
+        input[type="time"],
+        select,
+        textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            box-sizing: border-box; /* 確保 padding 不影響寬度 */
+            font-size: 16px;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 5px rgba(74, 144, 226, 0.3);
+        }
+
+        /* 特殊樣式 */
+        .row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        input[type="color"] {
+            height: 40px;
+            width: 100%;
+            cursor: pointer;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            cursor: pointer;
+        }
+
+        .checkbox-group, .radio-group {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .checkbox-group input, .radio-group input {
+            width: auto;
+        }
+
+        .submit-btn {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 18px;
+            width: 100%;
+            transition: background 0.3s;
+        }
+
+        .submit-btn:hover {
+            background-color: #357abd;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 12px;
+            color: #888;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>🚀 吳嘉恩表單</h2>
+    
+    <form action="#">
+        <div class="form-group">
+            <label>全名 (text)</label>
+            <input type="text" placeholder="請輸入姓名" required>
+        </div>
+
+        <div class="row">
+            <div class="form-group">
+                <label>電子郵件 (email)</label>
+                <input type="email" placeholder="example@mail.com">
+            </div>
+            <div class="form-group">
+                <label>密碼 (password)</label>
+                <input type="password" placeholder="輸入安全密碼">
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="form-group">
+                <label>年齡 (number)</label>
+                <input type="number" min="1" max="120" value="25">
+            </div>
+            <div class="form-group">
+                <label>聯絡電話 (tel)</label>
+                <input type="tel" placeholder="0912-345-678">
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="form-group">
+                <label>預約日期 (date)</label>
+                <input type="date">
+            </div>
+            <div class="form-group">
+                <label>具體時間 (time)</label>
+                <input type="time">
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>滿意度評分 (range: 1-100)</label>
+            <input type="range" min="1" max="100" value="70">
+        </div>
+
+        <div class="form-group">
+            <label>個人專屬顏色 (color)</label>
+            <input type="color" value="#4a90e2">
+        </div>
+
+        <div class="form-group">
+            <label>感興趣的主題 (select)</label>
+            <select>
+                <option value="web">網頁開發</option>
+                <option value="ai">人工智能</option>
+                <option value="design">介面設計</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>上傳大頭照 (file)</label>
+            <input type="file" accept="image/*">
+        </div>
+
+        <div class="form-group">
+            <label>接收通知方式 (checkbox)</label>
+            <div class="checkbox-group">
+                <label><input type="checkbox" checked> Email</label>
+                <label><input type="checkbox"> SMS</label>
+                <label><input type="checkbox"> App 推播</label>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>您的身份 (radio)</label>
+            <div class="radio-group">
+                <label><input type="radio" name="role" value="student"> 學生</label>
+                <label><input type="radio" name="role" value="worker"> 社會人士</label>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>個人部落格 (url)</label>
+            <input type="url" placeholder="https://example.com">
+        </div>
+
+        <div class="form-group">
+            <label>給我們的建議 (textarea)</label>
+            <textarea rows="4" placeholder="說點什麼吧..."></textarea>
+        </div>
+
+        <div class="row">
+            <input type="reset" value="重設表單" style="background:#eee; border:none; border-radius:6px; cursor:pointer;">
+            <button type="submit" class="submit-btn">送出問卷</button>
+        </div>
+    </form>
+
+    <footer>
+        © 2026 互動表單展示 - 由 Gemini 提供
+    </footer>
+</div>
+
+</body>
+</html>解釋每一段的用法<!DOCTYPE html>
+<html>
+<head>
+<style>
+body {
+  background-color: lightblue;
+}
+
+h1 {
+  color: white;
+  text-align: center;
+}
+
+p {
+  font-family: verdana;
+  font-size: 20px;
+}
+</style>
+</head>
+<body>
+
+<h1>My First CSS Example</h1>
+<p>This is a paragraph.</p>
+
+</body>
+</html>
