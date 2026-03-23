@@ -1,0 +1,11 @@
+function checkNumber(n) 
+{
+  if (n % 2 === 0) {
+    return "這是偶數";
+  } else {
+    return "這是奇數";
+  }
+}
+
+let result = checkNumber(8); 
+console.log(checkNumber(7));
