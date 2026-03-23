@@ -1,0 +1,5 @@
+for (let i = 2; i <= 2; i++) { // 若要全部 2~9，改成 i <= 9
+  for (let j = 1; j <= 9; j++) {
+    console.log(`${i} x ${j} = ${i * j}`);
+  }
+}
