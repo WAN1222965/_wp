@@ -1,0 +1,12 @@
+let target = 7;
+let count = 0;
+let currentGuess = 0;
+
+while (true) {
+  count++;
+  currentGuess = Math.floor(Math.random() * 10) + 1; // 產生 1~10
+  if (currentGuess === target) {
+    console.log(`抽到了 ${target}！總共抽了 ${count} 次。`);
+    break; 
+  }
+}
