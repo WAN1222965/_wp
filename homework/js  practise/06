@@ -1,0 +1,7 @@
+let jsonStr = '{"name": "chia wan", "score": 85}';
+
+let obj = JSON.parse(jsonStr); // 轉為物件
+obj.score = 90;               // 修改屬性
+let newJsonStr = JSON.stringify(obj); // 轉回字串
+
+console.log(newJsonStr);
