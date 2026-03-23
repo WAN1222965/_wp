@@ -1,0 +1,8 @@
+let inventoryData = '[{"name": "滑鼠", "stock": 5}, {"name": "鍵盤", "stock": 0}, {"name": "螢幕", "stock": 0}]';
+let products = JSON.parse(inventoryData);
+
+for (let i = 0; i < products.length; i++) {
+  if (products[i].stock === 0) {
+    console.log(`[${products[i].name}] 已售罄`);
+  }
+}
