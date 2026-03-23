@@ -1,0 +1,11 @@
+let user = {
+  name: "Alex",
+  age: 25,
+  isAdmin: true
+};
+
+if (user.isAdmin) {
+  console.log("歡迎管理員");
+} else {
+  console.log("一般用戶");
+}
