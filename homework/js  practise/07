@@ -1,0 +1,11 @@
+let students = [
+  { name: "A", grade: 80 },
+  { name: "B", grade: 90 },
+  { name: "C", grade: 70 }
+];
+let total = 0;
+
+for (let i = 0; i < students.length; i++) {
+  total += students[i].grade;
+}
+console.log("平均分數：" + (total / students.length));
