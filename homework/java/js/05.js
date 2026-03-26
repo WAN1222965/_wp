@@ -1,0 +1,9 @@
+let scores = [45, 70, 89, 55, 60, 95];
+let passed = [];
+
+for (let i = 0; i < scores.length; i++) {
+  if (scores[i] >= 60) {
+    passed.push(scores[i]);
+  }
+}
+console.log("及格名單：", passed);
