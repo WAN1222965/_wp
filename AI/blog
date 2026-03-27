@@ -1,0 +1,117 @@
+const express = require('express');
+const Database = require('better-sqlite3');
+const initSqlJs = require('sql.js');
+const fs = require('fs');
+const path = require('path');
+const app = express();
+app.use(express.json());
+const db = new Database('app.db');
+const DB_PATH = path.join(__dirname, 'blog.db');
+db.exec(`
+  CREATE TABLE IF NOT EXISTS todos (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    title TEXT NOT NULL,
+    completed INTEGER DEFAULT 0
+  )
+`);
+let db;
+const getAll = db.prepare('SELECT * FROM todos');
+const getOne = db.prepare('SELECT * FROM todos WHERE id = ?');
+const insert = db.prepare('INSERT INTO todos (title, completed) VALUES (?, ?)');
+const update = db.prepare('UPDATE todos SET title = ?, completed = ? WHERE id = ?');
+const remove = db.prepare('DELETE FROM todos WHERE id = ?');
+async function initDB() {
+  const SQL = await initSqlJs();
+  if (fs.existsSync(DB_PATH)) {
+    db = new SQL.Database(fs.readFileSync(DB_PATH));
+  } else {
+    db = new SQL.Database();
+  }
+  
+  db.run(`
+    CREATE TABLE IF NOT EXISTS posts (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      title TEXT NOT NULL,
+      content TEXT NOT NULL,
+      created_at TEXT DEFAULT CURRENT_TIMESTAMP
+    )
+  `);
+  saveDB();
+}
+app.get('/todos', (req, res) => {
+  res.json(getAll.all());
+function saveDB() {
+  const data = db.export();
+  const buffer = Buffer.from(data);
+  fs.writeFileSync(DB_PATH, buffer);
+}
+function queryAll(sql, params = []) {
+  const stmt = db.prepare(sql);
+  if (params.length) stmt.bind(params);
+  const results = [];
+  while (stmt.step()) results.push(stmt.getAsObject());
+  stmt.free();
+  return results;
+}
+function queryOne(sql, params = []) {
+  const results = queryAll(sql, params);
+  return results[0] || null;
+}
+function run(sql, params = []) {
+  db.run(sql, params);
+  saveDB();
+  return { lastID: db.exec("SELECT last_insert_rowid()")[0]?.values[0]?.[0] };
+}
+app.get('/blog', (req, res) => {
+  const posts = queryAll('SELECT id, title, created_at FROM posts ORDER BY created_at DESC');
+  res.json(posts);
+});
+app.get('/todos/:id', (req, res) => {
+  const todo = getOne.get(req.params.id);
+  if (!todo) return res.status(404).json({ error: 'Not found' });
+  res.json(todo);
+app.get('/blog/:id', (req, res) => {
+  const post = queryOne('SELECT * FROM posts WHERE id = ?', [req.params.id]);
+  if (!post) return res.status(404).json({ error: 'Not found' });
+  res.json(post);
+});
+app.post('/todos', (req, res) => {
+  const { title, completed = false } = req.body;
+  if (!title) return res.status(400).json({ error: 'title is required' });
+  const result = insert.run(title, completed ? 1 : 0);
+  res.status(201).json({ id: result.lastInsertRowid, title, completed });
+app.post('/blog', (req, res) => {
+  const { title, content } = req.body;
+  if (!title || !content) return res.status(400).json({ error: 'title and content required' });
+  const result = run('INSERT INTO posts (title, content) VALUES (?, ?)', [title, content]);
+  res.status(201).json({ id: result.lastID, title, content });
+});
+app.put('/todos/:id', (req, res) => {
+  const { title, completed } = req.body;
+  const todo = getOne.get(req.params.id);
+  if (!todo) return res.status(404).json({ error: 'Not found' });
+  update.run(title ?? todo.title, completed !== undefined ? (completed ? 1 : 0) : todo.completed, req.params.id);
+  res.json({ id: parseInt(req.params.id), title: title ?? todo.title, completed: completed ?? todo.completed });
+app.put('/blog/:id', (req, res) => {
+  const { title, content } = req.body;
+  const post = queryOne('SELECT * FROM posts WHERE id = ?', [req.params.id]);
+  if (!post) return res.status(404).json({ error: 'Not found' });
+  run('UPDATE posts SET title = ?, content = ? WHERE id = ?', [title || post.title, content || post.content, req.params.id]);
+  res.json({ id: parseInt(req.params.id), title: title || post.title, content: content || post.content });
+});
+app.delete('/todos/:id', (req, res) => {
+  const todo = getOne.get(req.params.id);
+  if (!todo) return res.status(404).json({ error: 'Not found' });
+  remove.run(req.params.id);
+app.delete('/blog/:id', (req, res) => {
+  const post = queryOne('SELECT * FROM posts WHERE id = ?', [req.params.id]);
+  if (!post) return res.status(404).json({ error: 'Not found' });
+  run('DELETE FROM posts WHERE id = ?', [req.params.id]);
+  res.status(204).send();
+});
+const PORT = 3000;
+app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));
+initDB().then(() => {
+  const PORT = 3000;
+  app.listen(PORT, () => console.log(`Blog API: http://localhost:${PORT}/blog`));
+});

@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>我的網誌</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f5f5; color: #333; line-height: 1.6; }
+    .container { max-width: 800px; margin: 0 auto; padding: 20px; }
+    header { background: #fff; padding: 20px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
+    h1 { color: #2563eb; font-size: 1.5rem; }
+    .user-info { display: flex; align-items: center; gap: 12px; }
+    .btn { padding: 8px 16px; border: none; border-radius: 6px; cursor: pointer; font-size: 0.9rem; transition: all 0.2s; }
+    .btn-primary { background: #2563eb; color: #fff; }
+    .btn-primary:hover { background: #1d4ed8; }
+    .btn-secondary { background: #e5e7eb; color: #374151; }
+    .btn-secondary:hover { background: #d1d5db; }
+    .btn-danger { background: #ef4444; color: #fff; }
+    .btn-danger:hover { background: #dc2626; }
+    .btn-small { padding: 4px 10px; font-size: 0.8rem; }
+    .card { background: #fff; border-radius: 12px; padding: 20px; margin-bottom: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+    .post-meta { color: #6b7280; font-size: 0.85rem; margin-bottom: 8px; }
+    .post-title { font-size: 1.25rem; font-weight: 600; margin-bottom: 8px; cursor: pointer; color: #1f2937; }
+    .post-title:hover { color: #2563eb; }
+    .post-content { color: #4b5563; white-space: pre-wrap; }
+    .comment { border-left: 3px solid #e5e7eb; padding-left: 12px; margin: 12px 0; }
+    .comment-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
+    .comment-author { font-weight: 600; color: #374151; }
+    .comment-time { color: #9ca3af; font-size: 0.8rem; }
+    .comment-content { color: #4b5563; }
+    .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); align-items: center; justify-content: center; }
+    .modal.active { display: flex; }
+    .modal-content { background: #fff; padding: 24px; border-radius: 12px; width: 90%; max-width: 400px; }
+    .modal h2 { margin-bottom: 16px; }
+    .form-group { margin-bottom: 16px; }
+    .form-group label { display: block; margin-bottom: 4px; font-weight: 500; }
+    .form-group input, .form-group textarea { width: 100%; padding: 10px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 1rem; }
+    .form-group textarea { min-height: 120px; resize: vertical; }
+    .form-row { display: flex; gap: 8px; justify-content: flex-end; }
+    .empty { text-align: center; color: #9ca3af; padding: 40px; }
+    .comments-section { margin-top: 20px; padding-top: 20px; border-top: 1px solid #e5e7eb; }
+    .comment-form { display: flex; gap: 8px; }
+    .comment-form input { flex: 1; padding: 10px; border: 1px solid #d1d5db; border-radius: 6px; }
+    .actions { display: flex; gap: 8px; margin-top: 12px; }
+    .back-link { display: inline-block; margin-bottom: 16px; color: #2563eb; cursor: pointer; }
+    .back-link:hover { text-decoration: underline; }
+    .nav-tabs { display: flex; gap: 8px; margin-bottom: 16px; }
+    .nav-tab { padding: 8px 16px; background: #fff; border: 1px solid #e5e7eb; border-radius: 6px; cursor: pointer; }
+    .nav-tab.active { background: #2563eb; color: #fff; border-color: #2563eb; }
+    .friend-card { display: flex; justify-content: space-between; align-items: center; }
+    .friend-info { display: flex; flex-direction: column; }
+    .friend-name { font-weight: 600; }
+    .friend-username { color: #6b7280; font-size: 0.85rem; }
+    .post-stats { display: flex; gap: 16px; margin-top: 12px; color: #6b7280; font-size: 0.9rem; }
+    .stat-item { cursor: pointer; display: flex; align-items: center; gap: 4px; }
+    .stat-item:hover { color: #2563eb; }
+    .stat-item.liked { color: #ef4444; }
+    .stat-item.disliked { color: #8b5cf6; }
+    .share-menu { display: flex; gap: 8px; margin-top: 8px; }
+    .share-btn { padding: 4px 12px; border-radius: 4px; font-size: 0.8rem; cursor: pointer; border: 1px solid #d1d5db; background: #fff; }
+    .share-btn:hover { background: #f3f4f6; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>📝 我的網誌</h1>
+      <div class="user-info" id="userArea">
+        <button class="btn btn-secondary" onclick="showFriends()" id="friendsBtn" style="display:none;">👥 好友</button>
+        <button class="btn btn-primary" onclick="showModal('loginModal')">登入</button>
+        <button class="btn btn-secondary" onclick="showModal('registerModal')">註冊</button>
+      </div>
+    </header>
+
+    <div id="postList"></div>
+    <div id="postDetail" style="display: none;"></div>
+    <div id="friendsSection" style="display: none;"></div>
+  </div>
+
+  <div class="modal" id="loginModal">
+    <div class="modal-content">
+      <h2>登入</h2>
+      <div class="form-group">
+        <label>使用者名稱</label>
+        <input type="text" id="loginUsername">
+      </div>
+      <div class="form-group">
+        <label>密碼</label>
+        <input type="password" id="loginPassword">
+      </div>
+      <div class="form-row">
+        <button class="btn btn-secondary" onclick="closeModal('loginModal')">取消</button>
+        <button class="btn btn-primary" onclick="login()">登入</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal" id="registerModal">
+    <div class="modal-content">
+      <h2>註冊新用戶</h2>
+      <div class="form-group">
+        <label>使用者名稱</label>
+        <input type="text" id="regUsername">
+      </div>
+      <div class="form-group">
+        <label>顯示名稱</label>
+        <input type="text" id="regDisplayName">
+      </div>
+      <div class="form-group">
+        <label>密碼</label>
+        <input type="password" id="regPassword">
+      </div>
+      <div class="form-row">
+        <button class="btn btn-secondary" onclick="closeModal('registerModal')">取消</button>
+        <button class="btn btn-primary" onclick="register()">註冊</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal" id="postModal">
+    <div class="modal-content">
+      <h2 id="postModalTitle">發布文章</h2>
+      <div class="form-group">
+        <label>標題</label>
+        <input type="text" id="postTitle">
+      </div>
+      <div class="form-group">
+        <label>內容</label>
+        <textarea id="postContent"></textarea>
+      </div>
+      <div class="form-row">
+        <button class="btn btn-secondary" onclick="closeModal('postModal')">取消</button>
+        <button class="btn btn-primary" onclick="savePost()">儲存</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let token = localStorage.getItem('token');
+    let user = JSON.parse(localStorage.getItem('user') || 'null');
+    let editingPostId = null;
+    let currentPostId = null;
+
+    function showModal(id) { document.getElementById(id).classList.add('active'); }
+    function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+
+    async function api(path, options = {}) {
+      const headers = { 'Content-Type': 'application/json' };
+      if (token) headers.Authorization = token;
+      const res = await fetch(path, { ...options, headers });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Error');
+      return data;
+    }
+
+    async function loadPosts() {
+      try {
+        const posts = await api('/blog');
+        const html = posts.length ? posts.map(p => `
+          <div class="card">
+            <div class="post-meta">${p.author_name || '匿名'} • ${new Date(p.created_at).toLocaleString('zh-TW')}</div>
+            <div class="post-title" onclick="viewPost(${p.id})">${escapeHtml(p.title)}</div>
+            <div class="post-content">${escapeHtml(p.content.substring(0, 150))}${p.content.length > 150 ? '...' : ''}</div>
+            <div class="post-stats">
+              <span class="stat-item" onclick="viewPost(${p.id})">💬 ${p.comments_count || 0}</span>
+              <span class="stat-item ${p.user_like === 'like' ? 'liked' : ''}" onclick="toggleLike(${p.id}, 'like')">👍 ${p.likes_count || 0}</span>
+              <span class="stat-item ${p.user_like === 'dislike' ? 'disliked' : ''}" onclick="toggleLike(${p.id}, 'dislike')">👎 ${p.dislikes_count || 0}</span>
+              <span class="stat-item" onclick="showShare(${p.id})">🔗 ${p.shares_count || 0}</span>
+            </div>
+            ${user && p.user_id === user.id ? `<div class="actions">
+              <button class="btn btn-small btn-secondary" onclick="editPost(${p.id})">編輯</button>
+              <button class="btn btn-small btn-danger" onclick="deletePost(${p.id})">刪除</button>
+            </div>` : ''}
+          </div>
+        `).join('') : '<div class="empty">尚無文章</div>';
+        document.getElementById('postList').innerHTML = html;
+        if (user) {
+          document.getElementById('postList').innerHTML += `<button class="btn btn-primary" onclick="showModal('postModal')" style="width:100%;margin-top:16px;">發布新文章</button>`;
+        }
+      } catch (e) { console.error(e); }
+    }
+
+    async function viewPost(id) {
+      currentPostId = id;
+      try {
+        const post = await api('/blog/' + id);
+        const html = `
+          <span class="back-link" onclick="showList()">← 返回列表</span>
+          <div class="card">
+            <h2>${escapeHtml(post.title)}</h2>
+            <div class="post-meta">${post.author_name || '匿名'} • ${new Date(post.created_at).toLocaleString('zh-TW')}</div>
+            <div class="post-content" style="margin-top:16px;">${escapeHtml(post.content)}</div>
+            <div class="post-stats">
+              <span class="stat-item ${post.likes?.find(l => l.user_id === user?.id && l.type === 'like') ? 'liked' : ''}" onclick="toggleLike(${post.id}, 'like')">👍 ${post.likes_count || 0}</span>
+              <span class="stat-item ${post.likes?.find(l => l.user_id === user?.id && l.type === 'dislike') ? 'disliked' : ''}" onclick="toggleLike(${post.id}, 'dislike')">👎 ${post.dislikes_count || 0}</span>
+              <span class="stat-item">💬 ${post.comments?.length || 0}</span>
+              <span class="stat-item" onclick="showShare(${post.id})">🔗 ${post.shares_count || 0}</span>
+            </div>
+            ${user && post.user_id === user.id ? `<div class="actions">
+              <button class="btn btn-small btn-secondary" onclick="editPost(${post.id})">編輯</button>
+              <button class="btn btn-small btn-danger" onclick="deletePost(${post.id})">刪除</button>
+            </div>` : ''}
+          </div>
+          <div class="comments-section">
+            <h3>留言 (${post.comments?.length || 0})</h3>
+            ${post.comments?.map(c => `
+              <div class="comment">
+                <div class="comment-header">
+                  <span class="comment-author">${escapeHtml(c.author_name || '匿名')}</span>
+                  <span class="comment-time">${new Date(c.created_at).toLocaleString('zh-TW')}</span>
+                </div>
+                <div class="comment-content">${escapeHtml(c.content)}</div>
+                ${user && c.user_id === user.id ? `<button class="btn btn-small btn-danger" onclick="deleteComment(${c.id})">刪除</button>` : ''}
+              </div>
+            `).join('') || ''}
+            ${user ? `
+              <div class="comment-form">
+                <input type="text" id="commentInput" placeholder="輸入留言...">
+                <button class="btn btn-primary" onclick="addComment()">發送</button>
+              </div>
+            ` : '<div style="margin-top:12px;color:#6b7280;">登入後可留言</div>'}
+          </div>
+        `;
+        document.getElementById('postList').style.display = 'none';
+        document.getElementById('postDetail').innerHTML = html;
+        document.getElementById('postDetail').style.display = 'block';
+      } catch (e) { alert(e.message); }
+    }
+
+    function showList() {
+      document.getElementById('postDetail').style.display = 'none';
+      document.getElementById('postList').style.display = 'block';
+      loadPosts();
+    }
+
+    async function addComment() {
+      const input = document.getElementById('commentInput');
+      if (!input.value.trim()) return;
+      try {
+        await api('/blog/' + currentPostId + '/comments', { method: 'POST', body: JSON.stringify({ content: input.value }) });
+        input.value = '';
+        viewPost(currentPostId);
+      } catch (e) { alert(e.message); }
+    }
+
+    async function deleteComment(commentId) {
+      if (!confirm('確定刪除留言？')) return;
+      try {
+        await api('/blog/' + currentPostId + '/comments/' + commentId, { method: 'DELETE' });
+        viewPost(currentPostId);
+      } catch (e) { alert(e.message); }
+    }
+
+    async function toggleLike(postId, type) {
+      if (!user) return alert('請先登入');
+      try {
+        const posts = await api('/blog');
+        const post = posts.find(p => p.id === postId);
+        if (post && post.user_like === type) {
+          await api('/posts/' + postId + '/likes', { method: 'DELETE' });
+        } else {
+          await api('/posts/' + postId + '/likes', { method: 'POST', body: JSON.stringify({ type }) });
+        }
+        loadPosts();
+        if (currentPostId === postId) viewPost(postId);
+      } catch (e) { alert(e.message); }
+    }
+
+    async function showShare(postId) {
+      const platforms = ['Facebook', 'Twitter', 'Line', 'Copy'];
+      const html = `
+        <div class="card">
+          <h3>分享文章</h3>
+          <div class="share-menu">
+            ${platforms.map(p => `<button class="share-btn" onclick="sharePost(${postId}, '${p}')">${p}</button>`).join('')}
+          </div>
+        </div>
+      `;
+      if (document.getElementById('postDetail').style.display === 'block') {
+        document.getElementById('postDetail').insertAdjacentHTML('beforeend', html);
+      } else {
+        document.getElementById('postList').insertAdjacentHTML('beforeend', html);
+      }
+    }
+
+    async function sharePost(postId, platform) {
+      const url = window.location.origin + '/?id=' + postId;
+      if (!user && platform !== 'Copy') return alert('請先登入');
+      try {
+        if (platform !== 'Copy') {
+          await api('/posts/' + postId + '/shares', { method: 'POST', body: JSON.stringify({ platform }) });
+        }
+        if (platform === 'Copy') {
+          await navigator.clipboard.writeText(url);
+          alert('連結已複製到剪貼簿！');
+        } else if (platform === 'Facebook') {
+          window.open('https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(url), '_blank');
+        } else if (platform === 'Twitter') {
+          window.open('https://twitter.com/intent/tweet?url=' + encodeURIComponent(url), '_blank');
+        } else if (platform === 'Line') {
+          window.open('https://line.me/R/msg/text/?' + encodeURIComponent(url), '_blank');
+        }
+        loadPosts();
+      } catch (e) { alert(e.message); }
+    }
+
+    async function register() {
+      const username = document.getElementById('regUsername').value;
+      const password = document.getElementById('regPassword').value;
+      const display_name = document.getElementById('regDisplayName').value;
+      try {
+        await api('/register', { method: 'POST', body: JSON.stringify({ username, password, display_name }) });
+        closeModal('registerModal');
+        alert('註冊成功！請登入');
+      } catch (e) { alert(e.message); }
+    }
+
+    async function login() {
+      const username = document.getElementById('loginUsername').value;
+      const password = document.getElementById('loginPassword').value;
+      try {
+        const data = await api('/login', { method: 'POST', body: JSON.stringify({ username, password }) });
+        token = data.token;
+        user = data.user;
+        localStorage.setItem('token', token);
+        localStorage.setItem('user', JSON.stringify(user));
+        closeModal('loginModal');
+        updateUserArea();
+        loadPosts();
+      } catch (e) { alert(e.message); }
+    }
+
+    async function logout() {
+      if (token) await api('/logout', { method: 'POST' });
+      token = null;
+      user = null;
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      updateUserArea();
+      loadPosts();
+    }
+
+    function updateUserArea() {
+      if (user) {
+        document.getElementById('userArea').innerHTML = `
+          <span>👤 ${user.display_name || user.username}</span>
+          <button class="btn btn-secondary" onclick="logout()">登出</button>
+        `;
+      } else {
+        document.getElementById('userArea').innerHTML = `
+          <button class="btn btn-primary" onclick="showModal('loginModal')">登入</button>
+          <button class="btn btn-secondary" onclick="showModal('registerModal')">註冊</button>
+        `;
+      }
+    }
+
+    function editPost(id) {
+      editingPostId = id;
+      api('/blog/' + id).then(post => {
+        document.getElementById('postTitle').value = post.title;
+        document.getElementById('postContent').value = post.content;
+        document.getElementById('postModalTitle').innerText = '編輯文章';
+        showModal('postModal');
+      });
+    }
+
+    async function savePost() {
+      const title = document.getElementById('postTitle').value;
+      const content = document.getElementById('postContent').value;
+      if (!title || !content) return alert('請填寫標題和內容');
+      try {
+        if (editingPostId) {
+          await api('/blog/' + editingPostId, { method: 'PUT', body: JSON.stringify({ title, content }) });
+        } else {
+          await api('/blog', { method: 'POST', body: JSON.stringify({ title, content }) });
+        }
+        closeModal('postModal');
+        document.getElementById('postTitle').value = '';
+        document.getElementById('postContent').value = '';
+        document.getElementById('postModalTitle').innerText = '發布文章';
+        editingPostId = null;
+        loadPosts();
+      } catch (e) { alert(e.message); }
+    }
+
+    async function deletePost(id) {
+      if (!confirm('確定刪除文章？')) return;
+      try {
+        await api('/blog/' + id, { method: 'DELETE' });
+        loadPosts();
+      } catch (e) { alert(e.message); }
+    }
+
+    function escapeHtml(str) {
+      return String(str).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    }
+
+    async function showFriends() {
+      document.getElementById('postList').style.display = 'none';
+      document.getElementById('postDetail').style.display = 'none';
+      document.getElementById('friendsSection').style.display = 'block';
+      loadFriends();
+    }
+
+    async function loadFriends() {
+      try {
+        const [friends, users] = await Promise.all([
+          api('/friends'),
+          api('/users')
+        ]);
+        const friendsList = friends.filter(f => f.status === 'accepted');
+        const pendingList = friends.filter(f => f.status === 'pending');
+        
+        const html = `
+          <div class="nav-tabs">
+            <button class="nav-tab active" onclick="showList()">🏠 文章</button>
+            <button class="nav-tab">👥 好友</button>
+          </div>
+          <h2>我的好友</h2>
+          ${friendsList.length ? friendsList.map(f => `
+            <div class="card friend-card">
+              <div class="friend-info">
+                <span class="friend-name">${escapeHtml(f.display_name || f.username)}</span>
+                <span class="friend-username">@${escapeHtml(f.username)}</span>
+              </div>
+              <button class="btn btn-small btn-danger" onclick="removeFriend(${f.friend_id})">移除</button>
+            </div>
+          `).join('') : '<div class="empty">尚無好友</div>'}
+          
+          ${pendingList.length ? `
+            <h3 style="margin-top:20px;">待確認</h3>
+            ${pendingList.map(f => `
+              <div class="card friend-card">
+                <div class="friend-info">
+                  <span class="friend-name">${escapeHtml(f.display_name || f.username)}</span>
+                  <span class="friend-username">@${escapeHtml(f.username)}</span>
+                </div>
+                <div>
+                  <button class="btn btn-small btn-primary" onclick="respondFriend(${f.friend_id}, 'accepted')">接受</button>
+                  <button class="btn btn-small btn-secondary" onclick="respondFriend(${f.friend_id}, 'rejected')">拒絕</button>
+                </div>
+              </div>
+            `).join('')}
+          ` : ''}
+          
+          <h3 style="margin-top:20px;">發現用戶</h3>
+          ${users.filter(u => !friends.find(f => (f.friend_id === u.id || f.id === u.id) && f.status !== 'rejected')).map(u => `
+            <div class="card friend-card">
+              <div class="friend-info">
+                <span class="friend-name">${escapeHtml(u.display_name || u.username)}</span>
+                <span class="friend-username">@${escapeHtml(u.username)}</span>
+              </div>
+              <button class="btn btn-small btn-primary" onclick="addFriend(${u.id})">加好友</button>
+            </div>
+          `).join('') || '<div class="empty">無其他用戶</div>'}
+        `;
+        document.getElementById('friendsSection').innerHTML = html;
+      } catch (e) { alert(e.message); }
+    }
+
+    async function addFriend(friendId) {
+      try {
+        await api('/friends', { method: 'POST', body: JSON.stringify({ friend_id: friendId }) });
+        loadFriends();
+      } catch (e) { alert(e.message); }
+    }
+
+    async function removeFriend(friendId) {
+      if (!confirm('確定移除好友？')) return;
+      try {
+        const friends = await api('/friends');
+        const friend = friends.find(f => f.friend_id === friendId || f.id === friendId);
+        if (friend) {
+          await api('/friends/' + friend.friend_id || friend.id, { method: 'DELETE' });
+        }
+        loadFriends();
+      } catch (e) { alert(e.message); }
+    }
+
+    async function respondFriend(friendId, status) {
+      try {
+        const friends = await api('/friends');
+        const friend = friends.find(f => (f.friend_id === friendId || f.id === friendId) && f.status === 'pending');
+        if (friend) {
+          await api('/friends/' + (friend.friend_id || friend.id), { method: 'PUT', body: JSON.stringify({ status }) });
+        }
+        loadFriends();
+      } catch (e) { alert(e.message); }
+    }
+
+    function updateUserArea() {
+      if (user) {
+        document.getElementById('userArea').innerHTML = `
+          <button class="btn btn-secondary" onclick="showFriends()" id="friendsBtn">👥 好友</button>
+          <span>👤 ${user.display_name || user.username}</span>
+          <button class="btn btn-secondary" onclick="logout()">登出</button>
+        `;
+      } else {
+        document.getElementById('userArea').innerHTML = `
+          <button class="btn btn-primary" onclick="showModal('loginModal')">登入</button>
+          <button class="btn btn-secondary" onclick="showModal('registerModal')">註冊</button>
+        `;
+      }
+    }
+
+    updateUserArea();
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const postId = urlParams.get('id');
+    if (postId) {
+      viewPost(parseInt(postId));
+    } else {
+      loadPosts();
+    }
+  </script>
+</body>
+</html>

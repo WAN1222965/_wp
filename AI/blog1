@@ -1,0 +1,118 @@
+const express = require('express');
+const initSqlJs = require('sql.js');
+const fs = require('fs');
+const path = require('path');
+
+const app = express();
+app.use(express.json());
+
+const DB_PATH = path.join(__dirname, 'blog.db');
+let db;
+
+function saveDB() {
+  const data = db.export();
+  const buffer = Buffer.from(data);
+  fs.writeFileSync(DB_PATH, buffer);
+}
+
+function queryAll(sql, params = []) {
+  const stmt = db.prepare(sql);
+  const results = [];
+  if (params.length) stmt.bind(params);
+  while (stmt.step()) results.push(stmt.getAsObject());
+  stmt.free();
+  return results;
+}
+
+function queryOne(sql, params = []) {
+  const results = queryAll(sql, params);
+  return results[0] || null;
+}
+
+function run(sql, params = []) {
+  db.run(sql, params);
+  saveDB();
+
+  const res = db.exec("SELECT last_insert_rowid()");
+  return { lastID: res[0].values[0][0] };
+}
+
+async function initDB() {
+  const SQL = await initSqlJs();
+  if (fs.existsSync(DB_PATH)) {
+    db = new SQL.Database(fs.readFileSync(DB_PATH));
+  } else {
+    db = new SQL.Database();
+  }
+
+  db.run(`CREATE TABLE IF NOT EXISTS todos (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    title TEXT NOT NULL,
+    completed INTEGER DEFAULT 0
+  )`);
+
+  db.run(`CREATE TABLE IF NOT EXISTS posts (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    title TEXT NOT NULL,
+    content TEXT NOT NULL,
+    created_at TEXT DEFAULT CURRENT_TIMESTAMP
+  )`);
+
+  db.run(`CREATE TABLE IF NOT EXISTS comments (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    post_id INTEGER NOT NULL,
+    author TEXT NOT NULL,
+    content TEXT NOT NULL,
+    created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (post_id) REFERENCES posts(id) ON DELETE CASCADE
+  )`);
+
+  saveDB();
+
+  const PORT = 3000;
+  app.listen(PORT, () => {
+    console.log(`伺服器運行中: http://localhost:${PORT}`);
+    console.log(`Blog API: http://localhost:${PORT}/blog`);
+    console.log(`Todos API: http://localhost:${PORT}/todos`);
+  });
+}
+
+
+app.get('/blog', (req, res) => {
+  res.json(queryAll('SELECT * FROM posts ORDER BY created_at DESC'));
+});
+
+app.post('/blog', (req, res) => {
+  const { title, content } = req.body;
+  if (!title || !content) return res.status(400).json({ error: '標題與內容為必填' });
+  const result = run('INSERT INTO posts (title, content) VALUES (?, ?)', [title, content]);
+  res.status(201).json({ id: result.lastID, title, content });
+});
+
+app.get('/blog/:id/comments', (req, res) => {
+  const comments = queryAll('SELECT * FROM comments WHERE post_id = ? ORDER BY created_at DESC', [req.params.id]);
+  res.json(comments);
+});
+
+app.post('/blog/:id/comments', (req, res) => {
+  const { author, content } = req.body;
+  const post = queryOne('SELECT id FROM posts WHERE id = ?', [req.params.id]);
+  if (!post) return res.status(404).json({ error: '找不到對應的文章' });
+  if (!author || !content) return res.status(400).json({ error: '名字與內容為必填' });
+
+  const result = run('INSERT INTO comments (post_id, author, content) VALUES (?, ?, ?)', 
+    [req.params.id, author, content]);
+  res.status(201).json({ id: result.lastID, post_id: req.params.id, author, content });
+});
+
+app.get('/todos', (req, res) => {
+  res.json(queryAll('SELECT * FROM todos'));
+});
+
+app.post('/todos', (req, res) => {
+  const { title, completed = false } = req.body;
+  const result = run('INSERT INTO todos (title, completed) VALUES (?, ?)', [title, completed ? 1 : 0]);
+  res.status(201).json({ id: result.lastID, title, completed });
+});
+
+initDB();
