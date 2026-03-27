@@ -313,11 +313,7 @@ function closeModal(id) { ... }       // 關閉彈窗
 | package.json | 專案設定 |
 | blog.db | SQLite 資料庫 |
 | note | 本摘要檔案 |
-## 啟動方式
-```bash
-npm start
-```
-然後訪問 http://localhost:3000
+
 ---
 ## 安全性考量
 ### 密碼加密
@@ -372,3 +368,9 @@ API 端點
 ├── package.json
 └── /public
     └── index.html 剛剛的 HTML
+    
+ ## 啟動方式
+```bash
+npm start
+```
+然後訪問 http://localhost:3000
