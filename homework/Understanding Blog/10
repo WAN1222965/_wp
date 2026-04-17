@@ -1,0 +1,23 @@
+function checkAdmin(role, callback) {
+    if (role !== "admin") {
+        callback("Access Denied");
+    } else
+        {
+        callback(null, "Welcome");
+    }
+}
+checkAdmin("guest", (err, message) =>{
+    if (err)
+        {
+        console.log("[失敗情況] 錯誤訊息：", err);
+        return;
+    }
+    console.log(message);
+});
+checkAdmin("admin", (err, message) => {
+    if (err) {
+        console.log("[成功情況] 錯誤訊息：", err);
+        return;
+    }
+    console.log("[成功情況] 結果：", message);
+});

@@ -1,0 +1,1 @@
+const { title, content } = req.body;

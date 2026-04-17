@@ -1,0 +1,17 @@
+function fetchData(id, callback)
+{
+    const fakeData = {
+        id: id,
+        status: "success"
+    };
+    callback(null, fakeData);
+}
+fetchData(101, (err, data) => {
+    if (err)
+        {
+        console.log("error：" + err);
+    } else
+        {
+        console.log("取得資料：", data); 
+    }
+});

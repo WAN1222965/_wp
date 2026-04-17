@@ -1,0 +1,11 @@
+const contents = [
+  "Very long content here", 
+  "Another Very long content here", 
+  "3rd Very long content here"
+];
+const summaries = contents.map(text =>
+    {
+  const truncated = text.substring(0, 10);
+  return `${truncated}...`;
+});
+console.log(summaries);
