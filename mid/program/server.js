@@ -263,26 +263,28 @@ router.get('/api/posts/:id/related', (req, res) => {
 // ===== RSS Feed =====
 
 router.get('/rss.xml', (req, res) => {
+  const host = req.headers.host || `localhost:${PORT}`;
+  const baseUrl = `http://${host}${BASE}`;
   db.all('SELECT id, title, content, created_at FROM posts ORDER BY created_at DESC LIMIT 20', [], (err, posts) => {
     if (err) return res.status(500).send(err.message);
     const buildDate = new Date().toUTCString();
     let items = posts.map(p => `
     <item>
       <title><![CDATA[${p.title || 'Untitled'}]]></title>
-      <link>http://localhost:${PORT}${BASE}/post/${p.id}</link>
+      <link>${baseUrl}/post/${p.id}</link>
       <description><![CDATA[${(p.content || '').substring(0, 500)}]]></description>
       <pubDate>${new Date(p.created_at).toUTCString()}</pubDate>
-      <guid>http://localhost:${PORT}${BASE}/post/${p.id}</guid>
+      <guid>${baseUrl}/post/${p.id}</guid>
     </item>`).join('\n');
     const rss = `<?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>墨 - 網誌</title>
-    <link>http://localhost:${PORT}${BASE}/</link>
+    <link>${baseUrl}/</link>
     <description>墨 - 紀錄瞬間的思緒</description>
     <language>zh-TW</language>
     <lastBuildDate>${buildDate}</lastBuildDate>
-    <atom:link href="http://localhost:${PORT}${BASE}/rss.xml" rel="self" type="application/rss+xml"/>
+    <atom:link href="${baseUrl}/rss.xml" rel="self" type="application/rss+xml"/>
     ${items}
   </channel>
 </rss>`;
