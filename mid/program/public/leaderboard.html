@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <title>排行榜 - 墨跡</title>
+    <link rel="stylesheet" href="/s111410509/style.css">
+    <style>
+        .leaderboard {
+            background: #fff;
+            padding: 30px;
+            border-radius: 4px;
+            box-shadow: 0 3px 15px rgba(0,0,0,0.08);
+            border: 1px solid rgba(139, 115, 85, 0.15);
+        }
+        .leaderboard h2 {
+            text-align: center;
+            margin-bottom: 25px;
+            font-weight: 400;
+            letter-spacing: 0.2em;
+        }
+        .score-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 15px;
+            border-bottom: 1px solid rgba(139, 115, 85, 0.1);
+        }
+        .score-item:first-child {
+            background: linear-gradient(180deg, rgba(139, 90, 43, 0.1) 0%, rgba(139, 90, 43, 0.05) 100%);
+        }
+        .score-rank {
+            font-weight: bold;
+            margin-right: 15px;
+            color: #8b5a2b;
+        }
+        .score-name {
+            flex: 1;
+        }
+        .score-value {
+            font-weight: bold;
+            color: #2a2a2a;
+        }
+        .score-date {
+            color: #aaa;
+            font-size: 0.85rem;
+            margin-left: 15px;
+        }
+        .back-link {
+            display: block;
+            text-align: center;
+            margin-top: 25px;
+            color: #8b7355;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>墨</h1>
+            <p>排行榜</p>
+        </header>
+
+        <nav class="nav-links">
+            <a href="/s111410509/notes">隨筆</a>
+            <a href="/s111410509/snake.html">墨跡</a>
+            <a href="/s111410509/leaderboard.html">排行榜</a>
+        </nav>
+
+        <div class="leaderboard">
+            <h2>墨跡排行</h2>
+            <div id="scoresList"></div>
+        </div>
+
+        <a href="/s111410509/snake.html" class="back-link">開始遊戲</a>
+    </div>
+    <script>
+        async function loadScores() {
+            const response = await fetch('/s111410509/api/scores');
+            const scores = await response.json();
+            const list = document.getElementById('scoresList');
+            
+            if (scores.length === 0) {
+                list.innerHTML = '<p style="text-align:center;color:#aaa;">尚無紀錄</p>';
+                return;
+            }
+            
+            list.innerHTML = scores.map((s, i) => `
+                <div class="score-item">
+                    <span class="score-rank">${i + 1}.</span>
+                    <span class="score-name">${s.name}</span>
+                    <span class="score-value">${s.score} 分</span>
+                    <span class="score-date">${s.date}</span>
+                </div>
+            `).join('');
+        }
+        loadScores();
+    </script>
+</body>
+</html>

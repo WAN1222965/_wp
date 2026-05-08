@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="zh-TW" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= post.title %> - 墨</title>
+  <link rel="alternate" type="application/rss+xml" title="墨 - 網誌 RSS" href="<%= baseUrl %>/rss.xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/line-numbers/prism-line-numbers.min.css" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #f2f0e9; --bg-card: rgba(255,255,255,0.8); --text: #1a1a1a; --text-secondary: #555;
+      --border: rgba(0,0,0,0.1); --accent: #000; --toc-bg: rgba(255,255,255,0.85);
+      --code-bg: #1e1e1e; --code-text: #d4d4d4; --shadow: rgba(0,0,0,0.08);
+      --hover-bg: rgba(0,0,0,0.05); --tag-bg: #e8e6df;
+    }
+    [data-theme="dark"] {
+      --bg: #1a1a1a; --bg-card: rgba(30,30,30,0.9); --text: #e0e0e0; --text-secondary: #999;
+      --border: rgba(255,255,255,0.1); --accent: #fff; --toc-bg: rgba(30,30,30,0.95);
+      --code-bg: #0d0d0d; --code-text: #d4d4d4; --shadow: rgba(0,0,0,0.3);
+      --hover-bg: rgba(255,255,255,0.08); --tag-bg: #2a2a2a;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; padding: 0; font-family: 'Noto Serif TC', serif;
+      background: var(--bg); color: var(--text);
+      transition: background 0.3s, color 0.3s;
+      overflow-x: hidden;
+    }
+    /* Reading Progress Bar */
+    #progressBar {
+      position: fixed; top: 0; left: 0; height: 3px;
+      background: linear-gradient(90deg, #667eea, #764ba2);
+      z-index: 9999; width: 0%; transition: width 0.1s;
+    }
+    /* Top Bar */
+    .top-bar {
+      position: fixed; top: 3px; left: 0; right: 0; z-index: 999;
+      display: flex; justify-content: flex-end; align-items: center;
+      padding: 8px 24px; gap: 12px;
+      background: var(--toc-bg); backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+    }
+    .top-bar a { color: var(--text-secondary); text-decoration: none; font-size: 0.85rem; }
+    .top-bar a:hover { color: var(--accent); }
+    .theme-toggle, .search-toggle {
+      background: none; border: 1px solid var(--border); border-radius: 20px;
+      padding: 4px 12px; cursor: pointer; font-size: 0.85rem;
+      color: var(--text); transition: 0.2s; box-shadow: none; margin: 0;
+    }
+    .theme-toggle:hover, .search-toggle:hover { background: var(--hover-bg); transform: none; }
+    /* Search Overlay */
+    .search-overlay {
+      position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.5); z-index: 10000;
+      display: none; justify-content: center; padding-top: 15vh;
+    }
+    .search-overlay.active { display: flex; }
+    .search-panel {
+      background: var(--bg-card); backdrop-filter: blur(12px);
+      width: 90%; max-width: 600px; max-height: 70vh;
+      border-radius: 12px; padding: 24px;
+      box-shadow: 0 20px 60px var(--shadow); overflow-y: auto;
+    }
+    .search-panel input {
+      width: 100%; padding: 12px 16px; border: 1px solid var(--border);
+      border-radius: 8px; font-size: 1.1rem;
+      background: var(--bg); color: var(--text);
+      font-family: 'Noto Serif TC', serif; outline: none;
+    }
+    .search-panel input:focus { border-color: var(--accent); }
+    .search-results { margin-top: 16px; }
+    .search-result-item {
+      padding: 12px; border-bottom: 1px solid var(--border);
+      cursor: pointer; transition: 0.2s;
+    }
+    .search-result-item:hover { background: var(--hover-bg); }
+    .search-result-item h4 { margin: 0 0 4px; font-size: 1rem; }
+    .search-result-item p { margin: 0; font-size: 0.85rem; color: var(--text-secondary); }
+    /* Layout */
+    .layout { display: flex; max-width: 1200px; margin: 60px auto 0; padding: 0 20px; gap: 30px; }
+    /* Floating TOC */
+    .toc-sidebar {
+      position: sticky; top: 70px; width: 220px; flex-shrink: 0;
+      max-height: calc(100vh - 90px); overflow-y: auto;
+      padding: 16px; border-radius: 8px;
+      background: var(--toc-bg); backdrop-filter: blur(8px);
+      border: 1px solid var(--border);
+    }
+    .toc-sidebar::-webkit-scrollbar { width: 3px; }
+    .toc-sidebar::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+    .toc-title { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 2px; color: var(--text-secondary); margin-bottom: 12px; font-weight: 700; }
+    .toc-item { display: block; padding: 4px 8px; font-size: 0.85rem; color: var(--text-secondary); text-decoration: none; border-left: 2px solid transparent; margin-bottom: 2px; transition: 0.2s; }
+    .toc-item:hover { color: var(--text); border-left-color: var(--text-secondary); }
+    .toc-item.active { color: var(--accent); border-left-color: var(--accent); font-weight: 700; }
+    .toc-item.h3 { padding-left: 20px; font-size: 0.8rem; }
+    /* Main Content */
+    .post-content { flex: 1; min-width: 0; max-width: 720px; }
+    .post-header { margin-bottom: 32px; }
+    .post-header h1 { font-size: 2rem; margin: 0 0 8px; line-height: 1.4; }
+    .post-meta { font-size: 0.85rem; color: var(--text-secondary); display: flex; gap: 16px; flex-wrap: wrap; align-items: center; }
+    .post-meta .tags { display: flex; gap: 6px; flex-wrap: wrap; }
+    .post-meta .tag { display: inline-block; padding: 2px 10px; background: var(--tag-bg); border-radius: 12px; font-size: 0.75rem; color: var(--text-secondary); text-decoration: none; }
+    /* Article Body */
+    .article-body { line-height: 1.9; font-size: 1.05rem; }
+    .article-body h2 { margin: 40px 0 16px; font-size: 1.5rem; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+    .article-body h3 { margin: 32px 0 12px; font-size: 1.2rem; }
+    .article-body p { margin: 0 0 16px; }
+    .article-body img { max-width: 100%; border-radius: 8px; margin: 16px 0; }
+    .article-body blockquote { margin: 16px 0; padding: 12px 20px; border-left: 4px solid var(--accent); background: var(--tag-bg); font-style: italic; }
+    .article-body ul, .article-body ol { padding-left: 24px; margin: 0 0 16px; }
+    .article-body li { margin-bottom: 8px; }
+    /* Annotation popover */
+    .annotation { border-bottom: 1px dashed var(--accent); cursor: help; position: relative; }
+    .annotation-popup {
+      position: absolute; bottom: calc(100% + 8px); left: 50%; transform: translateX(-50%);
+      background: var(--text); color: var(--bg); padding: 8px 14px; border-radius: 6px;
+      font-size: 0.85rem; white-space: nowrap; max-width: 280px; white-space: normal;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.2); opacity: 0; pointer-events: none;
+      transition: opacity 0.2s, transform 0.2s; z-index: 100; line-height: 1.5;
+    }
+    .annotation:hover .annotation-popup { opacity: 1; transform: translateX(-50%) translateY(-4px); }
+    /* Code Blocks */
+    .code-block-wrapper {
+      position: relative; margin: 20px 0; border-radius: 8px; overflow: hidden;
+      border: 1px solid var(--border);
+    }
+    .code-block-header {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 6px 14px; background: #2d2d2d; color: #999; font-size: 0.8rem;
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .code-block-header .filename { color: #ccc; }
+    .copy-btn {
+      background: none; border: 1px solid #555; color: #ccc; padding: 2px 10px;
+      border-radius: 4px; cursor: pointer; font-size: 0.75rem; box-shadow: none; margin: 0;
+      transition: 0.2s;
+    }
+    .copy-btn:hover { background: #444; transform: none; }
+    .copy-btn.copied { border-color: #4caf50; color: #4caf50; }
+    .code-block-wrapper pre { margin: 0; border-radius: 0; }
+    .code-block-wrapper pre[class*="language-"] { margin: 0; border-radius: 0; }
+    /* Code Playground */
+    .playground { margin: 24px 0; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+    .playground-tabs { display: flex; border-bottom: 1px solid var(--border); }
+    .playground-tab { padding: 8px 16px; cursor: pointer; font-size: 0.8rem; border-bottom: 2px solid transparent; transition: 0.2s; color: var(--text-secondary); }
+    .playground-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+    .playground-editor { display: none; }
+    .playground-editor.active { display: block; }
+    .playground-editor textarea {
+      width: 100%; min-height: 120px; padding: 12px; border: none;
+      background: #1e1e1e; color: #d4d4d4; font-family: 'JetBrains Mono', monospace;
+      font-size: 0.85rem; resize: vertical; outline: none;
+    }
+    .playground-output {
+      padding: 16px; background: var(--bg-card); border-top: 1px solid var(--border);
+      min-height: 80px;
+    }
+    .playground-output iframe { width: 100%; border: none; }
+    .playground-run {
+      display: block; width: 100%; padding: 10px; background: var(--accent);
+      color: var(--bg); border: none; cursor: pointer; font-size: 0.9rem;
+      font-family: 'Noto Serif TC', serif; transition: 0.2s; box-shadow: none; margin: 0;
+    }
+    .playground-run:hover { opacity: 0.8; transform: none; }
+    /* AI Summary */
+    .ai-summary {
+      margin: 24px 0; padding: 20px; background: var(--tag-bg);
+      border-left: 4px solid #667eea; border-radius: 0 8px 8px 0;
+    }
+    .ai-summary-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 2px; color: #667eea; font-weight: 700; margin-bottom: 8px; }
+    .ai-summary p { margin: 0; line-height: 1.7; font-size: 0.95rem; color: var(--text-secondary); }
+    /* Related Posts */
+    .related-posts { margin: 40px 0; padding: 24px; background: var(--bg-card); border-radius: 8px; border: 1px solid var(--border); }
+    .related-posts h3 { margin: 0 0 16px; font-size: 1.1rem; }
+    .related-list { display: grid; gap: 12px; }
+    .related-item { padding: 12px; border-radius: 6px; transition: 0.2s; text-decoration: none; display: block; }
+    .related-item:hover { background: var(--hover-bg); }
+    .related-item h4 { margin: 0 0 4px; font-size: 0.95rem; color: var(--text); }
+    .related-item p { margin: 0; font-size: 0.8rem; color: var(--text-secondary); }
+    /* Tag Cloud */
+    .tag-cloud { margin: 40px 0; }
+    .tag-cloud h3 { margin: 0 0 16px; font-size: 1.1rem; }
+    .tag-cloud-items { display: flex; flex-wrap: wrap; gap: 8px; }
+    .tag-cloud-item { padding: 4px 14px; background: var(--tag-bg); border-radius: 20px; text-decoration: none; color: var(--text-secondary); font-size: 0.85rem; transition: 0.2s; }
+    .tag-cloud-item:hover { background: var(--accent); color: var(--bg); }
+    /* Comments Section */
+    .comments-section { margin: 40px 0; }
+    .comments-section h3 { margin: 0 0 16px; font-size: 1.1rem; }
+    .comment-card { padding: 16px; border-bottom: 1px solid var(--border); }
+    .comment-author { font-weight: 700; font-size: 0.9rem; margin-bottom: 4px; }
+    .comment-text { font-size: 0.95rem; line-height: 1.6; }
+    .comment-date { font-size: 0.75rem; color: var(--text-secondary); margin-top: 4px; }
+    .comment-form { display: flex; gap: 12px; margin-top: 16px; }
+    .comment-form input { flex: 1; padding: 10px 14px; border: 1px solid var(--border); border-radius: 6px; background: var(--bg); color: var(--text); font-family: 'Noto Serif TC', serif; }
+    .comment-form button { padding: 10px 20px; background: var(--accent); color: var(--bg); border: none; border-radius: 6px; cursor: pointer; box-shadow: none; margin: 0; }
+    /* Newsletter */
+    .newsletter-box { margin: 40px 0; padding: 24px; background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px; text-align: center; }
+    .newsletter-box h3 { margin: 0 0 8px; font-size: 1.1rem; }
+    .newsletter-box p { margin: 0 0 16px; font-size: 0.9rem; color: var(--text-secondary); }
+    .newsletter-form { display: flex; gap: 8px; max-width: 400px; margin: 0 auto; }
+    .newsletter-form input { flex: 1; padding: 10px 14px; border: 1px solid var(--border); border-radius: 6px; background: var(--bg); color: var(--text); font-family: 'Noto Serif TC', serif; }
+    .newsletter-form button { padding: 10px 20px; background: var(--accent); color: var(--bg); border: none; border-radius: 6px; cursor: pointer; box-shadow: none; margin: 0; }
+    /* GitHub Discussions embed */
+    .github-discussions { margin: 40px 0; }
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+    /* Responsive */
+    @media (max-width: 860px) {
+      .toc-sidebar { display: none; }
+      .layout { padding: 0 16px; }
+    }
+  </style>
+</head>
+<body>
+  <div id="progressBar"></div>
+
+  <div class="top-bar">
+    <a href="<%= baseUrl %>/">← 首頁</a>
+    <a href="<%= baseUrl %>/rss.xml" target="_blank">RSS</a>
+    <button class="search-toggle" onclick="toggleSearch()">🔍 搜尋</button>
+    <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn">🌙 深色</button>
+  </div>
+
+  <!-- Search Overlay -->
+  <div class="search-overlay" id="searchOverlay" onclick="if(event.target===this)closeSearch()">
+    <div class="search-panel">
+      <input type="text" id="searchInput" placeholder="搜尋文章..." oninput="doSearch(this.value)" autofocus>
+      <div class="search-results" id="searchResults"></div>
+    </div>
+  </div>
+
+  <div class="layout">
+    <!-- Floating TOC -->
+    <nav class="toc-sidebar" id="tocSidebar">
+      <div class="toc-title">目錄</div>
+      <div id="tocList"></div>
+    </nav>
+
+    <!-- Main Content -->
+    <article class="post-content">
+      <header class="post-header">
+        <h1><%= post.title %></h1>
+        <div class="post-meta">
+          <span><%= new Date(post.created_at).toLocaleDateString('zh-TW') %></span>
+          <% if (post.tags && post.tags.length > 0) { %>
+          <div class="tags">
+            <% post.tags.forEach(tag => { %>
+            <a href="<%= baseUrl %>/?tag=<%= tag %>" class="tag"><%= tag %></a>
+            <% }) %>
+          </div>
+          <% } %>
+        </div>
+      </header>
+
+      <!-- AI Summary -->
+      <% if (post.summary) { %>
+      <div class="ai-summary">
+        <div class="ai-summary-label">📋 AI 摘要</div>
+        <p><%= post.summary %></p>
+      </div>
+      <% } %>
+
+      <!-- Article Body -->
+      <div class="article-body" id="articleBody">
+        <%- post.content %>
+      </div>
+
+      <!-- Playground (if code present) -->
+      <div id="playgroundContainer"></div>
+
+      <!-- Tag Cloud -->
+      <div class="tag-cloud" id="tagCloudContainer">
+        <h3>🏷️ 標籤雲</h3>
+        <div class="tag-cloud-items" id="tagCloudItems"></div>
+      </div>
+
+      <!-- Related Posts -->
+      <% if (relatedPosts && relatedPosts.length > 0) { %>
+      <div class="related-posts">
+        <h3>📌 你可能也會感興趣</h3>
+        <div class="related-list">
+          <% relatedPosts.forEach(rp => { %>
+          <a href="<%= baseUrl %>/post/<%= rp.id %>" class="related-item">
+            <h4><%= rp.title %></h4>
+          </a>
+          <% }) %>
+        </div>
+      </div>
+      <% } %>
+
+      <!-- Comments -->
+      <div class="comments-section" id="commentsSection">
+        <h3>💬 留言</h3>
+        <div id="commentsList"></div>
+        <div class="comment-form">
+          <input type="text" id="commentName" placeholder="你的名稱">
+          <input type="text" id="commentInput" placeholder="寫下留言...">
+          <button onclick="postComment()">送出</button>
+        </div>
+      </div>
+
+      <!-- GitHub Discussions -->
+      <div class="github-discussions">
+        <h3>📢 在 GitHub 上討論</h3>
+        <div id="githubDiscussions">
+          <p style="color:var(--text-secondary);font-size:0.9rem;">
+            要啟用 GitHub Discussions 留言，請在
+            <a href="https://github.com/settings/apps" target="_blank" style="color:var(--accent);">GitHub Settings</a>
+            中設定您的 repository 並替換下方的 giscus / utterances 程式碼。
+          </p>
+        </div>
+      </div>
+
+      <!-- Newsletter -->
+      <div class="newsletter-box">
+        <h3>📬 訂閱電子報</h3>
+        <p>每當有新文章發布，第一時間通知你</p>
+        <div class="newsletter-form">
+          <input type="email" id="newsletterEmail" placeholder="你的 Email">
+          <button onclick="subscribeNewsletter()">訂閱</button>
+        </div>
+        <p id="newsletterMsg" style="font-size:0.8rem;margin-top:8px;"></p>
+      </div>
+    </article>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/line-numbers/prism-line-numbers.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js" data-autoloader-path="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/"></script>
+  <script>window.BASE_URL = '<%= baseUrl %>';</script>
+  <script src="<%= baseUrl %>/blog.js"></script>
+</body>
+</html>

@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>墨陣 - 迷宮挑戰</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@700&display=swap">
+    <link rel="stylesheet" href="/s111410509/style.css">
+    <link rel="stylesheet" href="/s111410509/game_styles.css">
+</head>
+<body>
+    <canvas id="inkCanvas"></canvas>
+    <div class="game-area-container">
+        <header class="game-header">
+            <h1 class="main-title">墨 陣</h1>
+            <p class="subtitle">使用方向鍵引導墨點抵達印章</p>
+        </header>
+
+        <div class="maze-label-container">
+            <canvas id="mazeCanvas" width="400" height="400"></canvas>
+            
+            <div class="maze-label start-label">
+                <span class="maze-text">起點</span>
+            </div>
+            
+            <div class="maze-label end-label end-label-group">
+                <span class="seal-text-label">成</span>
+                <span class="end-text-label">終點</span>
+            </div>
+        </div>
+
+        <div class="bottom-instructions">
+            觸碰墨牆將退回起點
+        </div>
+        
+        <a href="/s111410509/notes" class="back-link" style="margin-top: 30px;">返回隨筆</a>
+    </div>
+
+    <script src="/s111410509/ink_background.js"></script>
+    <script src="/s111410509/maze.js"></script>
+</body>
+</html>

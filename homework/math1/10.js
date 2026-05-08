@@ -4,4 +4,4 @@ function calculateTotal(cart, discountFunc)
   return discountFunc(total);
 }
 const result = calculateTotal([100, 200, 300], (total) => total - 50);
-console.log(result); // 550
+console.log(result);

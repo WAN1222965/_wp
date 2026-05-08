@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <title>墨跡貪吃蛇</title>
+    <link rel="stylesheet" href="/s111410509/style.css">
+    <style>
+        canvas { 
+            background: #fff; 
+            border: 2px solid #000; 
+            display: block; 
+            margin: 20px auto;
+            box-shadow: 5px 5px 0px #ccc;
+        }
+        .game-info { text-align: center; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>墨跡</h1>
+            <p>得分：<span id="scoreVal">0</span></p>
+        </header>
+
+        <canvas id="gameCanvas" width="400" height="400"></canvas>
+
+        <div class="game-info">
+            <p>使用方向鍵控制運筆方向</p>
+            <button onclick="location.href='/s111410509/notes'">返回隨筆</button>
+        </div>
+    </div>
+    <script src="/s111410509/snake.js"></script>
+</body>
+</html>

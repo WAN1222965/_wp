@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="zh-TW" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>新增文章 - 墨</title>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    :root { --bg: #f2f0e9; --text: #1a1a1a; --border: rgba(0,0,0,0.1); --accent: #000; --bg-card: rgba(255,255,255,0.8); }
+    [data-theme="dark"] { --bg: #1a1a1a; --text: #e0e0e0; --border: rgba(255,255,255,0.1); --accent: #fff; --bg-card: rgba(30,30,30,0.9); }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; padding: 0; font-family: 'Noto Serif TC', serif;
+      background: var(--bg); color: var(--text); transition: background 0.3s, color 0.3s;
+      display: flex; justify-content: center;
+    }
+    .container { width: 90%; max-width: 720px; padding: 40px 0; }
+    h1 { font-size: 1.8rem; margin: 0 0 24px; }
+    label { display: block; font-size: 0.9rem; margin: 16px 0 6px; font-weight: 700; }
+    input, textarea {
+      width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: 6px;
+      font-size: 1rem; background: var(--bg-card); color: var(--text);
+      font-family: 'Noto Serif TC', serif; outline: none; box-sizing: border-box;
+    }
+    input:focus, textarea:focus { border-color: var(--accent); }
+    textarea { min-height: 300px; resize: vertical; }
+    .help-text { font-size: 0.8rem; color: #888; margin: 4px 0 0; }
+    .btn-group { display: flex; gap: 12px; margin-top: 24px; }
+    .btn {
+      padding: 10px 24px; background: var(--accent); color: var(--bg);
+      border: none; border-radius: 6px; cursor: pointer; font-size: 1rem;
+      font-family: 'Noto Serif TC', serif; text-decoration: none;
+    }
+    .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text); }
+    @media (max-width: 600px) { .container { width: 95%; } }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>✏️ 新增文章</h1>
+    <form action="<%= baseUrl %>/posts" method="POST">
+      <label>標題</label>
+      <input type="text" name="title" required placeholder="文章標題">
+
+      <label>標籤 (逗號分隔)</label>
+      <input type="text" name="tags" placeholder="例如：JavaScript, 網頁開發, 教學">
+
+      <label>AI 摘要 (選填，100 字內)</label>
+      <textarea name="summary" style="min-height:60px;" placeholder="簡短描述文章重點..."></textarea>
+
+      <label>內文 (支援 HTML)</label>
+      <textarea name="content" required placeholder="使用 HTML 編輯內容...&#10;&#10;支援語法高亮：&#10;<pre><code class=&quot;language-javascript&quot;>&#10;console.log('hello');&#10;</code></pre>&#10;&#10;支援註解彈窗：&#10;<span data-annotation=&quot;解釋文字&quot;>術語</span>&#10;&#10;支援程式碼沙盒：&#10;<div data-playground data-html=&quot;&lt;h1&gt;Hello&lt;/h1&gt;&quot;></div>"></textarea>
+
+      <div class="btn-group">
+        <button type="submit" class="btn">發布文章</button>
+        <a href="<%= baseUrl %>/" class="btn btn-outline">取消</a>
+      </div>
+    </form>
+  </div>
+
+  <script>
+    (function() {
+      const t = localStorage.getItem('theme');
+      const sys = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+      document.documentElement.setAttribute('data-theme', t || sys);
+    })();
+  </script>
+</body>
+</html>

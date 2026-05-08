@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>墨 - 登入</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;700&display=swap">
+    <link rel="stylesheet" href="/s111410509/style.css">
+    <style>
+        .auth-container {
+            position: relative;
+            z-index: 1;
+            max-width: 400px;
+            margin: 100px auto;
+            padding: 40px;
+            background: rgba(255,255,255,0.9);
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+        .auth-container h1 {
+            text-align: center;
+            font-size: 2.5rem;
+            letter-spacing: 15px;
+            margin-bottom: 30px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+            color: #555;
+        }
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+            font-family: inherit;
+        }
+        .form-group input:focus {
+            outline: none;
+            border-color: #333;
+        }
+        .btn-group {
+            display: flex;
+            gap: 10px;
+        }
+        .btn-group button {
+            flex: 1;
+            padding: 12px;
+            font-size: 1rem;
+        }
+        .switch-link {
+            text-align: center;
+            margin-top: 20px;
+            color: #666;
+            font-size: 0.9rem;
+        }
+        .switch-link a {
+            color: #000;
+            text-decoration: underline;
+            cursor: pointer;
+        }
+        .error-msg {
+            color: #d32f2f;
+            font-size: 0.85rem;
+            text-align: center;
+            margin-bottom: 15px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="inkCanvas"></canvas>
+    
+    <div class="auth-container" id="loginForm">
+        <h1>墨</h1>
+        <p class="error-msg" id="loginError"></p>
+        <div class="form-group">
+            <label>帳號</label>
+            <input type="text" id="loginUsername" placeholder="輸入帳號">
+        </div>
+        <div class="form-group">
+            <label>密碼</label>
+            <input type="password" id="loginPassword" placeholder="輸入密碼">
+        </div>
+        <div class="btn-group">
+            <button onclick="login()">登入</button>
+            <button onclick="showRegister()">註冊</button>
+        </div>
+    </div>
+
+    <div class="auth-container" id="registerForm" style="display:none;">
+        <h1>墨</h1>
+        <p class="error-msg" id="registerError"></p>
+        <div class="form-group">
+            <label>暱稱</label>
+            <input type="text" id="regNickname" placeholder="設定暱稱">
+        </div>
+        <div class="form-group">
+            <label>帳號</label>
+            <input type="text" id="regUsername" placeholder="設定帳號">
+        </div>
+        <div class="form-group">
+            <label>密碼</label>
+            <input type="password" id="regPassword" placeholder="設定密碼">
+        </div>
+        <div class="btn-group">
+            <button onclick="register()">註冊</button>
+            <button onclick="showLogin()">返回登入</button>
+        </div>
+    </div>
+
+    <script src="/s111410509/ink_background.js"></script>
+    <script>
+        let currentUser = JSON.parse(localStorage.getItem('user')) || null;
+        
+        if (currentUser) {
+            window.location.href = '/s111410509/notes';
+        }
+
+        function showRegister() {
+            document.getElementById('loginForm').style.display = 'none';
+            document.getElementById('registerForm').style.display = 'block';
+        }
+
+        function showLogin() {
+            document.getElementById('registerForm').style.display = 'none';
+            document.getElementById('loginForm').style.display = 'block';
+        }
+
+        async function login() {
+            const username = document.getElementById('loginUsername').value.trim();
+            const password = document.getElementById('loginPassword').value.trim();
+            if (!username || !password) {
+                document.getElementById('loginError').textContent = '請輸入帳號和密碼';
+                document.getElementById('loginError').style.display = 'block';
+                return;
+            }
+
+            const res = await fetch('/s111410509/api/auth/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, password })
+            });
+
+            if (res.ok) {
+                const user = await res.json();
+                localStorage.setItem('user', JSON.stringify(user));
+                window.location.href = '/s111410509/notes';
+            } else {
+                const err = await res.json();
+                document.getElementById('loginError').textContent = err.error;
+                document.getElementById('loginError').style.display = 'block';
+            }
+        }
+
+        async function register() {
+            const nickname = document.getElementById('regNickname').value.trim();
+            const username = document.getElementById('regUsername').value.trim();
+            const password = document.getElementById('regPassword').value.trim();
+            if (!username || !password) {
+                document.getElementById('registerError').textContent = '請輸入帳號和密碼';
+                document.getElementById('registerError').style.display = 'block';
+                return;
+            }
+
+            const res = await fetch('/s111410509/api/auth/register', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, nickname, password })
+            });
+
+            if (res.ok) {
+                const user = await res.json();
+                localStorage.setItem('user', JSON.stringify(user));
+                window.location.href = '/s111410509/notes';
+            } else {
+                const err = await res.json();
+                document.getElementById('registerError').textContent = err.error;
+                document.getElementById('registerError').style.display = 'block';
+            }
+        }
+    </script>
+</body>
+</html>
