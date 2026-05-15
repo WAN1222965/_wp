@@ -267,9 +267,15 @@
       const tags = await res.json();
       if (tags.length === 0) { document.getElementById('tagCloudContainer')?.remove(); return; }
       container.innerHTML = tags.map(t =>
-        '<a href="/?tag=' + encodeURIComponent(t.name) + '" class="tag-cloud-item">' + t.name + ' (' + t.count + ')</a>'
+        '<a href="' + BASE + '/?tag=' + encodeURIComponent(t.name) + '" class="tag-cloud-item">' + escapeHtml(t.name) + ' (' + t.count + ')</a>'
       ).join('');
     } catch { }
+  }
+
+  function escapeHtml(str) {
+    const div = document.createElement('div');
+    div.appendChild(document.createTextNode(str || ''));
+    return div.innerHTML;
   }
 
   // ===== COMMENTS =====
@@ -282,8 +288,8 @@
       list.innerHTML = comments.length
         ? comments.map(c => [
           '<div class="comment-card">',
-          '<div class="comment-author">' + (c.username || '匿名') + '</div>',
-          '<div class="comment-text">' + c.content + '</div>',
+          '<div class="comment-author">' + escapeHtml(c.username || '匿名') + '</div>',
+          '<div class="comment-text">' + escapeHtml(c.content) + '</div>',
           '<div class="comment-date">' + new Date(c.created_at).toLocaleDateString('zh-TW') + '</div>',
           '</div>'
         ].join(''))
@@ -296,11 +302,16 @@
     const name = document.getElementById('commentName').value.trim() || '匿名';
     const content = document.getElementById('commentInput').value.trim();
     if (!content) return;
+    let userId = 1;
+    try {
+      const user = JSON.parse(localStorage.getItem('user'));
+      if (user && user.id) userId = user.id;
+    } catch {}
     try {
       await fetch(BASE + '/api/notes/' + postId + '/comments', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ user_id: 1, content: name + '：' + content })
+        body: JSON.stringify({ user_id: userId, content: name + '：' + content })
       });
       document.getElementById('commentInput').value = '';
       loadComments();

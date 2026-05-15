@@ -1,28 +1,30 @@
 <!DOCTYPE html>
-<html lang="zh-TW">
+<html lang="zh-TW" data-theme="light">
 <head>
     <meta charset="UTF-8">
     <title>排行榜 - 墨跡</title>
     <link rel="stylesheet" href="/s111410509/style.css">
     <style>
         .leaderboard {
-            background: #fff;
+            background: var(--card-bg);
             padding: 30px;
             border-radius: 4px;
-            box-shadow: 0 3px 15px rgba(0,0,0,0.08);
-            border: 1px solid rgba(139, 115, 85, 0.15);
+            box-shadow: 0 3px 15px var(--shadow);
+            border: 1px solid var(--border);
         }
         .leaderboard h2 {
             text-align: center;
             margin-bottom: 25px;
             font-weight: 400;
             letter-spacing: 0.2em;
+            color: var(--text);
         }
         .score-item {
             display: flex;
             justify-content: space-between;
             padding: 15px;
-            border-bottom: 1px solid rgba(139, 115, 85, 0.1);
+            border-bottom: 1px solid var(--border);
+            color: var(--text);
         }
         .score-item:first-child {
             background: linear-gradient(180deg, rgba(139, 90, 43, 0.1) 0%, rgba(139, 90, 43, 0.05) 100%);
@@ -37,10 +39,10 @@
         }
         .score-value {
             font-weight: bold;
-            color: #2a2a2a;
+            color: var(--text);
         }
         .score-date {
-            color: #aaa;
+            color: var(--text-secondary);
             font-size: 0.85rem;
             margin-left: 15px;
         }
@@ -48,22 +50,29 @@
             display: block;
             text-align: center;
             margin-top: 25px;
-            color: #8b7355;
+            color: var(--text-secondary);
             text-decoration: none;
         }
     </style>
 </head>
 <body>
-    <div class="container">
+    <canvas id="inkCanvas"></canvas>
+    <div class="container" style="position:relative;z-index:1;">
         <header>
             <h1>墨</h1>
             <p>排行榜</p>
+            <div style="margin-top:8px;display:flex;justify-content:center;gap:8px;flex-wrap:wrap;">
+                <button onclick="toggleTheme()" id="themeBtn" style="border:1px solid var(--border);background:var(--card-bg);cursor:pointer;font-size:0.85rem;padding:4px 14px;border-radius:20px;color:var(--text-secondary);font-family:inherit;">🌙 深色</button>
+            </div>
         </header>
 
         <nav class="nav-links">
-            <a href="/s111410509/notes">隨筆</a>
-            <a href="/s111410509/snake.html">墨跡</a>
-            <a href="/s111410509/leaderboard.html">排行榜</a>
+            <a href="/s111410509/" class="game-link">📝 網誌</a>
+            <a href="/s111410509/notes" class="game-link">✏️ 隨筆</a>
+            <a href="/s111410509/snake.html" class="game-link">🐍 貪吃蛇</a>
+            <a href="/s111410509/whack.html" class="game-link">🎯 捕墨</a>
+            <a href="/s111410509/maze.html" class="game-link">🏃 墨陣</a>
+            <a href="/s111410509/news.html" class="game-link">📰 新聞</a>
         </nav>
 
         <div class="leaderboard">
@@ -73,14 +82,32 @@
 
         <a href="/s111410509/snake.html" class="back-link">開始遊戲</a>
     </div>
+    <script src="/s111410509/ink_background.js"></script>
     <script>
+        (function() {
+            const t = localStorage.getItem('theme');
+            const sys = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+            document.documentElement.setAttribute('data-theme', t || sys);
+            const btn = document.getElementById('themeBtn');
+            if (btn) btn.textContent = (t || sys) === 'dark' ? '☀️ 淺色' : '🌙 深色';
+        })();
+        window.toggleTheme = function() {
+            const c = document.documentElement.getAttribute('data-theme');
+            const t = c === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', t);
+            localStorage.setItem('theme', t);
+            const btn = document.getElementById('themeBtn');
+            if (btn) btn.textContent = t === 'dark' ? '☀️ 淺色' : '🌙 深色';
+            if (window.inkBg && window.inkBg.updateTheme) window.inkBg.updateTheme();
+        };
+
         async function loadScores() {
             const response = await fetch('/s111410509/api/scores');
             const scores = await response.json();
             const list = document.getElementById('scoresList');
             
             if (scores.length === 0) {
-                list.innerHTML = '<p style="text-align:center;color:#aaa;">尚無紀錄</p>';
+                list.innerHTML = '<p style="text-align:center;color:var(--text-secondary);">尚無紀錄</p>';
                 return;
             }
             

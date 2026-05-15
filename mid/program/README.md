@@ -1,4 +1,6 @@
-# 網頁設計課程作業 — 「墨」部落格系統
+# 墨 — 極簡部落格系統
+
+> 紀錄瞬間的思緒。一個融合部落格、隨筆小站與小遊戲的 Node.js 全端專案。
 
 | 欄位 | 內容 |
 |------|------|
@@ -7,8 +9,54 @@
 | 學號末兩碼 | 09 |
 | 教師 | [陳鍾誠](https://www.nqu.edu.tw/educsie/index.php?act=blog&code=list&ids=4) |
 | 學校科系 | [金門大學資訊工程系](https://www.nqu.edu.tw/educsie/index.php) |
-| 課程教材 | https://github.com/ccc114b/html2server / https://www.w3schools.com/ |
-| 執行網址 | http://localhost:3000/s111410509/ |
+| 課程教材 | [html2server](https://github.com/ccc114b/html2server) / [W3Schools](https://www.w3schools.com/) |
+| 執行網址 | `http://localhost:3000/s111410509/` |
+
+---
+
+## 目錄
+
+- [快速開始](#快速開始)
+- [系統架構](#系統架構)
+- [功能一覽](#功能一覽)
+- [目錄結構](#目錄結構)
+- [資料庫結構](#資料庫結構)
+- [API 文件](#api-文件)
+- [功能模組詳解](#功能模組詳解)
+  - [1. 部落格 CRUD](#1-部落格-crud)
+  - [2. Markdown 編輯器](#2-markdown-編輯器)
+  - [3. 搜尋引擎](#3-搜尋引擎)
+  - [4. 水墨動畫背景](#4-水墨動畫背景)
+  - [5. 深色模式](#5-深色模式)
+  - [6. RSS / Sitemap / SEO](#6-rss--sitemap--seo)
+  - [7. 圖片上傳](#7-圖片上傳)
+  - [8. 使用者認證](#8-使用者認證)
+  - [9. 隨筆小站](#9-隨筆小站)
+  - [10. 遊戲模組](#10-遊戲模組)
+  - [11. 時事新聞聚合](#11-時事新聞聚合)
+  - [12. 排行榜](#12-排行榜)
+- [部署指南](#部署指南)
+- [技術債與未來展望](#技術債與未來展望)
+
+---
+
+## 快速開始
+
+```bash
+# 1. 進入專案目錄
+cd mid/program
+
+# 2. 安裝依賴
+npm install
+
+# 3. 啟動伺服器
+npm start
+
+# 4. 開啟瀏覽器
+# → http://localhost:3000/s111410509/
+```
+
+**需求：** Node.js v18+（建議 v24+）、npm
 
 ---
 
@@ -22,266 +70,556 @@
 連接埠：3000
 ```
 
-### 目錄結構
+```
+瀏覽器 (Client)
+    │
+    ├─ EJS 頁面 (伺服器渲染) → views/*.ejs
+    ├─ 靜態頁面 (SPA 風格)   → public/*.html
+    │
+    ▼
+Express 伺服器 (server.js)
+    │
+    ├─ 路由掛載點：/s111410509/
+    │   ├─ 部落格 CRUD (EJS 渲染)
+    │   ├─ RESTful API (/api/*)
+    │   ├─ 靜態資源 (/uploads/、/*.html、/*.js、/*.css)
+    │   ├─ RSS (/rss.xml)
+    │   └─ Sitemap (/sitemap.xml)
+    │
+    ▼
+SQLite3 (blog.db)
+    ├─ users     — 使用者
+    ├─ posts     — 文章
+    ├─ tags      — 標籤
+    ├─ post_tags — 多對多關聯
+    ├─ comments  — 留言
+    ├─ scores    — 遊戲分數
+    ├─ news_likes    — 新聞按讚
+    └─ news_comments — 新聞留言
+```
+
+---
+
+## 功能一覽
+
+| 功能模組 | 說明 | 技術亮點 |
+|----------|------|----------|
+| 📝 部落格 CRUD | 文章新增/編輯/刪除/列表 | 分頁、標籤篩選、關聯推薦 |
+| ✏️ Markdown 編輯器 | 所見即所得預覽 + 工具列 | marked 渲染、分頁切換、草稿自動儲存 |
+| 🔍 客戶端搜尋引擎 | 即時搜尋文章 | 雙層架構 (SQL LIKE + 客戶端索引評分) |
+| 🎨 水墨動畫背景 | Canvas 粒子系統 | 滑鼠互動 + 深色模式自動切換 |
+| 🌙 深色模式 | 系統偏好 + 手動切換 + 跨頁面持久化 | localStorage + CSS 變數 |
+| 📡 RSS / Sitemap | 標準 RSS 2.0 + XML Sitemap | SEO 優化 |
+| 🖼 圖片上傳 | 拖放/選取上傳 | multer + UUID 重新命名 + 限制 5MB |
+| 👤 使用者認證 | 註冊/登入 | localStorage Token |
+| 🐍 貪吃蛇 | 20×20 Canvas 遊戲 | 蛇身漸層、分數提交 |
+| 🎯 捕墨 (打地鼠) | 3×3 九宮格反應遊戲 | 墨花濺射動畫、倒數計時 |
+| 🏃 墨陣 (迷宮) | 10×10 迷宮 | 撞牆水墨特效、起終點標示 |
+| 📰 時事新聞 | RSS 聚合 + 國際新聞 | 按讚/留言系統 |
+| 🏆 排行榜 | 遊戲分數排名 | SQL 排序取前 5 名 |
+
+---
+
+## 目錄結構
 
 ```
 mid/program/
-├── server.js          # 主伺服器 (Express 路由、API、資料庫)
-├── blog.db            # SQLite3 資料庫
-├── package.json       # Node.js 依賴管理
-├── views/             # EJS 樣板 (伺服端渲染)
-│   ├── index.ejs      # 部落格首頁
-│   ├── post.ejs       # 文章檢視頁
-│   ├── new.ejs        # 新增文章
-│   └── edit.ejs       # 編輯文章
-├── public/            # 靜態資源 (客戶端)
-│   ├── style.css      # 主樣式表
-│   ├── game_styles.css# 遊戲專用樣式
-│   ├── blog.js        # 部落格客戶端互動邏輯
-│   ├── script.js      # 隨筆小站客戶端邏輯
-│   ├── ink_background.js # 水墨動畫 Canvas 背景
-│   ├── index.html     # 隨筆小站入口
-│   ├── login.html     # 登入/註冊頁
-│   ├── news.html      # 時事新聞聚合頁
-│   ├── leaderboard.html # 排行榜
-│   ├── snake.html / snake.js   # 貪吃蛇遊戲
-│   ├── whack.html / whack.js   # 打地鼠遊戲
-│   └── maze.html / maze.js     # 迷宮遊戲
+├── server.js                  # 主伺服器 (Express 路由、API、資料庫)
+├── blog.db                    # SQLite3 資料庫
+├── package.json               # Node.js 依賴管理
+├── package-lock.json
+├── server.log                 # 伺服器日誌
+├── README.md                  # 本文件
+│
+├── views/                     # EJS 樣板 (伺服端渲染)
+│   ├── index.ejs              # 部落格首頁 (列表 + 分頁 + 搜尋 + 標籤雲)
+│   ├── post.ejs               # 文章檢視頁 (TOC + 程式碼區塊 + 留言 + 電子報)
+│   ├── new.ejs                # 新增文章 (Markdown 編輯器 + 圖片上傳)
+│   └── edit.ejs               # 編輯文章
+│
+├── public/                    # 靜態資源 (客戶端)
+│   ├── uploads/               # 上傳圖片存放處
+│   ├── style.css              # 主樣式表 (CSS 變數 + 深色模式)
+│   ├── game_styles.css        # 迷宮遊戲專用樣式
+│   ├── blog.js                # 部落格客戶端互動邏輯 (TOC、搜尋、留言、程式碼沙盒)
+│   ├── script.js              # 隨筆小站客戶端邏輯
+│   ├── ink_background.js      # 水墨動畫 Canvas 粒子背景
+│   ├── index.html             # 隨筆小站入口 (簡短文哲貼文)
+│   ├── login.html             # 登入/註冊頁
+│   ├── news.html              # 時事新聞聚合頁 (雙分頁、按讚、留言)
+│   ├── leaderboard.html       # 排行榜
+│   ├── snake.html / snake.js  # 貪吃蛇遊戲
+│   ├── whack.html / whack.js  # 打地鼠遊戲 (捕墨)
+│   └── maze.html / maze.js    # 迷宮遊戲 (墨陣)
+│
+└── node_modules/              # 依賴套件
 ```
 
 ---
 
-## 資料庫結構 (SQLite3)
+## 資料庫結構
 
 ```sql
 -- 使用者
-users (id, username UNIQUE, nickname, password, created_at)
+CREATE TABLE users (
+  id         INTEGER PRIMARY KEY AUTOINCREMENT,
+  username   TEXT UNIQUE NOT NULL,
+  nickname   TEXT NOT NULL,
+  password   TEXT NOT NULL,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
 
 -- 文章
-posts (id, user_id, title, content, summary, likes, reports, created_at)
+CREATE TABLE posts (
+  id         INTEGER PRIMARY KEY AUTOINCREMENT,
+  user_id    INTEGER NOT NULL DEFAULT 0,
+  title      TEXT DEFAULT '',
+  content    TEXT NOT NULL,
+  summary    TEXT DEFAULT '',
+  likes      INTEGER DEFAULT 0,
+  reports    INTEGER DEFAULT 0,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
 
 -- 標籤
-tags (id, name UNIQUE)
+CREATE TABLE tags (
+  id   INTEGER PRIMARY KEY AUTOINCREMENT,
+  name TEXT UNIQUE NOT NULL
+);
 
 -- 文章-標籤關聯 (多對多)
-post_tags (post_id PK, tag_id PK)
+CREATE TABLE post_tags (
+  post_id INTEGER NOT NULL,
+  tag_id  INTEGER NOT NULL,
+  PRIMARY KEY (post_id, tag_id)
+);
 
 -- 留言
-comments (id, post_id, user_id, content, created_at)
+CREATE TABLE comments (
+  id         INTEGER PRIMARY KEY AUTOINCREMENT,
+  post_id    INTEGER NOT NULL,
+  user_id    INTEGER NOT NULL,
+  content    TEXT NOT NULL,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
 
 -- 遊戲分數
-scores (id, name, score, date)
+CREATE TABLE scores (
+  id    INTEGER PRIMARY KEY AUTOINCREMENT,
+  name  TEXT NOT NULL,
+  score INTEGER NOT NULL,
+  date  TEXT NOT NULL
+);
 
 -- 新聞按讚
-news_likes (id, news_title, news_link, likes, created_at)
+CREATE TABLE news_likes (
+  id         INTEGER PRIMARY KEY AUTOINCREMENT,
+  news_title TEXT NOT NULL,
+  news_link  TEXT NOT NULL,
+  likes      INTEGER DEFAULT 0,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
 
 -- 新聞留言
-news_comments (id, news_title, news_link, username, content, created_at)
+CREATE TABLE news_comments (
+  id         INTEGER PRIMARY KEY AUTOINCREMENT,
+  news_title TEXT NOT NULL,
+  news_link  TEXT NOT NULL,
+  username   TEXT NOT NULL,
+  content    TEXT NOT NULL,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
 ```
 
 ---
 
-## 功能模組與程式碼說明
+## API 文件
 
-### 1. 部落格 CRUD（server.js + views/）
+### 部落格
 
-#### 路由表
+| 方法 | 路徑 | 功能 | 參數 | 回傳 |
+|------|------|------|------|------|
+| GET | `/` | 首頁文章列表 | `?page=1&tag=xxx` | EJS HTML |
+| GET | `/post/new` | 新增文章表單 | — | EJS HTML |
+| POST | `/posts` | 儲存新文章 | `title, content, summary, tags` | 302 Redirect |
+| GET | `/post/:id` | 文章檢視 | — | EJS HTML |
+| GET | `/post/:id/edit` | 編輯文章表單 | — | EJS HTML |
+| POST | `/post/:id/update` | 更新文章 | `title, content, summary, tags` | 302 Redirect |
+| POST | `/post/:id/delete` | 刪除文章 | — | 302 Redirect |
+
+### 搜尋
+
+| 方法 | 路徑 | 功能 | 參數 | 回傳 |
+|------|------|------|------|------|
+| GET | `/api/search` | SQL LIKE 搜尋 | `?q=keyword` | JSON |
+| GET | `/api/search-index` | 完整搜尋索引 | — | JSON |
+
+### 標籤
+
+| 方法 | 路徑 | 功能 | 回傳 |
+|------|------|------|------|
+| GET | `/api/tags` | 熱門標籤 (依文章數排序) | JSON |
+| GET | `/api/tags/:name/posts` | 指定標籤的文章列表 | JSON |
+
+### 圖片上傳
+
+| 方法 | 路徑 | 功能 | 參數 | 限制 |
+|------|------|------|------|------|
+| POST | `/api/upload` | 上傳圖片 | `image` (FormData) | 5MB, jpg/png/gif/webp/svg |
+| POST | `/api/upload/url` | 註冊圖片 URL | `url` | — |
+
+### 使用者認證
+
+| 方法 | 路徑 | 功能 | 參數 |
+|------|------|------|------|
+| POST | `/api/auth/register` | 註冊 | `username, nickname, password` |
+| POST | `/api/auth/login` | 登入 | `username, password` |
+
+### 隨筆 (Notes)
+
+| 方法 | 路徑 | 功能 |
+|------|------|------|
+| GET | `/api/notes` | 所有隨筆 |
+| POST | `/api/notes` | 新增隨筆 |
+| POST | `/api/notes/:id/like` | 按讚 |
+| POST | `/api/notes/:id/report` | 檢舉 |
+| GET | `/api/notes/:id/comments` | 留言列表 |
+| POST | `/api/notes/:id/comments` | 新增留言 |
+
+### 關聯推薦
+
+| 方法 | 路徑 | 功能 |
+|------|------|------|
+| GET | `/api/posts/:id/related` | 依共同標籤推薦最多 5 篇 |
+
+### 新聞
+
+| 方法 | 路徑 | 功能 |
+|------|------|------|
+| GET | `/api/news/taiwan` | RSS 聚合 (UDN + ETtoday + 自由) |
+| GET | `/api/news/world` | NewsAPI 國際新聞 |
+| GET | `/api/news/likes` | 所有新聞按讚數 |
+| POST | `/api/news/like` | 按讚/追加之 |
+| GET | `/api/news/comments` | 指定新聞留言 |
+| POST | `/api/news/comment` | 新增新聞留言 |
+
+### 遊戲
+
+| 方法 | 路徑 | 功能 |
+|------|------|------|
+| GET | `/api/scores` | 前 5 名排行榜 |
+| POST | `/api/scores` | 提交分數 |
+
+### 其他
+
+| 方法 | 路徑 | 功能 |
+|------|------|------|
+| GET | `/rss.xml` | RSS 2.0 Feed (最新 20 篇) |
+| GET | `/sitemap.xml` | XML Sitemap |
+| POST | `/api/subscribe` | 電子報訂閱 (記憶體暫存) |
+
+---
+
+## 功能模組詳解
+
+### 1. 部落格 CRUD
+
+路由表：
 
 | 方法 | 路徑 | 功能 | 樣板 |
 |------|------|------|------|
-| GET | `/` | 首頁（分頁列表，每頁 10 篇） | `index.ejs` |
+| GET | `/` | 首頁（分頁列表，每頁 10 篇，支援標籤篩選） | `index.ejs` |
 | GET | `/post/new` | 新增文章表單 | `new.ejs` |
 | POST | `/posts` | 儲存新文章（含標籤） | — |
-| GET | `/post/:id` | 文章檢視 + 關聯推薦 | `post.ejs` |
+| GET | `/post/:id` | 文章檢視 + TOC + 關聯推薦 + 留言 | `post.ejs` |
 | GET | `/post/:id/edit` | 編輯文章表單 | `edit.ejs` |
-| POST | `/post/:id/update` | 更新文章 | — |
-| POST | `/post/:id/delete` | 刪除文章 | — |
+| POST | `/post/:id/update` | 更新文章（含 `updated_at`） | — |
+| POST | `/post/:id/delete` | 刪除文章（含確認對話框） | — |
 
-**關鍵程式碼 — 首頁分頁查詢（server.js）：**
+**首頁分頁查詢：**
 
 ```javascript
 router.get('/', (req, res) => {
   const page = parseInt(req.query.page) || 1;
   const limit = 10;
   const offset = (page - 1) * limit;
-  // 先算總數，再查該頁文章，最後撈標籤
-  db.all('SELECT COUNT(*) as total FROM posts', [], (err, countResult) => {
-    const total = countResult ? countResult[0].total : 0;
-    db.all('SELECT * FROM posts ORDER BY created_at DESC LIMIT ? OFFSET ?',
-      [limit, offset], (err, posts) => {
-        // ... 組合標籤後渲染
-        res.render('index', { posts, currentPage: page, totalPages: Math.ceil(total / limit) });
-      });
-  });
+  const tagFilter = req.query.tag || '';
+
+  // 依有無標籤篩選，分別使用不同 SQL
+  let countSql, listSql;
+  if (tagFilter) {
+    countSql = `SELECT COUNT(*) FROM posts p
+      JOIN post_tags pt ON p.id = pt.post_id
+      JOIN tags t ON pt.tag_id = t.id WHERE t.name = ?`;
+    listSql = `SELECT p.* FROM posts p ... WHERE t.name = ?
+      ORDER BY p.created_at DESC LIMIT ? OFFSET ?`;
+  } else {
+    countSql = 'SELECT COUNT(*) as total FROM posts';
+    listSql = 'SELECT * FROM posts ORDER BY created_at DESC LIMIT ? OFFSET ?';
+  }
+  // 先算總數 → 再查該頁文章 → 最後撈標籤組合 → 渲染
 });
 ```
 
-#### index.ejs — 首頁功能
+**標籤篩選**：點擊標籤連結 (`/?tag=標籤名`) 可篩選特定標籤的文章，頁面會顯示目前篩選的標籤與清除按鈕。
 
-- **文章卡片列表**：顯示標題、日期、標籤、摘要（150 字）、閱讀更多
-- **分頁導航**：上一頁 / 下一頁 + 數字頁碼
-- **深色模式切換**：按鈕觸發，遵循系統 `prefers-color-scheme`，存入 `localStorage`
-- **標籤雲**：`fetch('/s111410509/api/tags')` 動態載入，依文章數量排序
-- **即時搜尋**：初始化時快取 `/api/search-index`，客戶端比對關鍵字、依權重評分（標題 10 分、內文 3 分）
-
-```javascript
-// index.ejs 內嵌 — 客戶端搜尋引擎
-const scored = index.map(item => {
-  let score = 0;
-  if (title.includes(term)) score += 10;
-  if (excerpt.includes(term)) score += 3;
-  return { item, score };
-}).filter(s => s.score > 0).sort((a, b) => b.score - a.score).slice(0, 20);
-```
-
-#### post.ejs — 文章檢視頁功能
-
-- **閱讀進度條**：`#progressBar` 固定頂部，隨捲動更新寬度
-- **浮動目錄 (TOC)**：自動抓取 `<h2>/<h3>` 產生側邊欄，`IntersectionObserver` 高亮目前章節
-- **搜尋 overlay**：`Ctrl+K` 快捷鍵、`Escape` 關閉
-- **AI 摘要區塊**：條件顯示 `post.summary`
-- **程式碼區塊增強**：自動包裝 `filename` 標頭 + 一鍵複製按鈕 + Prism.js 行號
-- **互動式程式碼沙盒**：從 `[data-playground]` 屬性解析 HTML/CSS/JS，iframe 即時執行
-- **註解彈窗**：`[data-annotation]` 屬性 → hover 顯示解釋
-- **關聯文章推薦**：依共同標籤查詢最多 5 篇
-- **留言系統**：名稱 + 內容，POST 至 `/api/notes/:id/comments`
-- **電子報訂閱**：POST 至 `/api/subscribe`
-- **GitHub Discussions**：預留嵌入區塊
-- **語法高亮**：Prism.js（CDN）+ Tomorrow 主題 + Autoloader
+**關聯推薦**：文章檢視頁底部自動推薦最多 5 篇含共同標籤的文章。
 
 ---
 
-### 2. 搜尋引擎（server.js + blog.js）
+### 2. Markdown 編輯器
+
+位於 `new.ejs` / `edit.ejs`，提供完整編輯體驗：
+
+- **工具列**：粗體、斜體、標題 H2/H3、清單、編號、程式碼區塊、連結、圖片、引用
+- **編輯/預覽分頁**：切換至預覽時以 marked 即時渲染 HTML
+- **圖片上傳**：點擊「上傳圖片」→ 選取檔案 → `POST /api/upload` → 自動插入 `![檔名](URL)` 至游標位置
+- **自動儲存草稿**：每 10 秒自動儲存至 `localStorage`，頁面載入時偵測草稿並詢問是否還原
+- **Toast 通知**：圖片上傳成功/失敗右上角浮動提示
+
+```javascript
+// 圖片上傳核心
+async function uploadImage(input) {
+  const formData = new FormData();
+  formData.append('image', file);
+  const res = await fetch('/s111410509/api/upload', { method: 'POST', body: formData });
+  const data = await res.json();
+  if (data.url) {
+    const md = `![${file.name}](${data.url})`;
+    // 插入至編輯器游標位置
+    editor.value = editor.value.substring(0, start) + md + editor.value.substring(end);
+  }
+}
+```
+
+---
+
+### 3. 搜尋引擎
 
 **雙層搜尋架構：**
 
-1. **伺服端 API** `GET /api/search?q=` — SQL `LIKE` 查詢，回傳 20 筆（備援）
-2. **客戶端搜尋索引** `GET /api/search-index` — 回傳所有文章的輕量 JSON
+1. **伺服端 API** `GET /api/search?q=` — SQL `LIKE` 查詢標題與內容，回傳最多 20 筆
+2. **客戶端搜尋索引** `GET /api/search-index` — 頁面初始化時快取所有文章的輕量 JSON
 
-**搜尋索引 API 實作（server.js）：**
-
-```javascript
-router.get('/api/search-index', (req, res) => {
-  db.all(`SELECT p.id, p.title, p.content, p.created_at,
-    COALESCE(GROUP_CONCAT(t.name), '') as tags
-    FROM posts p LEFT JOIN post_tags pt ON p.id = pt.post_id
-    LEFT JOIN tags t ON pt.tag_id = t.id
-    GROUP BY p.id ORDER BY p.created_at DESC`, [], (err, posts) => {
-    const index = posts.map(p => ({
-      id: p.id,
-      title: p.title || '',
-      excerpt: cleanHtml(p.content).substring(0, 200),
-      tags: p.tags ? p.tags.split(',').filter(Boolean) : [],
-      url: '/s111410509/post/' + p.id,
-      created_at: p.created_at
-    }));
-    res.json(index);
-  });
-});
-```
-
-**客戶端評分比對（blog.js）：**
+**客戶端評分比對演算法：**
 
 ```javascript
 const scored = index.map(item => {
   let score = 0;
-  const title = (item.title || '').toLowerCase();
+  const title   = (item.title   || '').toLowerCase();
   const excerpt = (item.excerpt || '').toLowerCase();
-  const tags = (item.tags || []).join(' ').toLowerCase();
+  const tags    = (item.tags    || []).join(' ').toLowerCase();
   for (const term of terms) {
-    if (title.includes(term)) score += 10;
-    if (excerpt.includes(term)) score += 3;
-    if (tags.includes(term)) score += 5;
+    if (title.includes(term))   score += 10;  // 標題權重最高
+    if (tags.includes(term))    score += 5;   // 標籤次之
+    if (excerpt.includes(term)) score += 3;   // 內文最低
   }
   return { item, score };
-}).filter(s => s.score > 0).sort((a, b) => b.score - a.score).slice(0, 20);
+}).filter(s => s.score > 0)
+  .sort((a, b) => b.score - a.score)
+  .slice(0, 20);
 ```
+
+搜尋結果支援關鍵字高亮顯示，部落格頁面可按 `Ctrl+K` 或 `Cmd+K` 快速啟用搜尋。
 
 ---
 
-### 3. 水墨動畫背景（ink_background.js）
+### 4. 水墨動畫背景
 
-**核心機制：**
+位於 `ink_background.js`，以 Canvas 2D 實作的粒子系統。  
+全部程式碼包裹在 **IIFE** 內，避免 `const canvas` / `const ctx` 與遊戲腳本的全域命名衝突。
 
 ```javascript
+(function() {
+const canvas = document.getElementById('inkCanvas');
+if (!canvas) return;  // 無 inkCanvas 的頁面跳過
+const ctx = canvas.getContext('2d');
+
 const THEME_COLORS = {
   light: { bg: [242, 240, 233], ink: [0, 0, 0] },
   dark:  { bg: [26, 26, 26],   ink: [200, 200, 200] }
 };
-
-function getThemeColors() {
-  const theme = document.documentElement.getAttribute('data-theme') || 'light';
-  return THEME_COLORS[theme] || THEME_COLORS.light;
-}
+// ...
+window.createInk = createInk;   // 暴露給 maze.js 呼叫
+window.inkBg = { updateTheme };
+})();
 ```
 
-- `InkParticle` 類別：墨點具有位置、大小、透明度、擴散速度與淡出速度
-- `createInk(x, y, count)`：在指定座標產生墨點粒子
-- `animate()` 主循環：每幀以半透明背景疊加產生殘影效果
-- 滑鼠移動（20% 機率噴 1 點）、點擊（噴 5 點）、定時自動（每 2 秒，上限 50 點）
-- 支援深色模式自動切換墨色與背景色
+- **`InkParticle` 類別**：每個墨點具有位置 (x, y)、大小、透明度、擴散速度 (`growSpeed`)、淡出速度 (`fadeSpeed`)
+- **`createInk(x, y, count, isAuto)`**：在指定座標產生墨點，`isAuto` 控制隨機擴散範圍；透過 `window.createInk` 暴露，供遊戲腳本撞牆特效呼叫
+- **主循環 `animate()`**：每幀以半透明背景疊加產生殘影效果 (`rgba(bg, 0.05)`)
+- **互動機制**：
+  - 滑鼠移動：20% 機率噴 1 點
+  - 滑鼠點擊：噴 5 點
+  - 自動產生：每 2 秒，上限 50 點
+- **深色模式切換**：透過 `window.inkBg.updateTheme()` 動態讀取 `data-theme` 屬性
 
 ---
 
-### 4. RSS 訂閱（server.js）
+### 5. 深色模式
+
+所有頁面統一透過 `localStorage` 持久化主題設定：
 
 ```javascript
-router.get('/rss.xml', (req, res) => {
-  db.all('SELECT id, title, content, created_at FROM posts ORDER BY created_at DESC LIMIT 20',
-    [], (err, posts) => {
-      // 產生 RSS 2.0 XML
-      res.set('Content-Type', 'application/rss+xml; charset=utf-8');
-      res.send(rss);
-    });
-});
-```
-
-標準 RSS 2.0 格式，包含 `title`、`link`、`description`、`pubDate`、`guid`，支援 `atom:link` 自我參照。
-
----
-
-### 5. 深色模式切換（blog.js + index.ejs）
-
-```javascript
-function getSystemTheme() {
-  return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-}
 function applyTheme(theme) {
   document.documentElement.setAttribute('data-theme', theme);
   localStorage.setItem('theme', theme);
 }
 
-// 系統變更時自動切換（若使用者未手動指定）
+// 系統偏好變更時自動切換（若使用者未手動指定）
 window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
   if (!localStorage.getItem('theme')) applyTheme(e.matches ? 'dark' : 'light');
 });
 ```
 
-CSS 變數 `--bg`、`--text`、`--accent` 等隨 `[data-theme]` 屬性切換。
+**CSS 變數系統**：
+
+| CSS 變數 | 淺色模式 | 深色模式 |
+|----------|---------|---------|
+| `--bg` | `#f2f0e9` | `#1a1a1a` |
+| `--text` | `#1a1a1a` | `#e0e0e0` |
+| `--accent` | `#000` | `#fff` |
+| `--bg-card` | `rgba(255,255,255,0.8)` | `rgba(30,30,30,0.9)` |
+| `--border` | `rgba(0,0,0,0.1)` | `rgba(255,255,255,0.1)` |
+
+所有頁面（部落格、隨筆、遊戲、排行榜）均支援主題切換，切換後在任何頁面都會保留設定。
 
 ---
 
-### 6. 遊戲模組
+### 6. RSS / Sitemap / SEO
 
-#### 墨跡貪吃蛇（snake.js）
+#### RSS Feed (`GET /rss.xml`)
 
-- 20×20 網格 Canvas，方向鍵控制
-- 蛇身漸層透明度（頭黑 → 尾淡）
-- 吃食物（紅點）增長 + 加分
-- 撞牆或撞自己 → Game Over，POST 分數至 `/api/scores`
-- 遊戲循環 `setInterval(draw, 100)`
+標準 RSS 2.0 格式，包含最新 20 篇文章：
 
-```javascript
-// 蛇身繪製 — 頭部黑色，尾部漸淡
-ctx.fillStyle = (i == 0) ? "black" : `rgba(0, 0, 0, ${1 - i/snake.length})`;
+```xml
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>墨 - 網誌</title>
+    <link>http://localhost:3000/s111410509/</link>
+    <description>墨 - 紀錄瞬間的思緒</description>
+    ...
+    <item>
+      <title><![CDATA[文章標題]]></title>
+      <link>http://localhost:3000/s111410509/post/1</link>
+      <description><![CDATA[前 500 字純文字摘要]]></description>
+      <pubDate>...</pubDate>
+      <guid>http://localhost:3000/s111410509/post/1</guid>
+    </item>
+  </channel>
+</rss>
 ```
 
-#### 捕墨打地鼠（whack.js）
+#### Sitemap (`GET /sitemap.xml`)
 
-- 3×3 九宮格，墨點隨機彈出（600-1200ms）
+自動產生包含所有文章 URL 的 XML Sitemap，每篇文章標記 `changefreq=weekly`、`priority=0.8`。
+
+#### SEO 標籤
+
+每篇文章自動生成：
+- **Open Graph**：`og:title`、`og:description`、`og:type=article`、`og:url`
+- **Twitter Card**：`twitter:card=summary`
+- **JSON-LD**：嵌入 `Article` 結構化資料 (Schema.org)
+- **Canonical URL**：防止重複內容
+- **Meta Description**：自動取用文章摘要或前 160 字
+- **Robots**：編輯/新增頁面標示 `noindex`
+
+---
+
+### 7. 圖片上傳
+
+採用 `multer` 中介軟體處理檔案上傳：
+
+```javascript
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => cb(null, 'public/uploads/'),
+  filename: (req, file, cb) => {
+    const ext = path.extname(file.originalname);
+    cb(null, uuidv4() + ext);  // UUID 重新命名避免衝突
+  }
+});
+const upload = multer({
+  storage,
+  limits: { fileSize: 5 * 1024 * 1024 },  // 5MB
+  fileFilter: (req, file, cb) => {
+    const allowed = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg'];
+    cb(null, allowed.includes(path.extname(file.originalname).toLowerCase()));
+  }
+});
+```
+
+**特性：**
+- 支援格式：jpg, jpeg, png, gif, webp, svg
+- 大小限制：5MB
+- 儲存位置：`public/uploads/`（自動建立目錄）
+- 重新命名：UUID v4 保留副檔名
+- 可擴充：修改 `storage` 即可切換至 AWS S3
+
+---
+
+### 8. 使用者認證
+
+輕量級認證系統，無密碼雜湊（課程作業範疇）：
+
+| 方法 | 路徑 | 說明 |
+|------|------|------|
+| POST | `/api/auth/register` | 註冊：`{ username, nickname, password }` |
+| POST | `/api/auth/login` | 登入：`{ username, password }` |
+
+流程：
+1. 客戶端提交帳號密碼
+2. 伺服器查詢 `users` 表比對
+3. 成功後回傳使用者物件 `{ id, username, nickname }`
+4. 客戶端存入 `localStorage`
+5. 後續請求從 `localStorage` 讀取使用者資訊帶入
+
+---
+
+### 9. 隨筆小站
+
+位於 `public/index.html` + `public/script.js`，提供極簡短貼文功能：
+
+- 輸入框 + 落筆按鈕 → `POST /api/notes`
+- 貼文卡片列表 → `GET /api/notes`
+- 按讚 (`POST /api/notes/:id/like`)
+- 檢舉 (`POST /api/notes/:id/report`)
+- 留言系統 (`GET/POST /api/notes/:id/comments`)
+- 需登入才能操作
+
+---
+
+### 10. 遊戲模組
+
+三款遊戲均採用統一的 **深色霓虹視覺風格**（`#0f172a` 深藍底色），並共用專案的主題切換、水墨背景與排行榜系統。
+
+#### 墨跡貪吃蛇 (`snake.js`)
+
+- **遊戲引擎**：`requestAnimationFrame` 驅動，幀率控制（約 15 FPS）
+- **視覺**：霓虹藍蛇身 `#38bdf8` + 粉紅食物 `#f43f5e` + CSS `shadowBlur` 發光效果
+- **機制**：20px 網格移動、穿牆（從另一端出現）、吃食物增長加分
+- **碰撞**：撞到自己 → Game Over → 自動提交分數 → 1.5 秒後重生
+- **操作**：方向鍵 + WASD（桌面）、滑動手勢（行動裝置）
+- **分數提交**：名稱「無名書生」
+
+```javascript
+// 遊戲主循環 — requestAnimationFrame + 幀率控制
+function loop() {
+  requestAnimationFrame(loop);
+  if (++count < 6) return;
+  count = 0;
+  // ...更新邏輯與繪製
+}
+```
+
+#### 捕墨打地鼠 (`whack.js`)
+
+- 3×3 九宮格，墨點隨機彈出（600-1200ms 間隔，隨時間加速）
 - 30 秒倒數計時
-- 點擊命中：得分 + 墨花濺射動畫（CSS `@keyframes splash`）
-- 時間到 → 顯示得分 → POST 至 `/api/scores`
+- 連擊系統：連續命中 3 次得 2 分、5 次得 3 分
+- 點擊命中 → 浮動 `+N` 分數動畫 + 墨花濺射（CSS `@keyframes splash`）
+- 最高分紀錄於 `localStorage`（跨遊戲階段保留）
+- 分數提交名稱：「捕墨手」
 
 ```css
 @keyframes splash {
@@ -289,57 +627,114 @@ ctx.fillStyle = (i == 0) ? "black" : `rgba(0, 0, 0, ${1 - i/snake.length})`;
 }
 ```
 
-#### 墨陣迷宮（maze.js）
+#### 墨陣迷宮 (`maze.js`)
 
-- 10×10 二維陣列迷宮（1=牆、2=起點、3=終點、0=路徑）
-- 方向鍵移動，撞牆觸發 `createInk()` 水墨特效
-- 到達終點→ 顯示「墨成！順利抵達。」並重置
-- Canvas 繪製：牆壁黑色、起點綠色（「起」）、終點紅色（「成」）、玩家黑色圓點 + 陰影
+- **演算法**：遞迴回溯法（Recursive Backtracking / DFS），產生完美迷宮（任意兩點間僅一條路徑）
+- **視覺**：深色 Canvas 背景 `#1e293b`、牆壁 `#475569`、玩家光點 `#38bdf8`（外發光）、終點 `#f43f5e`（發光圓球）
+- **操作**：方向鍵 / WASD + 觸控滑動
+- **碰撞**：撞牆 → `createInk()` 水墨噴濺特效 → 退回起點，步數重置
+- **關卡遞增**：過關後點擊「下一關」，迷宮尺寸從 6×6 遞增至最大 18×18
+- **計分**：`max(200 − 失誤×10 − 步數 + 關卡×20, 1)`
+- **分數提交**：名稱「墨陣行者」
 
 ---
 
-### 7. 時事新聞（news.html + server.js）
+### 11. 時事新聞聚合
 
-- 雙分頁：台灣新聞（RSS 聚合） / 國際新聞（NewsAPI）
-- 台灣新聞來源：UDN 聯合報、ETtoday、自由時報（`rss-parser`）
-- 每則新聞可按讚、留言
-- 留言自動填入使用者暱稱（從 `localStorage`）
+位於 `news.html` + `server.js` 伺服端 RSS 聚合：
+
+**雙分頁系統：**
+- **台灣新聞**：使用 `rss-parser` 聚合三大新聞源
+  - UDN 聯合報、ETtoday、自由時報
+  - 各取前 10 則，依來源標色
+- **國際新聞**：透過 NewsAPI 取得（需自備 API Key）
+
+**互動功能：**
+- 按讚：`POST /api/news/like`（資料庫持久化）
+- 留言：`POST /api/news/comment`（自動填入使用者暱稱）
+- 分頁切換：`switchTab()` 切換台灣/國際分頁
+
+---
+
+### 12. 排行榜
+
+位於 `leaderboard.html`，簡單的遊戲分數排名：
 
 ```javascript
-// 伺服端 — RSS 聚合 (server.js)
-const feeds = [
-  { name: 'UDN 聯合報', url: 'https://udn.com/rssfeed/news/2' },
-  { name: 'ETtoday 新聞', url: 'https://www.ettoday.net/rss/news2.xml' },
-  { name: '自由時報', url: 'https://news.ltn.com.tw/rss/all.xml' }
-];
-const allNews = await Promise.all(feeds.map(async (feed) => {
-  const f = await parser.parseURL(feed.url);
-  return { source: feed.name, articles: f.items.slice(0, 10) };
-}));
+// GET /api/scores — 回傳前 5 名
+db.all('SELECT name, score, date FROM scores ORDER BY score DESC LIMIT 5', ...);
 ```
 
 ---
 
-### 8. 使用者認證（login.html + server.js）
+## 部署指南
 
-- 註冊：`POST /api/auth/register` → 存入 `users` 表
-- 登入：`POST /api/auth/login` → 比對帳號密碼 → 回傳使用者物件
-- 客戶端存入 `localStorage`，後續請求自動帶入使用者資訊
-
----
-
-### 9. 排行榜（leaderboard.html）
-
-- `GET /api/scores` 取前 5 名
-- 遊戲結束時自動 `POST /api/scores` 提交分數
-- `snake.js` 提交名稱「無名書生」、`whack.js` 提交名稱「捕墨手」
-
----
-
-## 啟動方式
+### 本地部署
 
 ```bash
+git clone <repository-url>
 cd mid/program
-npm install      # 安裝依賴（express, sqlite3, ejs, ...）
-npm start        # 啟動伺服器 → http://localhost:3000/s111410509/
+npm install
+npm start
+# → http://localhost:3000/s111410509/
 ```
+
+### 線上部署 (建議)
+
+**使用 PM2 (背景執行)：**
+```bash
+npm install -g pm2
+pm2 start server.js --name "ink-blog"
+pm2 save
+pm2 startup
+```
+
+**使用反向代理 (Nginx)：**
+```nginx
+server {
+    listen 80;
+    server_name your-domain.com;
+
+    location /s111410509/ {
+        proxy_pass http://127.0.0.1:3000;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+    }
+}
+```
+
+**環境變數（選用）：**
+| 變數 | 預設值 | 說明 |
+|------|--------|------|
+| `PORT` | `3000` | 伺服器連接埠 |
+| `BASE` | `/s111410509/` | 基礎路徑前綴 |
+
+---
+
+## 技術債與未來展望
+
+- **密碼安全**：目前密碼以明文儲存，建議引入 `bcrypt` 進行雜湊處理
+- **國際新聞 API Key**：需要註冊 [NewsAPI](https://newsapi.org/) 並設定金鑰
+- **Session 管理**：目前採用 `localStorage` 簡易方案，建議導入 JWT 或 Session 機制
+- **資料庫備份**：生產環境建議定期備份 `blog.db`
+- **響應式設計**：部分遊戲頁面在手機上體驗有限，可考慮觸控事件支援
+- **載入效能**：首頁可加入圖片懶載入 (`loading="lazy"`) 與無限捲動
+- **留言驗證**：缺乏 XSS 防護與 Rate Limiting
+- **單元測試**：目前無測試覆蓋，建議加入 `jest` 或 `mocha`
+
+---
+
+## 更新紀錄
+
+| 日期 | 變更 |
+|------|------|
+| 2026-05 | 修復 `ink_background.js` 全域 `const` 與遊戲腳本命名衝突（包裹 IIFE） |
+| 2026-05 | 貪吃蛇改為 `requestAnimationFrame` 驅動 + 霓虹視覺風格 |
+| 2026-05 | 迷宮改為 DFS 遞迴回溯演算法 + 深色霓虹視覺風格 |
+| 2026-05 | 伺服器加入 `EADDRINUSE` 自動 fallback 埠號機制 |
+| 2026-05 | 所有頁面加入 `localStorage` 主題同步，切換頁面保留深色/淺色設定 |
+| 2026-05 | 修復圖片上傳按鈕選擇器（`button:last-child` → `[onclick*="imageUpload"]`） |
+
+---
+
+*本專案為金門大學資訊工程系網頁設計課程作業，僅供學習用途。*

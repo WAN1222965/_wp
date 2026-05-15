@@ -3,19 +3,56 @@ const cors = require('cors');
 const bodyParser = require('body-parser');
 const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
-const fetch = require('node-fetch');
 const Parser = require('rss-parser');
+const { marked } = require('marked');
+const multer = require('multer');
+const { v4: uuidv4 } = require('uuid');
+
+// Multer config — local file storage (swap to S3 by changing storage)
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => cb(null, path.join(__dirname, 'public', 'uploads')),
+  filename: (req, file, cb) => {
+    const ext = path.extname(file.originalname);
+    cb(null, uuidv4() + ext);
+  }
+});
+const upload = multer({
+  storage,
+  limits: { fileSize: 5 * 1024 * 1024 },
+  fileFilter: (req, file, cb) => {
+    const allowed = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg'];
+    const ext = path.extname(file.originalname).toLowerCase();
+    cb(null, allowed.includes(ext));
+  }
+});
+
+marked.setOptions({
+  breaks: true,
+  gfm: true
+});
+
+function renderMarkdown(md) {
+  if (!md) return '';
+  return marked.parse(md);
+}
 
 const app = express();
 const PORT = 3000;
 const BASE = '/s111410509';
-const db = new sqlite3.Database('./blog.db');
+const dbPath = path.join(__dirname, 'blog.db');
+const publicDir = path.join(__dirname, 'public');
+const db = new sqlite3.Database(dbPath);
 
 app.use(cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
-app.use(BASE, express.static('public', { index: false }));
-app.use(express.static('views'));
+app.use(BASE, express.static(publicDir, { index: false }));
+
+// Ensure uploads directory exists
+const uploadsDir = path.join(__dirname, 'public', 'uploads');
+if (!require('fs').existsSync(uploadsDir)) {
+  require('fs').mkdirSync(uploadsDir, { recursive: true });
+}
 
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
@@ -91,6 +128,26 @@ db.serialize(() => {
   db.run("ALTER TABLE posts ADD COLUMN user_id INTEGER NOT NULL DEFAULT 0", err => err && null);
   db.run("ALTER TABLE posts ADD COLUMN likes INTEGER DEFAULT 0", err => err && null);
   db.run("ALTER TABLE posts ADD COLUMN reports INTEGER DEFAULT 0", err => err && null);
+  db.run("ALTER TABLE posts ADD COLUMN updated_at DATETIME DEFAULT CURRENT_TIMESTAMP", err => err && null);
+});
+
+// ===== Image Upload API =====
+
+router.post('/api/upload', (req, res) => {
+  upload.single('image')(req, res, (err) => {
+    if (err) {
+      if (err.code === 'LIMIT_FILE_SIZE') return res.status(400).json({ error: '檔案大小超過 5MB 限制' });
+      return res.status(400).json({ error: '上傳失敗：' + err.message });
+    }
+    if (!req.file) return res.status(400).json({ error: '未選擇檔案或不支援的格式' });
+    res.json({ url: `${BASE}/uploads/${req.file.filename}`, filename: req.file.filename });
+  });
+});
+
+router.post('/api/upload/url', (req, res) => {
+  const { url } = req.body;
+  if (!url) return res.status(400).json({ error: 'URL required' });
+  res.json({ url });
 });
 
 // ===== BLOG CRUD (EJS) =====
@@ -99,10 +156,22 @@ router.get('/', (req, res) => {
   const page = parseInt(req.query.page) || 1;
   const limit = 10;
   const offset = (page - 1) * limit;
-  db.all('SELECT COUNT(*) as total FROM posts', [], (err, countResult) => {
+  const tagFilter = req.query.tag || '';
+  let countSql = 'SELECT COUNT(*) as total FROM posts';
+  let listSql = 'SELECT * FROM posts ORDER BY created_at DESC LIMIT ? OFFSET ?';
+  let countParams = [];
+  let listParams = [limit, offset];
+  if (tagFilter) {
+    countSql = `SELECT COUNT(*) as total FROM posts p JOIN post_tags pt ON p.id = pt.post_id JOIN tags t ON pt.tag_id = t.id WHERE t.name = ?`;
+    listSql = `SELECT p.* FROM posts p JOIN post_tags pt ON p.id = pt.post_id JOIN tags t ON pt.tag_id = t.id WHERE t.name = ? ORDER BY p.created_at DESC LIMIT ? OFFSET ?`;
+    countParams = [tagFilter];
+    listParams = [tagFilter, limit, offset];
+  }
+  db.all(countSql, countParams, (err, countResult) => {
     const total = countResult ? countResult[0].total : 0;
-    db.all('SELECT * FROM posts ORDER BY created_at DESC LIMIT ? OFFSET ?', [limit, offset], (err, posts) => {
+    db.all(listSql, listParams, (err, posts) => {
       if (err) return res.status(500).send(err.message);
+      posts.forEach(p => { p.html = renderMarkdown(p.content || ''); });
       const tagMap = {};
       if (posts.length > 0) {
         const ids = posts.map(p => p.id);
@@ -110,10 +179,10 @@ router.get('/', (req, res) => {
         db.all(`SELECT pt.post_id, t.name FROM post_tags pt JOIN tags t ON pt.tag_id = t.id WHERE pt.post_id IN (${placeholders})`, ids, (err, tags) => {
           if (tags) tags.forEach(t => { (tagMap[t.post_id] = tagMap[t.post_id] || []).push(t.name); });
           posts.forEach(p => p.tags = tagMap[p.id] || []);
-          res.render('index', { posts, tags: [], currentPage: page, totalPages: Math.ceil(total / limit) });
+          res.render('index', { posts, tags: [], currentPage: page, totalPages: Math.ceil(total / limit), tagFilter });
         });
       } else {
-        res.render('index', { posts, tags: [], currentPage: page, totalPages: Math.ceil(total / limit) });
+        res.render('index', { posts, tags: [], currentPage: page, totalPages: Math.ceil(total / limit), tagFilter });
       }
     });
   });
@@ -145,6 +214,7 @@ router.post('/posts', (req, res) => {
 router.get('/post/:id', (req, res) => {
   db.get('SELECT * FROM posts WHERE id = ?', [req.params.id], (err, post) => {
     if (err || !post) return res.status(404).send('Post not found');
+    post.content = renderMarkdown(post.content);
     db.all('SELECT t.name FROM post_tags pt JOIN tags t ON pt.tag_id = t.id WHERE pt.post_id = ?', [post.id], (err, tags) => {
       post.tags = tags ? tags.map(t => t.name) : [];
       // Related posts (same tags)
@@ -172,7 +242,7 @@ router.get('/post/:id/edit', (req, res) => {
 
 router.post('/post/:id/update', (req, res) => {
   const { title, content, summary, tags: tagsStr } = req.body;
-  db.run('UPDATE posts SET title = ?, content = ?, summary = ? WHERE id = ?', [title, content, summary || '', req.params.id], function(err) {
+  db.run("UPDATE posts SET title = ?, content = ?, summary = ?, updated_at = datetime('now') WHERE id = ?", [title, content, summary || '', req.params.id], function(err) {
     if (err) return res.status(500).send(err.message);
     db.run('DELETE FROM post_tags WHERE post_id = ?', [req.params.id]);
     if (tagsStr) {
@@ -210,7 +280,7 @@ router.get('/api/search-index', (req, res) => {
     const index = posts.map(p => ({
       id: p.id,
       title: p.title || '',
-      excerpt: cleanHtml(p.content).substring(0, 200),
+      excerpt: cleanHtml(renderMarkdown(p.content)).substring(0, 200),
       tags: p.tags ? p.tags.split(',').filter(Boolean) : [],
       url: '/s111410509/post/' + p.id,
       created_at: p.created_at
@@ -222,8 +292,11 @@ router.get('/api/search-index', (req, res) => {
 router.get('/api/search', (req, res) => {
   const q = req.query.q;
   if (!q) return res.json([]);
-  db.all(`SELECT id, title, content, substr(content, 1, 200) as excerpt, created_at FROM posts WHERE title LIKE ? OR content LIKE ? ORDER BY created_at DESC LIMIT 20`, [`%${q}%`, `%${q}%`], (err, posts) => {
+  db.all(`SELECT id, title, content, created_at FROM posts WHERE title LIKE ? OR content LIKE ? ORDER BY created_at DESC LIMIT 20`, [`%${q}%`, `%${q}%`], (err, posts) => {
     if (err) return res.status(500).json({ error: err.message });
+    posts.forEach(p => {
+      p.excerpt = cleanHtml(renderMarkdown(p.content || '')).substring(0, 200);
+    });
     res.json(posts);
   });
 });
@@ -253,7 +326,8 @@ router.get('/api/posts/:id/related', (req, res) => {
       const tagNames = tags.map(t => t.name);
       if (tagNames.length === 0) return res.json([]);
       const placeholders = tagNames.map(() => '?').join(',');
-      db.all(`SELECT DISTINCT p.id, p.title, substr(p.content, 1, 100) as excerpt FROM posts p JOIN post_tags pt ON p.id = pt.post_id JOIN tags t ON pt.tag_id = t.id WHERE t.name IN (${placeholders}) AND p.id != ? LIMIT 5`, [...tagNames, post.id], (err, related) => {
+      db.all(`SELECT DISTINCT p.id, p.title, p.content FROM posts p JOIN post_tags pt ON p.id = pt.post_id JOIN tags t ON pt.tag_id = t.id WHERE t.name IN (${placeholders}) AND p.id != ? LIMIT 5`, [...tagNames, post.id], (err, related) => {
+        if (related) related.forEach(r => r.excerpt = cleanHtml(renderMarkdown(r.content || '')).substring(0, 100));
         res.json(related || []);
       });
     });
@@ -268,14 +342,18 @@ router.get('/rss.xml', (req, res) => {
   db.all('SELECT id, title, content, created_at FROM posts ORDER BY created_at DESC LIMIT 20', [], (err, posts) => {
     if (err) return res.status(500).send(err.message);
     const buildDate = new Date().toUTCString();
-    let items = posts.map(p => `
+    let items = posts.map(p => {
+      const rendered = renderMarkdown(p.content || '');
+      const plain = cleanHtml(rendered).substring(0, 500);
+      return `
     <item>
       <title><![CDATA[${p.title || 'Untitled'}]]></title>
       <link>${baseUrl}/post/${p.id}</link>
-      <description><![CDATA[${(p.content || '').substring(0, 500)}]]></description>
+      <description><![CDATA[${plain}]]></description>
       <pubDate>${new Date(p.created_at).toUTCString()}</pubDate>
       <guid>${baseUrl}/post/${p.id}</guid>
-    </item>`).join('\n');
+    </item>`;
+    }).join('\n');
     const rss = `<?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
@@ -294,6 +372,32 @@ router.get('/rss.xml', (req, res) => {
 });
 
 router.get('/notes', (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')));
+
+// ===== Sitemap =====
+
+router.get('/sitemap.xml', (req, res) => {
+  const host = req.headers.host || `localhost:${PORT}`;
+  const baseUrl = `http://${host}${BASE}`;
+  db.all('SELECT id, created_at, updated_at FROM posts ORDER BY created_at DESC', [], (err, posts) => {
+    const urls = posts.map(p => `
+  <url>
+    <loc>${baseUrl}/post/${p.id}</loc>
+    <lastmod>${new Date(p.updated_at || p.created_at).toISOString()}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>`).join('\n');
+    const xml = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>${baseUrl}/</loc>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
+  </url>${urls}
+</urlset>`;
+    res.set('Content-Type', 'application/xml; charset=utf-8');
+    res.send(xml);
+  });
+});
 
 // ===== Newsletter Subscription =====
 
@@ -352,7 +456,7 @@ router.get('/api/notes', (req, res) => {
     FROM posts p LEFT JOIN users u ON p.user_id = u.id 
     ORDER BY p.created_at DESC`, [], (err, posts) => {
     if (err) return res.status(500).json({ error: err.message });
-    const notes = posts.map(p => ({ ...p, time: p.time ? new Date(p.time).toLocaleDateString('zh-TW') : '' }));
+    const notes = posts.map(p => ({ ...p, content: renderMarkdown(p.content || ''), time: p.time ? new Date(p.time).toLocaleDateString('zh-TW') : '' }));
     res.json(notes);
   });
 });
@@ -472,16 +576,21 @@ router.get('/api/news/taiwan', async (req, res) => {
 });
 
 router.get('/api/news/world', async (req, res) => {
-  const API_KEY = 'YOUR_NEWSAPI_KEY';
-  const url = `https://newsapi.org/v2/top-headlines?language=zh&apiKey=${API_KEY}`;
+  const parser = new Parser();
+  const feeds = [
+    { name: 'BBC', url: 'https://feeds.bbci.co.uk/news/world/rss.xml' },
+    { name: 'CNN', url: 'http://rss.cnn.com/rss/cnn_world.rss' }
+  ];
   try {
-    const response = await fetch(url);
-    const data = await response.json();
-    if (data.status === 'ok') {
-      res.json({ source: '國際新聞 (NewsAPI)', articles: data.articles.slice(0, 20).map(item => ({ title: item.title, link: item.url, pubDate: item.publishedAt, description: item.description || '', image: item.urlToImage })) });
-    } else {
-      res.json({ source: '國際新聞', articles: [], error: '請設定 NewsAPI Key 或使用替代新聞源' });
-    }
+    const allNews = await Promise.all(feeds.map(async (feed) => {
+      try {
+        const f = await parser.parseURL(feed.url);
+        return { source: feed.name, articles: f.items.slice(0, 10).map(item => ({ title: item.title, link: item.link, pubDate: item.pubDate || item.isoDate, description: item.contentSnippet || item.content || '' })) };
+      } catch (e) {
+        return { source: feed.name, articles: [] };
+      }
+    }));
+    res.json(allNews);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -491,6 +600,18 @@ app.use(BASE, router);
 app.get('/', (req, res) => res.redirect(BASE + '/'));
 app.get('/notes', (req, res) => res.redirect(BASE + '/notes'));
 
-app.listen(PORT, '0.0.0.0', () => {
-  console.log(`「墨」伺服器運行中：http://localhost:${PORT}${BASE}/`);
-});
+function startServer(port) {
+  const server = app.listen(port, '0.0.0.0');
+  server.on('error', (err) => {
+    if (err.code === 'EADDRINUSE') {
+      console.error(`⚠️ 埠 ${port} 已被佔用，嘗試埠 ${port + 1}...`);
+      startServer(port + 1);
+    } else {
+      console.error('❌ 伺服器啟動失敗：', err.message);
+    }
+  });
+  server.on('listening', () => {
+    console.log(`「墨」伺服器運行中：http://localhost:${port}${BASE}/`);
+  });
+}
+startServer(PORT);

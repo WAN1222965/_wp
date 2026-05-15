@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="zh-TW">
+<html lang="zh-TW" data-theme="light">
 <head>
     <meta charset="UTF-8">
     <title>捕墨 - 墨跡反應挑戰</title>
@@ -42,7 +42,26 @@
             to { transform: scale(1.5); opacity: 0; filter: blur(10px); }
         }
 
+        .float-score {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #b02528;
+            pointer-events: none;
+            z-index: 10;
+            opacity: 1;
+            transition: all 0.5s ease-out;
+        }
+        .float-score.float-up {
+            transform: translate(-50%, -200%);
+            opacity: 0;
+        }
+
         .stats { font-size: 1.5rem; margin-bottom: 10px; }
+        .sub-stats { font-size: 1rem; color: var(--text-secondary); margin-bottom: 10px; display: flex; justify-content: center; gap: 20px; }
     </style>
 </head>
 <body>
@@ -50,8 +69,15 @@
     <div class="main-container game-container">
         <header>
             <h1>捕墨</h1>
+            <div style="margin-top:8px;display:flex;justify-content:center;gap:8px;flex-wrap:wrap;">
+                <button onclick="toggleTheme()" id="themeBtn" style="border:1px solid var(--border);background:var(--card-bg);cursor:pointer;font-size:0.85rem;padding:4px 14px;border-radius:20px;color:var(--text-secondary);font-family:inherit;">🌙 深色</button>
+            </div>
             <div class="stats">
                 得分：<span id="score">0</span> | 剩餘時間：<span id="timeLeft">30</span>s
+            </div>
+            <div class="sub-stats">
+                <span>連擊：<span id="combo">0</span></span>
+                <span>最高分：<span id="highScore">0</span></span>
             </div>
             <button id="startBtn" onclick="startGame()">開始研墨</button>
         </header>
@@ -68,10 +94,36 @@
             <div class="hole"><div class="ink-blot"></div></div>
         </div>
 
-        <a href="/s111410509/notes" class="back-link">返回隨筆</a>
+        <nav class="nav-links">
+            <a href="/s111410509/" class="game-link">📝 網誌</a>
+            <a href="/s111410509/notes" class="game-link">✏️ 隨筆</a>
+            <a href="/s111410509/snake.html" class="game-link">🐍 貪吃蛇</a>
+            <a href="/s111410509/maze.html" class="game-link">🏃 墨陣</a>
+            <a href="/s111410509/leaderboard.html" class="game-link">🏆 排行</a>
+            <a href="/s111410509/news.html" class="game-link">📰 新聞</a>
+        </nav>
     </div>
 
     <script src="/s111410509/ink_background.js"></script>
+    <script>
+        (function() {
+            const t = localStorage.getItem('theme');
+            const sys = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+            const theme = t || sys;
+            document.documentElement.setAttribute('data-theme', theme);
+            const btn = document.getElementById('themeBtn');
+            if (btn) btn.textContent = theme === 'dark' ? '☀️ 淺色' : '🌙 深色';
+        })();
+        window.toggleTheme = function() {
+            const c = document.documentElement.getAttribute('data-theme');
+            const t = c === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', t);
+            localStorage.setItem('theme', t);
+            const btn = document.getElementById('themeBtn');
+            if (btn) btn.textContent = t === 'dark' ? '☀️ 淺色' : '🌙 深色';
+            if (window.inkBg && window.inkBg.updateTheme) window.inkBg.updateTheme();
+        };
+    </script>
     <script src="/s111410509/whack.js"></script>
 </body>
 </html>

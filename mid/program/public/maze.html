@@ -1,42 +1,228 @@
 <!DOCTYPE html>
-<html lang="zh-TW">
+<html lang="zh-TW" data-theme="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>墨陣 - 迷宮挑戰</title>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@700&display=swap">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/s111410509/style.css">
-    <link rel="stylesheet" href="/s111410509/game_styles.css">
+    <style>
+        :root {
+            --maze-bg: #0f172a;
+            --maze-wall: #475569;
+            --maze-player: #38bdf8;
+            --maze-goal: #f43f5e;
+            --maze-start: #22c55e;
+            --maze-accent: #6366f1;
+        }
+        body {
+            background: var(--maze-bg);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            font-family: 'Noto Serif TC', serif;
+        }
+        #inkCanvas { display: none; }
+        .game-area-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            max-width: 500px;
+            padding: 20px;
+        }
+        .game-header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .game-header h1 {
+            color: #fff;
+            font-size: 2.5rem;
+            letter-spacing: 15px;
+            margin: 0;
+            text-shadow: 0 0 20px rgba(255,255,255,0.15);
+        }
+        .game-header .subtitle {
+            color: #94a3b8;
+            font-size: 0.95rem;
+            margin-top: 6px;
+        }
+        #mazeCanvas {
+            border-radius: 12px;
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
+            border: 3px solid var(--maze-wall);
+            max-width: 100%;
+            height: auto;
+        }
+        .maze-stats {
+            display: flex;
+            gap: 24px;
+            margin-top: 16px;
+            padding: 10px 24px;
+            background: rgba(255,255,255,0.06);
+            backdrop-filter: blur(10px);
+            border-radius: 50px;
+            color: #cbd5e1;
+            font-size: 0.95rem;
+        }
+        .maze-stats span { white-space: nowrap; }
+        .maze-stats strong { color: #fff; }
+        .bottom-instructions {
+            color: #64748b;
+            font-size: 0.85rem;
+            margin-top: 14px;
+            text-align: center;
+        }
+        .nav-links {
+            margin-top: 24px;
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .nav-links a {
+            padding: 6px 16px;
+            border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 20px;
+            text-decoration: none;
+            color: #94a3b8;
+            font-size: 0.82rem;
+            background: rgba(255,255,255,0.05);
+            transition: 0.2s;
+        }
+        .nav-links a:hover {
+            background: rgba(255,255,255,0.12);
+            color: #fff;
+        }
+        .win-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.7);
+            backdrop-filter: blur(6px);
+            z-index: 100;
+            justify-content: center;
+            align-items: center;
+        }
+        .win-box {
+            background: linear-gradient(135deg, #1e293b, #0f172a);
+            border: 1px solid rgba(255,255,255,0.15);
+            padding: 36px 48px;
+            border-radius: 16px;
+            text-align: center;
+            box-shadow: 0 30px 60px rgba(0,0,0,0.5);
+        }
+        .win-box h2 {
+            margin: 0 0 8px;
+            font-size: 2.2rem;
+            letter-spacing: 10px;
+            color: var(--maze-goal);
+        }
+        .win-box p {
+            color: #cbd5e1;
+            font-size: 1.1rem;
+            margin: 10px 0;
+        }
+        .win-box button {
+            margin-top: 18px;
+            padding: 10px 32px;
+            font-size: 1rem;
+            border: none;
+            background: var(--maze-accent);
+            color: #fff;
+            cursor: pointer;
+            border-radius: 25px;
+            font-family: inherit;
+            transition: 0.3s;
+        }
+        .win-box button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(99,102,241,0.4);
+        }
+        .theme-btn {
+            position: fixed;
+            top: 16px;
+            right: 16px;
+            z-index: 50;
+            background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.15);
+            color: #94a3b8;
+            padding: 6px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-family: inherit;
+            transition: 0.2s;
+        }
+        .theme-btn:hover { background: rgba(255,255,255,0.15); color: #fff; }
+        @media (max-width: 520px) {
+            .game-header h1 { font-size: 1.8rem; letter-spacing: 10px; }
+            .maze-stats { gap: 12px; padding: 8px 16px; font-size: 0.85rem; }
+            .win-box { padding: 24px 28px; }
+        }
+    </style>
 </head>
 <body>
-    <canvas id="inkCanvas"></canvas>
     <div class="game-area-container">
         <header class="game-header">
-            <h1 class="main-title">墨 陣</h1>
-            <p class="subtitle">使用方向鍵引導墨點抵達印章</p>
+            <h1>墨 陣</h1>
+            <p class="subtitle">方向鍵 / WASD 引導墨點抵達終點</p>
         </header>
 
-        <div class="maze-label-container">
-            <canvas id="mazeCanvas" width="400" height="400"></canvas>
-            
-            <div class="maze-label start-label">
-                <span class="maze-text">起點</span>
-            </div>
-            
-            <div class="maze-label end-label end-label-group">
-                <span class="seal-text-label">成</span>
-                <span class="end-text-label">終點</span>
-            </div>
+        <canvas id="mazeCanvas"></canvas>
+
+        <div class="maze-stats">
+            <span>步數：<strong id="movesCount">0</strong></span>
+            <span>失誤：<strong id="wallsCount">0</strong></span>
+            <span>關卡：<strong id="levelNum">1</strong></span>
         </div>
 
         <div class="bottom-instructions">
-            觸碰墨牆將退回起點
+            撞牆即退回起點 · 失誤越少分數越高
         </div>
-        
-        <a href="/s111410509/notes" class="back-link" style="margin-top: 30px;">返回隨筆</a>
+
+        <nav class="nav-links">
+            <a href="/s111410509/">📝 網誌</a>
+            <a href="/s111410509/notes">✏️ 隨筆</a>
+            <a href="/s111410509/snake.html">🐍 貪吃蛇</a>
+            <a href="/s111410509/whack.html">🎯 捕墨</a>
+            <a href="/s111410509/leaderboard.html">🏆 排行</a>
+            <a href="/s111410509/news.html">📰 新聞</a>
+        </nav>
     </div>
 
+    <div class="win-overlay" id="winOverlay">
+        <div class="win-box">
+            <h2>墨 成</h2>
+            <p>以 <strong id="winMoves" style="color:#38bdf8;">0</strong> 步完成！</p>
+            <button id="nextLevelBtn">下一關</button>
+        </div>
+    </div>
+
+    <button class="theme-btn" onclick="toggleTheme()" id="themeBtn">🌙 深色</button>
+
     <script src="/s111410509/ink_background.js"></script>
+    <script>
+        (function() {
+            const t = localStorage.getItem('theme');
+            const sys = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+            const theme = t || sys;
+            document.documentElement.setAttribute('data-theme', theme);
+            const btn = document.getElementById('themeBtn');
+            if (btn) btn.textContent = theme === 'dark' ? '☀️ 淺色' : '🌙 深色';
+        })();
+        window.toggleTheme = function() {
+            const c = document.documentElement.getAttribute('data-theme');
+            const t = c === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', t);
+            localStorage.setItem('theme', t);
+            const btn = document.getElementById('themeBtn');
+            if (btn) btn.textContent = t === 'dark' ? '☀️ 淺色' : '🌙 深色';
+        };
+    </script>
     <script src="/s111410509/maze.js"></script>
 </body>
 </html>

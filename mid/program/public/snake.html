@@ -1,34 +1,147 @@
 <!DOCTYPE html>
-<html lang="zh-TW">
+<html lang="zh-TW" data-theme="light">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>墨跡貪吃蛇</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/s111410509/style.css">
     <style>
-        canvas { 
-            background: #fff; 
-            border: 2px solid #000; 
-            display: block; 
-            margin: 20px auto;
-            box-shadow: 5px 5px 0px #ccc;
+        :root {
+            --snake-bg: #0f172a;
+            --snake-accent: #38bdf8;
+            --snake-goal: #f43f5e;
         }
-        .game-info { text-align: center; }
+        body {
+            background: var(--snake-bg);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            font-family: 'Noto Serif TC', serif;
+        }
+        #inkCanvas { display: none; }
+        .game-area {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+        .game-header {
+            text-align: center;
+            margin-bottom: 16px;
+        }
+        .game-header h1 {
+            color: #fff;
+            font-size: 2.5rem;
+            letter-spacing: 15px;
+            margin: 0;
+            text-shadow: 0 0 20px rgba(255,255,255,0.15);
+        }
+        .score-board {
+            font-size: 1.3rem;
+            color: var(--snake-accent);
+            margin-bottom: 12px;
+            padding: 8px 24px;
+            background: rgba(255,255,255,0.06);
+            border-radius: 50px;
+            backdrop-filter: blur(10px);
+        }
+        .score-board strong { font-size: 1.8rem; }
+        #snakeGame {
+            border: 3px solid #1e293b;
+            box-shadow: 0 0 30px rgba(56, 189, 248, 0.15);
+            border-radius: 8px;
+            max-width: 100%;
+        }
+        .nav-links {
+            margin-top: 20px;
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .nav-links a {
+            padding: 6px 16px;
+            border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 20px;
+            text-decoration: none;
+            color: #94a3b8;
+            font-size: 0.82rem;
+            background: rgba(255,255,255,0.05);
+            transition: 0.2s;
+        }
+        .nav-links a:hover { background: rgba(255,255,255,0.12); color: #fff; }
+        .hint {
+            color: #64748b;
+            font-size: 0.85rem;
+            margin-top: 10px;
+        }
+        .theme-btn {
+            position: fixed;
+            top: 16px;
+            right: 16px;
+            z-index: 50;
+            background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.15);
+            color: #94a3b8;
+            padding: 6px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-family: inherit;
+            transition: 0.2s;
+        }
+        .theme-btn:hover { background: rgba(255,255,255,0.15); color: #fff; }
     </style>
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1>墨跡</h1>
-            <p>得分：<span id="scoreVal">0</span></p>
+    <div class="game-area">
+        <header class="game-header">
+            <h1>墨 跡</h1>
         </header>
 
-        <canvas id="gameCanvas" width="400" height="400"></canvas>
-
-        <div class="game-info">
-            <p>使用方向鍵控制運筆方向</p>
-            <button onclick="location.href='/s111410509/notes'">返回隨筆</button>
+        <div class="score-board">
+            得分：<strong id="scoreVal">0</strong>
         </div>
+
+        <canvas id="snakeGame" width="400" height="400"></canvas>
+
+        <div class="hint">方向鍵控制方向 · 撞到自己則結束</div>
+
+        <nav class="nav-links">
+            <a href="/s111410509/">📝 網誌</a>
+            <a href="/s111410509/notes">✏️ 隨筆</a>
+            <a href="/s111410509/whack.html">🎯 捕墨</a>
+            <a href="/s111410509/maze.html">🏃 墨陣</a>
+            <a href="/s111410509/leaderboard.html">🏆 排行</a>
+            <a href="/s111410509/news.html">📰 新聞</a>
+        </nav>
     </div>
+
+    <button class="theme-btn" onclick="toggleTheme()" id="themeBtn">🌙 深色</button>
+
+    <script src="/s111410509/ink_background.js"></script>
+    <script>
+        (function() {
+            const t = localStorage.getItem('theme');
+            const sys = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+            const theme = t || sys;
+            document.documentElement.setAttribute('data-theme', theme);
+            const btn = document.getElementById('themeBtn');
+            if (btn) btn.textContent = theme === 'dark' ? '☀️ 淺色' : '🌙 深色';
+        })();
+        window.toggleTheme = function() {
+            const c = document.documentElement.getAttribute('data-theme');
+            const t = c === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', t);
+            localStorage.setItem('theme', t);
+            const btn = document.getElementById('themeBtn');
+            if (btn) btn.textContent = t === 'dark' ? '☀️ 淺色' : '🌙 深色';
+        };
+    </script>
     <script src="/s111410509/snake.js"></script>
 </body>
 </html>

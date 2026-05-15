@@ -1,85 +1,120 @@
-const canvas = document.getElementById("gameCanvas");
-const ctx = canvas.getContext("2d");
-const scoreEl = document.getElementById("scoreVal");
+const canvas = document.getElementById('snakeGame');
+const ctx = canvas.getContext('2d');
+const scoreElement = document.getElementById('scoreVal');
 
-const box = 20;
-let score = 0;
-let snake = [{ x: 9 * box, y: 10 * box }];
-let food = {
-    x: Math.floor(Math.random() * 19 + 1) * box,
-    y: Math.floor(Math.random() * 19 + 1) * box
+const grid = 20;
+let count = 0, score = 0, gameOver = false;
+
+let snake = {
+  x: 160, y: 160,
+  dx: grid, dy: 0,
+  cells: [],
+  maxCells: 4
 };
-let d;
 
-document.addEventListener("keydown", direction);
+let apple = { x: 320, y: 320 };
 
-function direction(event) {
-    if(event.keyCode == 37 && d != "RIGHT") d = "LEFT";
-    else if(event.keyCode == 38 && d != "DOWN") d = "UP";
-    else if(event.keyCode == 39 && d != "LEFT") d = "RIGHT";
-    else if(event.keyCode == 40 && d != "UP") d = "DOWN";
+function getRandomInt(min, max) {
+  return Math.floor(Math.random() * (max - min)) + min;
 }
 
-function collision(head, array) {
-    for(let i = 0; i < array.length; i++) {
-        if(head.x == array[i].x && head.y == array[i].y) return true;
-    }
-    return false;
+function resetGame() {
+  snake.x = 160; snake.y = 160;
+  snake.cells = [];
+  snake.maxCells = 4;
+  snake.dx = grid; snake.dy = 0;
+  score = 0; gameOver = false;
+  if (scoreElement) scoreElement.textContent = '0';
+  apple.x = getRandomInt(0, 20) * grid;
+  apple.y = getRandomInt(0, 20) * grid;
 }
 
-function draw() {
-    ctx.fillStyle = "white";
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+function loop() {
+  requestAnimationFrame(loop);
+  if (++count < 6) return;
+  count = 0;
 
-    for(let i = 0; i < snake.length; i++) {
-        ctx.fillStyle = (i == 0) ? "black" : `rgba(0, 0, 0, ${1 - i/snake.length})`;
-        ctx.fillRect(snake[i].x, snake[i].y, box, box);
-        ctx.strokeStyle = "white";
-        ctx.strokeRect(snake[i].x, snake[i].y, box, box);
+  ctx.fillStyle = '#020617';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  if (gameOver) return;
+
+  snake.x += snake.dx;
+  snake.y += snake.dy;
+
+  if (snake.x < 0) snake.x = canvas.width - grid;
+  else if (snake.x >= canvas.width) snake.x = 0;
+  if (snake.y < 0) snake.y = canvas.height - grid;
+  else if (snake.y >= canvas.height) snake.y = 0;
+
+  snake.cells.unshift({ x: snake.x, y: snake.y });
+  if (snake.cells.length > snake.maxCells) snake.cells.pop();
+
+  ctx.shadowBlur = 15;
+  ctx.shadowColor = '#f43f5e';
+  ctx.fillStyle = '#f43f5e';
+  ctx.fillRect(apple.x, apple.y, grid - 1, grid - 1);
+
+  ctx.shadowBlur = 10;
+  ctx.shadowColor = '#38bdf8';
+  ctx.fillStyle = '#38bdf8';
+
+  snake.cells.forEach(function(cell, index) {
+    ctx.fillRect(cell.x, cell.y, grid - 1, grid - 1);
+
+    if (cell.x === apple.x && cell.y === apple.y) {
+      snake.maxCells++;
+      score += 10;
+      if (scoreElement) scoreElement.textContent = score;
+      apple.x = getRandomInt(0, 20) * grid;
+      apple.y = getRandomInt(0, 20) * grid;
     }
 
-    ctx.fillStyle = "red";
-    ctx.beginPath();
-    ctx.arc(food.x + box/2, food.y + box/2, box/3, 0, Math.PI * 2);
-    ctx.fill();
-
-    let snakeX = snake[0].x;
-    let snakeY = snake[0].y;
-
-    if(d == "LEFT") snakeX -= box;
-    if(d == "UP") snakeY -= box;
-    if(d == "RIGHT") snakeX += box;
-    if(d == "DOWN") snakeY += box;
-
-    if(snakeX == food.x && snakeY == food.y) {
-        score++;
-        scoreEl.innerText = score;
-        food = {
-            x: Math.floor(Math.random() * 19 + 1) * box,
-            y: Math.floor(Math.random() * 19 + 1) * box
-        };
-    } else {
-        snake.pop();
-    }
-
-    let newHead = { x: snakeX, y: snakeY };
-
-    if(snakeX < 0 || snakeX >= canvas.width || snakeY < 0 || snakeY >= canvas.height || collision(newHead, snake)) {
-        clearInterval(game);
+    for (let i = index + 1; i < snake.cells.length; i++) {
+      if (cell.x === snake.cells[i].x && cell.y === snake.cells[i].y) {
+        gameOver = true;
         submitScore(score);
-        alert("墨跡乾涸！得分：" + score);
-        location.reload();
+        setTimeout(resetGame, 1500);
+        return;
+      }
     }
-
-    snake.unshift(newHead);
+  });
 }
+
+document.addEventListener('keydown', function(e) {
+  if (e.key.startsWith('Arrow')) e.preventDefault();
+  if (e.key === 'ArrowLeft' && snake.dx === 0) { snake.dx = -grid; snake.dy = 0; }
+  else if (e.key === 'ArrowUp' && snake.dy === 0) { snake.dy = -grid; snake.dx = 0; }
+  else if (e.key === 'ArrowRight' && snake.dx === 0) { snake.dx = grid; snake.dy = 0; }
+  else if (e.key === 'ArrowDown' && snake.dy === 0) { snake.dy = grid; snake.dx = 0; }
+});
+
+// touch swipe
+let tx = 0, ty = 0;
+canvas.addEventListener('touchstart', e => {
+  tx = e.touches[0].clientX;
+  ty = e.touches[0].clientY;
+}, { passive: true });
+
+canvas.addEventListener('touchend', e => {
+  const dx = e.changedTouches[0].clientX - tx;
+  const dy = e.changedTouches[0].clientY - ty;
+  if (Math.abs(dx) < 15 && Math.abs(dy) < 15) return;
+  if (Math.abs(dx) > Math.abs(dy)) {
+    if (dx > 0 && snake.dx === 0) { snake.dx = grid; snake.dy = 0; }
+    else if (dx < 0 && snake.dx === 0) { snake.dx = -grid; snake.dy = 0; }
+  } else {
+    if (dy > 0 && snake.dy === 0) { snake.dy = grid; snake.dx = 0; }
+    else if (dy < 0 && snake.dy === 0) { snake.dy = -grid; snake.dx = 0; }
+  }
+});
 
 async function submitScore(finalScore) {
-    await fetch('/s111410509/api/scores', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: "無名書生", score: finalScore })
-    });
+  await fetch('/s111410509/api/scores', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name: '無名書生', score: finalScore })
+  }).catch(() => {});
 }
 
-let game = setInterval(draw, 100);
+requestAnimationFrame(loop);

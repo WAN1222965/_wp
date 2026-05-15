@@ -4,17 +4,19 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>編輯文章 - 墨</title>
+  <meta name="robots" content="noindex">
+  <link rel="canonical" href="<%= baseUrl %>/post/<%= post.id %>">
   <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;700&display=swap" rel="stylesheet">
   <style>
-    :root { --bg: #f2f0e9; --text: #1a1a1a; --border: rgba(0,0,0,0.1); --accent: #000; --bg-card: rgba(255,255,255,0.8); }
-    [data-theme="dark"] { --bg: #1a1a1a; --text: #e0e0e0; --border: rgba(255,255,255,0.1); --accent: #fff; --bg-card: rgba(30,30,30,0.9); }
+    :root { --bg: #f2f0e9; --text: #1a1a1a; --border: rgba(0,0,0,0.1); --accent: #000; --bg-card: rgba(255,255,255,0.8); --tag-bg: #e8e6df; --text-secondary: #555; }
+    [data-theme="dark"] { --bg: #1a1a1a; --text: #e0e0e0; --border: rgba(255,255,255,0.1); --accent: #fff; --bg-card: rgba(30,30,30,0.9); --tag-bg: #2a2a2a; --text-secondary: #999; }
     * { box-sizing: border-box; }
     body {
       margin: 0; padding: 0; font-family: 'Noto Serif TC', serif;
       background: var(--bg); color: var(--text); transition: background 0.3s, color 0.3s;
       display: flex; justify-content: center;
     }
-    .container { width: 90%; max-width: 720px; padding: 40px 0; }
+    .container { width: 90%; max-width: 760px; padding: 40px 0; }
     h1 { font-size: 1.8rem; margin: 0 0 24px; }
     label { display: block; font-size: 0.9rem; margin: 16px 0 6px; font-weight: 700; }
     input, textarea {
@@ -24,6 +26,32 @@
     }
     input:focus, textarea:focus { border-color: var(--accent); }
     textarea { min-height: 300px; resize: vertical; }
+    .help-text { font-size: 0.8rem; color: var(--text-secondary); margin: 4px 0 0; }
+    .editor-tabs { display: flex; gap: 0; margin-top: 8px; border-bottom: 1px solid var(--border); }
+    .editor-tab { padding: 8px 16px; cursor: pointer; font-size: 0.85rem; border: 1px solid transparent; border-bottom: none; border-radius: 6px 6px 0 0; color: var(--text-secondary); background: transparent; transition: 0.2s; }
+    .editor-tab.active { background: var(--bg-card); border-color: var(--border); color: var(--text); }
+    .editor-pane { display: none; }
+    .editor-pane.active { display: block; }
+    .preview-pane {
+      min-height: 300px; padding: 16px; border: 1px solid var(--border); border-radius: 0 6px 6px 6px;
+      background: var(--bg-card); line-height: 1.8; font-size: 1rem;
+    }
+    .preview-pane img { max-width: 100%; border-radius: 6px; }
+    .preview-pane pre { background: #1e1e1e; color: #d4d4d4; padding: 12px; border-radius: 6px; overflow-x: auto; }
+    .preview-pane code { font-family: 'JetBrains Mono', monospace; font-size: 0.9rem; }
+    .preview-pane blockquote { border-left: 4px solid var(--accent); padding: 8px 16px; margin: 12px 0; background: var(--tag-bg); font-style: italic; }
+    .preview-pane h2 { border-bottom: 1px solid var(--border); padding-bottom: 6px; margin-top: 24px; }
+    .preview-pane table { border-collapse: collapse; width: 100%; }
+    .preview-pane th, .preview-pane td { border: 1px solid var(--border); padding: 8px; }
+    .toolbar {
+      display: flex; gap: 4px; margin-bottom: 8px; flex-wrap: wrap;
+    }
+    .toolbar button {
+      padding: 4px 10px; background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: 4px; cursor: pointer; font-size: 0.8rem; color: var(--text); font-family: inherit;
+      transition: 0.2s; margin: 0; box-shadow: none;
+    }
+    .toolbar button:hover { background: var(--tag-bg); }
     .btn-group { display: flex; gap: 12px; margin-top: 24px; }
     .btn {
       padding: 10px 24px; background: var(--accent); color: var(--bg);
@@ -31,11 +59,25 @@
       font-family: 'Noto Serif TC', serif; text-decoration: none;
     }
     .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text); }
+    .site-nav { display:flex; justify-content:center; gap:8px; flex-wrap:wrap; padding:12px 0; border-bottom:1px solid var(--border); margin-bottom:24px; }
+    .site-nav a { padding:4px 14px; text-decoration:none; color:var(--text-secondary); font-size:0.82rem; border:1px solid var(--border); border-radius:20px; background:var(--bg-card); transition:0.2s; }
+    .site-nav a:hover { background:var(--hover-bg); color:var(--text); }
+    .site-nav a.nav-brand { font-weight:700; letter-spacing:2px; color:var(--text); border-color:var(--accent); }
     @media (max-width: 600px) { .container { width: 95%; } }
   </style>
 </head>
 <body>
   <div class="container">
+    <nav class="site-nav">
+      <a href="<%= baseUrl %>/" class="nav-brand">墨</a>
+      <a href="<%= baseUrl %>/">📝 網誌</a>
+      <a href="<%= baseUrl %>/notes">✏️ 隨筆</a>
+      <a href="<%= baseUrl %>/snake.html">🐍 貪吃蛇</a>
+      <a href="<%= baseUrl %>/whack.html">🎯 捕墨</a>
+      <a href="<%= baseUrl %>/maze.html">🏃 墨陣</a>
+      <a href="<%= baseUrl %>/leaderboard.html">🏆 排行</a>
+      <a href="<%= baseUrl %>/news.html">📰 新聞</a>
+    </nav>
     <h1>✏️ 編輯文章</h1>
     <form action="<%= baseUrl %>/post/<%= post.id %>/update" method="POST">
       <label>標題</label>
@@ -47,8 +89,31 @@
       <label>AI 摘要 (選填)</label>
       <textarea name="summary" style="min-height:60px;"><%= post.summary || '' %></textarea>
 
-      <label>內文 (支援 HTML)</label>
-      <textarea name="content" required><%= post.content %></textarea>
+      <label>內文 (Markdown)</label>
+      <div class="toolbar">
+        <button type="button" onclick="insertMarkdown('**','**')"><b>B</b></button>
+        <button type="button" onclick="insertMarkdown('*','*')"><i>I</i></button>
+        <button type="button" onclick="insertMarkdown('## ','')">H2</button>
+        <button type="button" onclick="insertMarkdown('### ','')">H3</button>
+        <button type="button" onclick="insertMarkdown('- ','')">•</button>
+        <button type="button" onclick="insertMarkdown('1. ','')">1.</button>
+        <button type="button" onclick="insertMarkdown('```\n','\n```')">代码</button>
+        <button type="button" onclick="insertMarkdown('[','](url)')">🔗</button>
+        <button type="button" onclick="insertMarkdown('![alt](',')')">🖼</button>
+        <button type="button" onclick="document.getElementById('imageUpload').click()">📎 上傳圖片</button>
+        <button type="button" onclick="insertMarkdown('> ','')">❝</button>
+        <input type="file" id="imageUpload" accept="image/*" style="display:none" onchange="uploadImage(this)">
+      </div>
+      <div class="editor-tabs">
+        <div class="editor-tab active" onclick="switchTab('edit')">✏️ 編輯</div>
+        <div class="editor-tab" onclick="switchTab('preview')">👁 預覽</div>
+      </div>
+      <div class="editor-pane active" id="editPane">
+        <textarea id="contentEditor" name="content" required><%= post.content %></textarea>
+      </div>
+      <div class="editor-pane" id="previewPane">
+        <div class="preview-pane" id="livePreview"></div>
+      </div>
 
       <div class="btn-group">
         <button type="submit" class="btn">儲存變更</button>
@@ -57,12 +122,104 @@
     </form>
   </div>
 
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <script>
     (function() {
       const t = localStorage.getItem('theme');
       const sys = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
       document.documentElement.setAttribute('data-theme', t || sys);
     })();
+
+    const editor = document.getElementById('contentEditor');
+
+    function switchTab(tab) {
+      document.querySelectorAll('.editor-tab').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.editor-pane').forEach(el => el.classList.remove('active'));
+      if (tab === 'edit') {
+        document.querySelector('.editor-tab').classList.add('active');
+        document.getElementById('editPane').classList.add('active');
+      } else {
+        document.querySelectorAll('.editor-tab')[1].classList.add('active');
+        document.getElementById('previewPane').classList.add('active');
+        updatePreview();
+      }
+    }
+
+    function updatePreview() {
+      document.getElementById('livePreview').innerHTML = marked.parse(editor.value || '', { breaks: true });
+    }
+
+    function insertMarkdown(before, after) {
+      const start = editor.selectionStart, end = editor.selectionEnd;
+      const text = editor.value.substring(start, end);
+      editor.value = editor.value.substring(0, start) + before + text + after + editor.value.substring(end);
+      editor.focus();
+      editor.selectionStart = editor.selectionEnd = start + before.length + text.length + after.length;
+      updatePreview();
+    }
+
+    editor.addEventListener('input', updatePreview);
+
+    async function uploadImage(input) {
+      const file = input.files[0];
+      if (!file) return;
+      const btn = document.querySelector('.toolbar button[onclick*="imageUpload"]');
+      btn.textContent = '⏳ 上傳中...';
+      btn.disabled = true;
+      const formData = new FormData();
+      formData.append('image', file);
+      try {
+        const res = await fetch('<%= baseUrl %>/api/upload', { method: 'POST', body: formData });
+        const data = await res.json();
+        if (data.url) {
+          const md = `![${file.name}](${data.url})`;
+          const start = editor.selectionStart, end = editor.selectionEnd;
+          editor.value = editor.value.substring(0, start) + md + editor.value.substring(end);
+          updatePreview();
+          showToast('✅ 圖片上傳成功');
+        } else {
+          showToast('❌ 上傳失敗：伺服器未回傳圖片網址');
+        }
+      } catch (e) { showToast('❌ 上傳失敗：' + e.message); }
+      input.value = '';
+      btn.textContent = '📎 上傳圖片';
+      btn.disabled = false;
+    }
+
+    // Toast
+    function showToast(msg) {
+      const t = document.createElement('div');
+      t.textContent = msg;
+      Object.assign(t.style, { position:'fixed', bottom:'24px', right:'24px', background:'var(--text)', color:'var(--bg)', padding:'12px 20px', borderRadius:'8px', fontSize:'0.9rem', zIndex:'9999', boxShadow:'0 4px 20px rgba(0,0,0,0.2)', opacity:'0', transform:'translateY(10px)', transition:'0.3s', fontFamily:'inherit' });
+      document.body.appendChild(t);
+      requestAnimationFrame(() => { t.style.opacity = '1'; t.style.transform = 'translateY(0)'; });
+      setTimeout(() => { t.style.opacity = '0'; t.style.transform = 'translateY(10px)'; setTimeout(() => t.remove(), 300); }, 2500);
+    }
+
+    // Auto-save draft
+    const DRAFT_KEY = 'blog_draft_<%= post.id %>';
+    function saveDraft() {
+      const data = { title: document.querySelector('[name="title"]')?.value || '', content: editor.value, tags: document.querySelector('[name="tags"]')?.value || '', summary: document.querySelector('[name="summary"]')?.value || '' };
+      localStorage.setItem(DRAFT_KEY, JSON.stringify(data));
+    }
+    function loadDraft() {
+      try {
+        const raw = localStorage.getItem(DRAFT_KEY);
+        if (!raw) return;
+        const data = JSON.parse(raw);
+        if (data.content && data.content !== editor.value && confirm('📝 偵測到未儲存的變更，是否還原？')) {
+          document.querySelector('[name="title"]').value = data.title || '';
+          editor.value = data.content || '';
+          document.querySelector('[name="tags"]').value = data.tags || '';
+          document.querySelector('[name="summary"]').value = data.summary || '';
+          updatePreview();
+        }
+        localStorage.removeItem(DRAFT_KEY);
+      } catch {}
+    }
+    setInterval(saveDraft, 10000);
+    loadDraft();
+    window.addEventListener('beforeunload', saveDraft);
   </script>
 </body>
 </html>

@@ -256,10 +256,18 @@ button:hover { background: var(--hover-color); transform: translateY(-1px); }
 .nav-links {
     text-align: center;
     margin-bottom: 30px;
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    flex-wrap: wrap;
 }
 
 .nav-links .game-link {
-    margin: 0 10px;
+    margin: 0;
+    padding: 4px 14px;
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    background: var(--card-bg);
 }
 
 .note-author {

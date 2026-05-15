@@ -1,4 +1,6 @@
+(function() {
 const canvas = document.getElementById('inkCanvas');
+if (!canvas) return;
 const ctx = canvas.getContext('2d');
 
 const THEME_COLORS = {
@@ -89,6 +91,7 @@ function animate() {
     requestAnimationFrame(animate);
 }
 
+window.createInk = createInk;
 window.inkBg = {
   updateTheme: function () {
     // Theme is read dynamically from data-theme attribute every frame
@@ -114,3 +117,4 @@ setInterval(() => {
 }, 2000);
 
 animate();
+})();

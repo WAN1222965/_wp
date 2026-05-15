@@ -1,6 +1,12 @@
 const PREFIX = '/s111410509';
 const API_URL = PREFIX + '/api/notes';
 
+function escapeHtml(str) {
+    const div = document.createElement('div');
+    div.appendChild(document.createTextNode(str || ''));
+    return div.innerHTML;
+}
+
 function getUser() {
     return JSON.parse(localStorage.getItem('user'));
 }
@@ -39,7 +45,7 @@ async function loadNotes() {
                 </div>
                 <div class="comments-section" id="comments-${note.id}" style="display:none;">
                     <div class="comments-list">
-                        ${comments.map(c => `<div class="comment"><p><strong>${c.username || '匿名'}:</strong> ${c.content}</p></div>`).join('')}
+                        ${comments.map(c => `<div class="comment"><p><strong>${escapeHtml(c.username || '匿名')}:</strong> ${escapeHtml(c.content)}</p></div>`).join('')}
                     </div>
                     ${user ? `
                     <div class="comment-input">

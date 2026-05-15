@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="zh-TW">
+<html lang="zh-TW" data-theme="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -75,6 +75,16 @@
 </head>
 <body>
     <canvas id="inkCanvas"></canvas>
+
+    <nav class="nav-links" style="position:relative;z-index:1;margin-top:20px;">
+        <a href="/s111410509/" class="game-link">📝 網誌</a>
+        <a href="/s111410509/notes" class="game-link">✏️ 隨筆</a>
+        <a href="/s111410509/snake.html" class="game-link">🐍 貪吃蛇</a>
+        <a href="/s111410509/whack.html" class="game-link">🎯 捕墨</a>
+        <a href="/s111410509/maze.html" class="game-link">🏃 墨陣</a>
+        <a href="/s111410509/leaderboard.html" class="game-link">🏆 排行</a>
+        <a href="/s111410509/news.html" class="game-link">📰 新聞</a>
+    </nav>
     
     <div class="auth-container" id="loginForm">
         <h1>墨</h1>
@@ -116,6 +126,12 @@
 
     <script src="/s111410509/ink_background.js"></script>
     <script>
+        (function() {
+            const t = localStorage.getItem('theme');
+            const sys = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+            document.documentElement.setAttribute('data-theme', t || sys);
+        })();
+
         let currentUser = JSON.parse(localStorage.getItem('user')) || null;
         
         if (currentUser) {

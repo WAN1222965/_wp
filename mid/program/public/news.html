@@ -30,6 +30,9 @@
             display: inline-block;
             margin-top: 10px;
         }
+        .news-nav { display:flex; justify-content:center; gap:8px; flex-wrap:wrap; margin-top:16px; }
+        .news-nav a { padding:6px 16px; background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.15); border-radius:20px; color:#ccc; text-decoration:none; font-size:0.85rem; transition:0.2s; }
+        .news-nav a:hover { background:rgba(255,255,255,0.15); color:#fff; }
         .tabs {
             display: flex;
             justify-content: center;
@@ -169,8 +172,15 @@
 <body>
     <div class="container">
         <header>
-            <h1>時事新聞</h1>
-            <a href="/s111410509/notes">← 返回網誌</a>
+            <h1>墨・新聞</h1>
+            <nav class="news-nav">
+                <a href="/s111410509/">📝 網誌</a>
+                <a href="/s111410509/notes">✏️ 隨筆</a>
+                <a href="/s111410509/snake.html">🐍 貪吃蛇</a>
+                <a href="/s111410509/whack.html">🎯 捕墨</a>
+                <a href="/s111410509/maze.html">🏃 墨陣</a>
+                <a href="/s111410509/leaderboard.html">🏆 排行</a>
+            </nav>
         </header>
 
         <div class="tabs">
@@ -232,42 +242,47 @@
             const container = document.getElementById('world-news');
             try {
                 const res = await fetch('/s111410509/api/news/world');
-                const data = await res.json();
+                const feeds = await res.json();
                 container.innerHTML = '';
                 
-                if (data.articles.length === 0) {
-                    container.innerHTML = '<div class="error">請設定 NewsAPI Key 以取得國際新聞</div>';
-                    return;
-                }
-
-                data.articles.forEach(article => {
-                    const card = createNewsCard(article, data.source);
-                    container.appendChild(card);
+                feeds.forEach(feed => {
+                    if (feed.articles.length === 0) return;
+                    feed.articles.forEach(article => {
+                        const card = createNewsCard(article, feed.source);
+                        container.appendChild(card);
+                    });
                 });
+
+                if (container.children.length === 0) {
+                    container.innerHTML = '<div class="error">暫時無法載入國際新聞</div>';
+                }
             } catch (e) {
                 container.innerHTML = '<div class="error">載入失敗: ' + e.message + '</div>';
             }
         }
+
+        function esc(v) { return (v || '').replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/'/g, '&#39;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
 
         function createNewsCard(article, source) {
             const card = document.createElement('div');
             card.className = 'news-card';
             
             const likes = newsLikes[article.title] || 0;
-            const likedClass = likes > 0 ? 'liked' : '';
+            const title = article.title;
+            const link = article.link;
             
             card.innerHTML = `
-                <h3><a href="${article.link}" target="_blank">${article.title}</a></h3>
+                <h3><a href="${esc(link)}" target="_blank">${esc(title)}</a></h3>
                 <div class="news-meta">
-                    <span class="source-tag">${source}</span>
+                    <span class="source-tag">${esc(source)}</span>
                     ${article.pubDate ? ' • ' + new Date(article.pubDate).toLocaleDateString('zh-TW') : ''}
                 </div>
-                ${article.description ? `<p>${article.description.substring(0, 150)}...</p>` : ''}
+                ${article.description ? `<p>${esc(article.description.substring(0, 150))}...</p>` : ''}
                 <div class="news-actions">
-                    <button class="like-btn ${likedClass}" onclick="toggleLike(this, '${encodeURIComponent(article.title)}', '${article.link}')">
+                    <button class="like-btn ${likes > 0 ? 'liked' : ''}" data-title="${esc(title)}" data-link="${esc(link)}" onclick="toggleLike(this)">
                         ♡ <span class="like-count">${likes}</span>
                     </button>
-                    <button class="like-btn" onclick="toggleComments(this, '${encodeURIComponent(article.title)}', '${article.link}')" style="background: rgba(160, 196, 255, 0.2); border-color: rgba(160, 196, 255, 0.4); color: #a0c4ff;">
+                    <button class="like-btn" data-title="${esc(title)}" data-link="${esc(link)}" onclick="toggleComments(this)" style="background: rgba(160, 196, 255, 0.2); border-color: rgba(160, 196, 255, 0.4); color: #a0c4ff;">
                         💬 <span class="comment-count">0</span>
                     </button>
                 </div>
@@ -275,7 +290,7 @@
                     <div class="comment-form">
                         <input type="text" placeholder="暱稱" class="comment-username">
                         <input type="text" placeholder="留言..." class="comment-input">
-                        <button onclick="addComment(this, '${encodeURIComponent(article.title)}', '${article.link}')">發送</button>
+                        <button onclick="addComment(this)">發送</button>
                     </div>
                     <div class="comments-list"></div>
                 </div>
@@ -283,8 +298,12 @@
             return card;
         }
 
-        async function toggleLike(btn, encodedTitle, link) {
-            const title = decodeURIComponent(encodedTitle);
+        function getTitle(btn) { return btn.getAttribute('data-title'); }
+        function getLink(btn) { return btn.getAttribute('data-link'); }
+
+        async function toggleLike(btn) {
+            const title = getTitle(btn);
+            const link = getLink(btn);
             
             try {
                 const res = await fetch('/s111410509/api/news/like', {
@@ -302,10 +321,11 @@
             }
         }
 
-        async function toggleComments(btn, encodedTitle, link) {
+        async function toggleComments(btn) {
             const card = btn.closest('.news-card');
             const commentSection = card.querySelector('.comment-section');
-            const title = decodeURIComponent(encodedTitle);
+            const title = getTitle(btn);
+            const link = getLink(btn);
             
             if (commentSection.style.display === 'none') {
                 commentSection.style.display = 'block';
@@ -340,11 +360,12 @@
             }
         }
 
-        async function addComment(btn, encodedTitle, link) {
+        async function addComment(btn) {
             const card = btn.closest('.news-card');
             const usernameInput = card.querySelector('.comment-username');
             const contentInput = card.querySelector('.comment-input');
-            const title = decodeURIComponent(encodedTitle);
+            const title = getTitle(btn);
+            const link = getLink(btn);
             const username = usernameInput.value.trim();
             const content = contentInput.value.trim();
             
