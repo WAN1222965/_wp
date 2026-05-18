@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="zh-TW" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>隱私權政策 - 墨</title>
+  <meta name="robots" content="noindex">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    :root { --bg: #f2f0e9; --bg-card: rgba(255,255,255,0.8); --text: #1a1a1a; --text-secondary: #555; --border: rgba(0,0,0,0.1); --accent: #000; --shadow: rgba(0,0,0,0.08); --hover-bg: rgba(0,0,0,0.05); --tag-bg: #e8e6df; }
+    [data-theme="dark"] { --bg: #1a1a1a; --bg-card: rgba(30,30,30,0.9); --text: #e0e0e0; --text-secondary: #999; --border: rgba(255,255,255,0.1); --accent: #fff; --shadow: rgba(0,0,0,0.3); --hover-bg: rgba(255,255,255,0.08); --tag-bg: #2a2a2a; }
+    * { box-sizing: border-box; }
+    body { margin:0; padding:0; font-family:'Noto Serif TC',serif; background:var(--bg); color:var(--text); transition:.3s; display:flex; flex-direction:column; align-items:center; min-height:100vh; }
+    .container { width:90%; max-width:720px; padding:40px 0; flex:1; }
+    h1 { font-size:1.8rem; }
+    h2 { font-size:1.2rem; margin-top:28px; }
+    p { line-height:1.8; color:var(--text-secondary); }
+    a { color:var(--accent); }
+    @media (max-width:600px) { .container { width:95%; padding:20px 0; } }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🔒 隱私權政策</h1>
+    <p>最後更新：2026 年 1 月</p>
+
+    <h2>1. 資料收集</h2>
+    <p>本網站使用 Google Analytics 4 (GA4) 收集匿名瀏覽數據，包括但不限於：頁面瀏覽次數、來源網站、瀏覽器類型、裝置類型。這些資料無法識別個人身分。</p>
+    <p>當您透過聯絡表單提交訊息時，我們會收集您提供的姓名、Email 與訊息內容，僅用於回覆您的需求。</p>
+    <p>當您訂閱電子報時，您的 Email 僅用於發送新文章通知，不會分享給第三方。</p>
+
+    <h2>2. Cookie 使用</h2>
+    <p>本網站使用 Google Analytics Cookie 來分析流量。您可以透過瀏覽器設定拒絕所有 Cookie。</p>
+
+    <h2>3. 第三方服務</h2>
+    <p>本網站可能嵌入 YouTube 影片、GitHub 討論區等第三方內容，這些服務有其各自的隱私權政策。</p>
+
+    <h2>4. 資料安全</h2>
+    <p>我們採取合理的技術措施保護您的個人資料，但無法保證網際網路傳輸的絕對安全。</p>
+
+    <h2>5. 聯絡方式</h2>
+    <p>如對本政策有任何疑問，請透過 <a href="<%= baseUrl %>/contact">聯絡表單</a> 與我們聯繫。</p>
+
+    <p style="margin-top:32px;"><a href="<%= baseUrl %>/">&larr; 回到首頁</a></p>
+  </div>
+  <script>(function(){const t=localStorage.getItem('theme');const s=window.matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light';document.documentElement.setAttribute('data-theme',t||s);})();</script>
+</body>
+</html>

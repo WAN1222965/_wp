@@ -1,0 +1,38 @@
+<footer class="site-footer">
+  <div class="footer-inner">
+    <div class="footer-col">
+      <h4>墨</h4>
+      <p class="footer-desc">紀錄瞬間的思緒，以專業視角解析世界。一個融合技術、人文與創作的個人網誌。</p>
+    </div>
+    <div class="footer-col">
+      <h4>導覽</h4>
+      <a href="<%= baseUrl %>/">📝 網誌</a>
+      <a href="<%= baseUrl %>/about">ℹ️ 關於</a>
+      <a href="<%= baseUrl %>/notes">✏️ 隨筆</a>
+      <a href="<%= baseUrl %>/contact">✉️ 聯絡</a>
+    </div>
+    <div class="footer-col">
+      <h4>連結</h4>
+      <a href="<%= baseUrl %>/rss.xml" target="_blank">📡 RSS 訂閱</a>
+      <a href="<%= baseUrl %>/sitemap.xml" target="_blank">🗺️ 網站地圖</a>
+      <a href="<%= baseUrl %>/leaderboard.html">🏆 排行榜</a>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <p>&copy; <%= new Date().getFullYear() %> 墨. All rights reserved.</p>
+    <p class="footer-legal">
+      <a href="<%= baseUrl %>/privacy">隱私權政策</a>
+    </p>
+  </div>
+</footer>
+
+<!-- Google Analytics (GA4) -->
+<% if (typeof gaId !== 'undefined' && gaId) { %>
+<script async src="https://www.googletagmanager.com/gtag/js?id=<%= gaId %>"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', '<%= gaId %>');
+</script>
+<% } %>

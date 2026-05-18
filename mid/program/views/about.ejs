@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="zh-TW" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>關於 - 墨</title>
+  <meta name="description" content="了解墨 - 這個網誌的寫作初衷、主題定位與作者背景。">
+  <meta property="og:title" content="關於 - 墨">
+  <meta property="og:description" content="了解墨 - 這個網誌的寫作初衷、主題定位與作者背景。">
+  <meta property="og:url" content="<%= baseUrl %>/about">
+  <link rel="canonical" href="<%= baseUrl %>/about">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #f2f0e9; --bg-card: rgba(255,255,255,0.8); --text: #1a1a1a; --text-secondary: #555;
+      --border: rgba(0,0,0,0.1); --accent: #000; --shadow: rgba(0,0,0,0.08);
+      --hover-bg: rgba(0,0,0,0.05); --tag-bg: #e8e6df;
+    }
+    [data-theme="dark"] {
+      --bg: #1a1a1a; --bg-card: rgba(30,30,30,0.9); --text: #e0e0e0; --text-secondary: #999;
+      --border: rgba(255,255,255,0.1); --accent: #fff; --shadow: rgba(0,0,0,0.3);
+      --hover-bg: rgba(255,255,255,0.08); --tag-bg: #2a2a2a;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; padding: 0; font-family: 'Noto Serif TC', serif;
+      background: var(--bg); color: var(--text);
+      transition: background 0.3s, color 0.3s;
+      display: flex; flex-direction: column; align-items: center; min-height: 100vh;
+    }
+    .container { width: 90%; max-width: 720px; padding: 40px 0; flex: 1; }
+
+    /* Nav styles */
+    .site-nav { width: 100%; margin-bottom: 40px; }
+    .nav-inner {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 12px 0; border-bottom: 1px solid var(--border);
+    }
+    .nav-toggle { display: none; }
+    .nav-hamburger { display: none; flex-direction: column; gap: 4px; cursor: pointer; padding: 4px; }
+    .nav-hamburger span { display: block; width: 22px; height: 2px; background: var(--text); border-radius: 2px; transition: 0.3s; }
+    .nav-brand { font-size: 1.2rem; font-weight: 700; letter-spacing: 3px; text-decoration: none; color: var(--text); }
+    .nav-links { display: flex; gap: 6px; flex-wrap: wrap; }
+    .nav-links a {
+      padding: 4px 12px; border: 1px solid var(--border); border-radius: 20px;
+      text-decoration: none; color: var(--text-secondary); font-size: 0.82rem;
+      background: var(--bg-card); transition: 0.2s;
+    }
+    .nav-links a:hover { background: var(--hover-bg); color: var(--text); }
+    .nav-links a.active { color: var(--text); border-color: var(--accent); }
+
+    h1 { font-size: 2rem; margin: 0 0 8px; }
+    .subtitle { color: var(--text-secondary); margin-bottom: 32px; }
+    section { margin-bottom: 32px; }
+    section h2 { font-size: 1.3rem; margin: 0 0 12px; padding-bottom: 6px; border-bottom: 1px solid var(--border); }
+    section p { line-height: 1.8; color: var(--text-secondary); margin: 0 0 12px; }
+    .values { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 16px; }
+    .value-card {
+      padding: 20px; background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: 8px; transition: 0.2s;
+    }
+    .value-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px var(--shadow); }
+    .value-card h3 { margin: 0 0 6px; font-size: 1rem; }
+    .value-card p { margin: 0; font-size: 0.9rem; }
+    .skills { display: flex; flex-wrap: wrap; gap: 8px; }
+    .skill-tag { padding: 4px 14px; background: var(--tag-bg); border-radius: 20px; font-size: 0.85rem; color: var(--text-secondary); }
+
+    /* Footer styles */
+    .site-footer {
+      width: 100%; border-top: 1px solid var(--border);
+      padding: 32px 0 16px; margin-top: 40px;
+    }
+    .footer-inner {
+      width: 90%; max-width: 720px; margin: 0 auto;
+      display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 24px;
+    }
+    .footer-col h4 { margin: 0 0 8px; font-size: 0.95rem; }
+    .footer-desc { font-size: 0.85rem; color: var(--text-secondary); line-height: 1.6; margin: 0; }
+    .footer-col a {
+      display: block; padding: 3px 0; font-size: 0.85rem;
+      color: var(--text-secondary); text-decoration: none;
+    }
+    .footer-col a:hover { color: var(--text); }
+    .footer-bottom {
+      width: 90%; max-width: 720px; margin: 24px auto 0;
+      padding-top: 16px; border-top: 1px solid var(--border);
+      display: flex; justify-content: space-between; align-items: center;
+      font-size: 0.8rem; color: var(--text-secondary);
+    }
+    .footer-legal a { color: var(--text-secondary); text-decoration: none; }
+    .footer-legal a:hover { color: var(--text); }
+
+    @media (max-width: 600px) {
+      .container { width: 95%; padding: 20px 0; }
+      .values { grid-template-columns: 1fr; }
+      .footer-inner { grid-template-columns: 1fr; gap: 16px; }
+      .footer-bottom { flex-direction: column; gap: 4px; text-align: center; }
+      .nav-hamburger { display: flex; }
+      .nav-links {
+        display: none; position: absolute; top: 100%; left: 0; right: 0;
+        background: var(--bg-card); backdrop-filter: blur(12px);
+        border: 1px solid var(--border); border-radius: 8px;
+        padding: 12px; flex-direction: column; z-index: 100;
+        box-shadow: 0 8px 24px var(--shadow);
+      }
+      .nav-toggle:checked ~ .nav-links { display: flex; }
+      .nav-inner { position: relative; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <%- include('partials/navbar') %>
+    <h1>ℹ️ 關於本站</h1>
+    <p class="subtitle">用文字記錄思緒，以專業剖析世界。</p>
+
+    <section>
+      <h2>📖 寫作初衷</h2>
+      <p>「墨」誕生於對技術與人文的熱愛。在資訊爆炸的時代，我希望提供一個經過沉澱、帶有個人觀點的閱讀空間。</p>
+      <p>這裡的文章圍繞三大主軸：<strong>技術深度解析</strong>、<strong>時事評論</strong> 與 <strong>生活反思</strong>。每篇文章都力求在資訊量與可讀性之間取得平衡，讓不同背景的讀者都能獲得啟發。</p>
+    </section>
+
+    <section>
+      <h2>🎯 這個網誌適合誰</h2>
+      <div class="values">
+        <div class="value-card">
+          <h3>👨‍💻 技術從業者</h3>
+          <p>程式設計、系統架構、資安等實戰經驗分享</p>
+        </div>
+        <div class="value-card">
+          <h3>📚 知識追求者</h3>
+          <p>時事分析、深度評論，從專業視角看世界</p>
+        </div>
+        <div class="value-card">
+          <h3>✍️ 寫作愛好者</h3>
+          <p>觀察如何組織想法、建構論述與表達觀點</p>
+        </div>
+        <div class="value-card">
+          <h3>🎮 遊戲愛好者</h3>
+          <p>貪吃蛇、捕墨、墨陣等小遊戲放鬆片刻</p>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>🛠️ 技術棧</h2>
+      <div class="skills">
+        <span class="skill-tag">Node.js</span>
+        <span class="skill-tag">Express</span>
+        <span class="skill-tag">SQLite</span>
+        <span class="skill-tag">EJS</span>
+        <span class="skill-tag">JavaScript</span>
+        <span class="skill-tag">CSS</span>
+        <span class="skill-tag">HTML</span>
+        <span class="skill-tag">RSS</span>
+      </div>
+    </section>
+
+    <section>
+      <h2>📬 與我聯繫</h2>
+      <p>有任何想法、合作邀約或建議，歡迎透過 <a href="<%= baseUrl %>/contact" style="color:var(--accent);">聯絡表單</a> 與我交流。</p>
+    </section>
+  </div>
+
+  <%- include('partials/footer') %>
+
+  <script>
+    (function() {
+      const t = localStorage.getItem('theme');
+      const sys = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+      document.documentElement.setAttribute('data-theme', t || sys);
+    })();
+  </script>
+</body>
+</html>

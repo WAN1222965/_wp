@@ -3,6 +3,7 @@ const cors = require('cors');
 const bodyParser = require('body-parser');
 const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
+const os = require('os');
 const Parser = require('rss-parser');
 const { marked } = require('marked');
 const multer = require('multer');
@@ -37,8 +38,8 @@ function renderMarkdown(md) {
 }
 
 const app = express();
-const PORT = 3000;
-const BASE = '/s111410509';
+const PORT = parseInt(process.env.PORT) || 3000;
+const BASE = process.env.BASE || '/s111410509';
 const dbPath = path.join(__dirname, 'blog.db');
 const publicDir = path.join(__dirname, 'public');
 const db = new sqlite3.Database(dbPath);
@@ -57,6 +58,7 @@ if (!require('fs').existsSync(uploadsDir)) {
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 app.locals.baseUrl = BASE;
+app.locals.gaId = process.env.GA_ID || '';
 
 const router = express.Router();
 
@@ -123,12 +125,36 @@ db.serialize(() => {
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
   )`);
 
+  db.run(`CREATE TABLE IF NOT EXISTS news_commentary (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    category TEXT NOT NULL,
+    original_title TEXT NOT NULL,
+    original_link TEXT NOT NULL,
+    source_name TEXT NOT NULL,
+    rewritten_headline TEXT NOT NULL,
+    event_summary TEXT NOT NULL,
+    analysis_content TEXT NOT NULL,
+    embed_url TEXT DEFAULT '',
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  )`);
+
   db.run("ALTER TABLE posts ADD COLUMN title TEXT DEFAULT ''", err => err && null);
   db.run("ALTER TABLE posts ADD COLUMN summary TEXT DEFAULT ''", err => err && null);
   db.run("ALTER TABLE posts ADD COLUMN user_id INTEGER NOT NULL DEFAULT 0", err => err && null);
   db.run("ALTER TABLE posts ADD COLUMN likes INTEGER DEFAULT 0", err => err && null);
   db.run("ALTER TABLE posts ADD COLUMN reports INTEGER DEFAULT 0", err => err && null);
   db.run("ALTER TABLE posts ADD COLUMN updated_at DATETIME DEFAULT CURRENT_TIMESTAMP", err => err && null);
+  db.run("ALTER TABLE posts ADD COLUMN meta_description TEXT DEFAULT ''", err => err && null);
+
+  db.run(`CREATE TABLE IF NOT EXISTS contact_messages (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    email TEXT NOT NULL,
+    subject TEXT NOT NULL,
+    message TEXT NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  )`);
 });
 
 // ===== Image Upload API =====
@@ -193,10 +219,10 @@ router.get('/post/new', (req, res) => {
 });
 
 router.post('/posts', (req, res) => {
-  const { title, content, summary, tags: tagsStr } = req.body;
+  const { title, content, summary, tags: tagsStr, meta_description } = req.body;
   if (!title || !content) return res.status(400).send('Title and content required');
-  const stmt = db.prepare('INSERT INTO posts (title, content, summary, user_id) VALUES (?, ?, ?, 1)');
-  stmt.run(title, content, summary || '', function(err) {
+  const stmt = db.prepare('INSERT INTO posts (title, content, summary, meta_description, user_id) VALUES (?, ?, ?, ?, 1)');
+  stmt.run(title, content, summary || '', meta_description || '', function(err) {
     if (err) return res.status(500).send(err.message);
     const postId = this.lastID;
     if (tagsStr) {
@@ -241,8 +267,8 @@ router.get('/post/:id/edit', (req, res) => {
 });
 
 router.post('/post/:id/update', (req, res) => {
-  const { title, content, summary, tags: tagsStr } = req.body;
-  db.run("UPDATE posts SET title = ?, content = ?, summary = ?, updated_at = datetime('now') WHERE id = ?", [title, content, summary || '', req.params.id], function(err) {
+  const { title, content, summary, tags: tagsStr, meta_description } = req.body;
+  db.run("UPDATE posts SET title = ?, content = ?, summary = ?, meta_description = ?, updated_at = datetime('now') WHERE id = ?", [title, content, summary || '', meta_description || '', req.params.id], function(err) {
     if (err) return res.status(500).send(err.message);
     db.run('DELETE FROM post_tags WHERE post_id = ?', [req.params.id]);
     if (tagsStr) {
@@ -386,13 +412,19 @@ router.get('/sitemap.xml', (req, res) => {
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>`).join('\n');
-    const xml = `<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+    const staticUrls = [
+      { loc: '/', freq: 'daily', priority: 1.0 },
+      { loc: '/about', freq: 'monthly', priority: 0.6 },
+      { loc: '/contact', freq: 'monthly', priority: 0.4 },
+    ];
+    const staticXml = staticUrls.map(u => `
   <url>
-    <loc>${baseUrl}/</loc>
-    <changefreq>daily</changefreq>
-    <priority>1.0</priority>
-  </url>${urls}
+    <loc>${baseUrl}${u.loc}</loc>
+    <changefreq>${u.freq}</changefreq>
+    <priority>${u.priority}</priority>
+  </url>`).join('');
+    const xml = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${staticXml}${urls}
 </urlset>`;
     res.set('Content-Type', 'application/xml; charset=utf-8');
     res.send(xml);
@@ -407,6 +439,33 @@ router.post('/api/subscribe', (req, res) => {
   if (!email || !email.includes('@')) return res.status(400).json({ error: 'Valid email required' });
   subscribers.push(email);
   res.json({ message: '訂閱成功！' });
+});
+
+// ===== Static Pages =====
+
+router.get('/about', (req, res) => {
+  res.render('about');
+});
+
+router.get('/contact', (req, res) => {
+  res.render('contact', { success: false, error: null });
+});
+
+router.post('/contact', (req, res) => {
+  const { name, email, subject, message } = req.body;
+  if (!name || !email || !subject || !message) {
+    return res.render('contact', { success: false, error: '所有欄位皆為必填' });
+  }
+  const stmt = db.prepare('INSERT INTO contact_messages (name, email, subject, message) VALUES (?, ?, ?, ?)');
+  stmt.run(name, email, subject, message, function(err) {
+    if (err) return res.render('contact', { success: false, error: '送出失敗，請稍後再試' });
+    res.render('contact', { success: true, error: null });
+  });
+  stmt.finalize();
+});
+
+router.get('/privacy', (req, res) => {
+  res.render('privacy');
 });
 
 // ===== Existing Routes (kept intact) =====
@@ -596,6 +655,50 @@ router.get('/api/news/world', async (req, res) => {
   }
 });
 
+router.get('/api/news/commentary/:category', (req, res) => {
+  const { category } = req.params;
+  db.all('SELECT * FROM news_commentary WHERE category = ? ORDER BY created_at DESC', [category], (err, rows) => {
+    if (err) return res.status(500).json({ error: err.message });
+    res.json(rows);
+  });
+});
+
+router.post('/api/news/commentary', (req, res) => {
+  const { category, original_title, original_link, source_name, rewritten_headline, event_summary, analysis_content, embed_url } = req.body;
+  if (!category || !original_title || !original_link || !source_name || !rewritten_headline || !event_summary || !analysis_content) {
+    return res.status(400).json({ error: '所有必填欄位皆須填寫' });
+  }
+  const stmt = db.prepare('INSERT INTO news_commentary (category, original_title, original_link, source_name, rewritten_headline, event_summary, analysis_content, embed_url) VALUES (?, ?, ?, ?, ?, ?, ?, ?)');
+  stmt.run(category, original_title, original_link, source_name, rewritten_headline, event_summary, analysis_content, embed_url || '', function(err) {
+    if (err) return res.status(500).json({ error: err.message });
+    res.status(201).json({ id: this.lastID, category, original_title, original_link, source_name, rewritten_headline, event_summary, analysis_content, embed_url: embed_url || '' });
+  });
+  stmt.finalize();
+});
+
+router.put('/api/news/commentary/:id', (req, res) => {
+  const { id } = req.params;
+  const { category, original_title, original_link, source_name, rewritten_headline, event_summary, analysis_content, embed_url } = req.body;
+  if (!category || !original_title || !original_link || !source_name || !rewritten_headline || !event_summary || !analysis_content) {
+    return res.status(400).json({ error: '所有必填欄位皆須填寫' });
+  }
+  db.run('UPDATE news_commentary SET category = ?, original_title = ?, original_link = ?, source_name = ?, rewritten_headline = ?, event_summary = ?, analysis_content = ?, embed_url = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
+    [category, original_title, original_link, source_name, rewritten_headline, event_summary, analysis_content, embed_url || '', id], function(err) {
+      if (err) return res.status(500).json({ error: err.message });
+      if (this.changes === 0) return res.status(404).json({ error: '找不到該評論' });
+      res.json({ message: '更新成功' });
+    });
+});
+
+router.delete('/api/news/commentary/:id', (req, res) => {
+  const { id } = req.params;
+  db.run('DELETE FROM news_commentary WHERE id = ?', [id], function(err) {
+    if (err) return res.status(500).json({ error: err.message });
+    if (this.changes === 0) return res.status(404).json({ error: '找不到該評論' });
+    res.json({ message: '刪除成功' });
+  });
+});
+
 app.use(BASE, router);
 app.get('/', (req, res) => res.redirect(BASE + '/'));
 app.get('/notes', (req, res) => res.redirect(BASE + '/notes'));
@@ -611,7 +714,11 @@ function startServer(port) {
     }
   });
   server.on('listening', () => {
+    const nets = os.networkInterfaces();
+    const ips = Object.values(nets).flat().filter(n => n.family === 'IPv4' && !n.internal).map(n => n.address);
     console.log(`「墨」伺服器運行中：http://localhost:${port}${BASE}/`);
+    ips.forEach(ip => console.log(`  區域網路：http://${ip}:${port}${BASE}/`));
+    console.log(`  連接埠 ${port}（設定 PORT 環境變數可更改）`);
   });
 }
 startServer(PORT);

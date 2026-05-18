@@ -89,34 +89,81 @@
     }
     .pagination a:hover { background: var(--hover-bg); }
     .pagination .current { background: var(--accent); color: var(--bg); border-color: var(--accent); }
+    /* Hero */
+    .hero {
+      text-align: center; padding: 24px 0 20px;
+      border-bottom: 1px solid var(--border); margin-bottom: 24px;
+    }
+    .hero h2 { font-size: 1.6rem; margin: 0 0 8px; }
+    .hero p { color: var(--text-secondary); line-height: 1.7; max-width: 520px; margin: 0 auto; font-size: 0.95rem; }
+    .hero-tags { display: flex; justify-content: center; gap: 6px; flex-wrap: wrap; margin-top: 12px; }
+    .hero-tag { padding: 3px 12px; background: var(--tag-bg); border-radius: 20px; font-size: 0.75rem; color: var(--text-secondary); text-decoration: none; }
+    .hero-tag:hover { background: var(--accent); color: var(--bg); }
+    /* Nav styles */
+    .site-nav { width: 100%; margin-bottom: 8px; }
+    .nav-inner {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 12px 0; border-bottom: 1px solid var(--border);
+    }
+    .nav-toggle { display: none; }
+    .nav-hamburger { display: none; flex-direction: column; gap: 4px; cursor: pointer; padding: 4px; }
+    .nav-hamburger span { display: block; width: 22px; height: 2px; background: var(--text); border-radius: 2px; transition: 0.3s; }
+    .nav-brand { font-size: 1.2rem; font-weight: 700; letter-spacing: 3px; text-decoration: none; color: var(--text); }
+    .nav-links { display: flex; gap: 6px; flex-wrap: wrap; }
+    .nav-links a {
+      padding: 4px 12px; border: 1px solid var(--border); border-radius: 20px;
+      text-decoration: none; color: var(--text-secondary); font-size: 0.82rem;
+      background: var(--bg-card); transition: 0.2s;
+    }
+    .nav-links a:hover { background: var(--hover-bg); color: var(--text); }
+    .nav-links a.active { color: var(--text); border-color: var(--accent); }
+    /* Footer styles */
+    .site-footer { width: 100%; border-top: 1px solid var(--border); padding: 32px 0 16px; margin-top: 40px; }
+    .footer-inner { max-width: 720px; margin: 0 auto; display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 24px; }
+    .footer-col h4 { margin: 0 0 8px; font-size: 0.95rem; }
+    .footer-desc { font-size: 0.85rem; color: var(--text-secondary); line-height: 1.6; margin: 0; }
+    .footer-col a { display: block; padding: 3px 0; font-size: 0.85rem; color: var(--text-secondary); text-decoration: none; }
+    .footer-col a:hover { color: var(--text); }
+    .footer-bottom {
+      max-width: 720px; margin: 24px auto 0; padding-top: 16px; border-top: 1px solid var(--border);
+      display: flex; justify-content: space-between; align-items: center;
+      font-size: 0.8rem; color: var(--text-secondary);
+    }
+    .footer-legal a { color: var(--text-secondary); text-decoration: none; }
+    .footer-legal a:hover { color: var(--text); }
+
     @media (max-width: 600px) {
       .container { width: 95%; padding: 20px 0; }
       header h1 { font-size: 2rem; }
+      .footer-inner { grid-template-columns: 1fr; gap: 16px; }
+      .footer-bottom { flex-direction: column; gap: 4px; text-align: center; }
+      .nav-hamburger { display: flex; }
+      .nav-links {
+        display: none; position: absolute; top: 100%; left: 0; right: 0;
+        background: var(--bg-card); backdrop-filter: blur(12px);
+        border: 1px solid var(--border); border-radius: 8px;
+        padding: 12px; flex-direction: column; z-index: 100;
+        box-shadow: 0 8px 24px var(--shadow);
+      }
+      .nav-toggle:checked ~ .nav-links { display: flex; }
+      .nav-inner { position: relative; }
+      .hero h2 { font-size: 1.3rem; }
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <header>
-      <h1><a href="<%= baseUrl %>/">墨</a></h1>
-      <p class="subtitle">紀錄瞬間的思緒</p>
-      <div class="top-actions">
-        <a href="<%= baseUrl %>/post/new">✏️ 新文章</a>
-        <a href="<%= baseUrl %>/rss.xml" target="_blank">📡 RSS</a>
-        <button onclick="toggleTheme()" id="themeBtn">🌙 深色</button>
-      </div>
-    </header>
+    <%- include('partials/navbar') %>
 
-    <nav class="site-nav">
-      <a href="<%= baseUrl %>/" class="nav-brand">墨</a>
-      <a href="<%= baseUrl %>/">📝 網誌</a>
-      <a href="<%= baseUrl %>/notes">✏️ 隨筆</a>
-      <a href="<%= baseUrl %>/snake.html">🐍 貪吃蛇</a>
-      <a href="<%= baseUrl %>/whack.html">🎯 捕墨</a>
-      <a href="<%= baseUrl %>/maze.html">🏃 墨陣</a>
-      <a href="<%= baseUrl %>/leaderboard.html">🏆 排行</a>
-      <a href="<%= baseUrl %>/news.html">📰 新聞</a>
-    </nav>
+    <div class="hero">
+      <h2>紀錄瞬間的思緒</h2>
+      <p>以專業視角解析技術與時事，在資訊爆炸的時代提供沉澱後的觀點。</p>
+      <div class="hero-tags">
+        <a href="<%= baseUrl %>/post/new" class="hero-tag" style="background:var(--accent);color:var(--bg);">✏️ 新文章</a>
+        <a href="<%= baseUrl %>/rss.xml" target="_blank" class="hero-tag">📡 RSS</a>
+        <button onclick="toggleTheme()" class="hero-tag theme-btn-label" style="cursor:pointer;border:none;font-family:inherit;">🌙 深色</button>
+      </div>
+    </div>
 
     <div class="search-box">
       <input type="text" id="searchInput" placeholder="搜尋文章..." oninput="doSearch(this.value)">
@@ -172,6 +219,8 @@
     <% } %>
   </div>
 
+  <%- include('partials/footer') %>
+
   <script>
     const BASE = '<%= baseUrl %>';
 
@@ -180,8 +229,9 @@
     function applyTheme(t) {
       document.documentElement.setAttribute('data-theme', t);
       localStorage.setItem('theme', t);
-      const btn = document.getElementById('themeBtn');
-      if (btn) btn.textContent = t === 'dark' ? '☀️ 淺色' : '🌙 深色';
+      document.querySelectorAll('.theme-btn-label').forEach(btn => {
+        btn.textContent = t === 'dark' ? '☀️ 淺色' : '🌙 深色';
+      });
     }
     window.toggleTheme = function() {
       const c = document.documentElement.getAttribute('data-theme');

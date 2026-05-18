@@ -4,20 +4,21 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title><%= post.title %> - 墨</title>
-  <meta name="description" content="<%= (post.summary || '').substring(0, 160) || (post.content || '').replace(/<[^>]*>/g, '').substring(0, 160) %>">
+  <meta name="description" content="<%= (post.meta_description || post.summary || '').substring(0, 160) || (post.content || '').replace(/<[^>]*>/g, '').substring(0, 160) %>">
   <meta name="keywords" content="<%= post.tags ? post.tags.join(',') : '' %>">
   <meta property="og:title" content="<%= post.title %> - 墨">
-  <meta property="og:description" content="<%= (post.summary || '').substring(0, 160) || '墨 - 紀錄瞬間的思緒' %>">
+  <meta property="og:description" content="<%= (post.meta_description || post.summary || '').substring(0, 160) || '墨 - 紀錄瞬間的思緒' %>">
   <meta property="og:type" content="article">
   <meta property="og:url" content="<%= baseUrl %>/post/<%= post.id %>">
   <meta property="article:published_time" content="<%= new Date(post.created_at).toISOString() %>">
+  <meta property="article:modified_time" content="<%= new Date(post.updated_at || post.created_at).toISOString() %>">
   <meta property="article:author" content="墨">
   <% (post.tags || []).forEach(tag => { %>
   <meta property="article:tag" content="<%= tag %>">
   <% }) %>
   <meta name="twitter:card" content="summary">
   <meta name="twitter:title" content="<%= post.title %> - 墨">
-  <meta name="twitter:description" content="<%= (post.summary || '').substring(0, 160) || '墨 - 紀錄瞬間的思緒' %>">
+  <meta name="twitter:description" content="<%= (post.meta_description || post.summary || '').substring(0, 160) || '墨 - 紀錄瞬間的思緒' %>">
   <link rel="canonical" href="<%= baseUrl %>/post/<%= post.id %>">
   <link rel="alternate" type="application/rss+xml" title="墨 - 網誌 RSS" href="<%= baseUrl %>/rss.xml">
   <link rel="sitemap" type="application/xml" title="Sitemap" href="<%= baseUrl %>/sitemap.xml">
@@ -225,6 +226,36 @@
     .comment-form { display: flex; gap: 12px; margin-top: 16px; }
     .comment-form input { flex: 1; padding: 10px 14px; border: 1px solid var(--border); border-radius: 6px; background: var(--bg); color: var(--text); font-family: 'Noto Serif TC', serif; }
     .comment-form button { padding: 10px 20px; background: var(--accent); color: var(--bg); border: none; border-radius: 6px; cursor: pointer; box-shadow: none; margin: 0; }
+    /* Social Share */
+    .share-section { margin: 32px 0; padding: 20px 0; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); text-align: center; }
+    .share-section span { font-size: 0.9rem; color: var(--text-secondary); margin-right: 12px; }
+    .share-btn {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 8px 18px; border-radius: 20px; text-decoration: none;
+      font-size: 0.85rem; margin: 0 4px; transition: 0.2s;
+      border: 1px solid var(--border); color: var(--text-secondary); background: var(--bg-card);
+    }
+    .share-btn:hover { background: var(--hover-bg); color: var(--text); }
+    .share-btn.facebook:hover { background: #1877f2; color: #fff; border-color: #1877f2; }
+    .share-btn.line:hover { background: #06c755; color: #fff; border-color: #06c755; }
+    .share-btn.twitter:hover { background: #000; color: #fff; border-color: #000; }
+    /* Reading time */
+    .reading-time { color: var(--text-secondary); font-size: 0.85rem; display: inline-flex; align-items: center; gap: 4px; }
+    /* Footer */
+    .site-footer { width: 100%; border-top: 1px solid var(--border); padding: 32px 0 16px; margin-top: 40px; }
+    .footer-inner { max-width: 720px; margin: 0 auto; display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 24px; }
+    .footer-col h4 { margin: 0 0 8px; font-size: 0.95rem; }
+    .footer-desc { font-size: 0.85rem; color: var(--text-secondary); line-height: 1.6; margin: 0; }
+    .footer-col a { display: block; padding: 3px 0; font-size: 0.85rem; color: var(--text-secondary); text-decoration: none; }
+    .footer-col a:hover { color: var(--text); }
+    .footer-bottom {
+      max-width: 720px; margin: 24px auto 0; padding-top: 16px; border-top: 1px solid var(--border);
+      display: flex; justify-content: space-between; align-items: center;
+      font-size: 0.8rem; color: var(--text-secondary);
+    }
+    .footer-legal a { color: var(--text-secondary); text-decoration: none; }
+    .footer-legal a:hover { color: var(--text); }
+
     /* Newsletter */
     .newsletter-box { margin: 40px 0; padding: 24px; background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px; text-align: center; }
     .newsletter-box h3 { margin: 0 0 8px; font-size: 1.1rem; }
@@ -243,6 +274,12 @@
       .toc-sidebar { display: none; }
       .layout { padding: 0 16px; }
     }
+    @media (max-width: 600px) {
+      .footer-inner { grid-template-columns: 1fr; gap: 16px; }
+      .footer-bottom { flex-direction: column; gap: 4px; text-align: center; }
+      .top-bar { flex-wrap: wrap; gap: 6px; padding: 8px 12px; }
+      .share-btn { margin: 4px; }
+    }
   </style>
 </head>
 <body>
@@ -251,12 +288,8 @@
   <div class="top-bar">
     <a href="<%= baseUrl %>/" class="nav-brand" style="font-weight:700;letter-spacing:2px;">墨</a>
     <a href="<%= baseUrl %>/">📝 網誌</a>
-    <a href="<%= baseUrl %>/notes">✏️ 隨筆</a>
-    <a href="<%= baseUrl %>/snake.html">🐍 貪吃蛇</a>
-    <a href="<%= baseUrl %>/whack.html">🎯 捕墨</a>
-    <a href="<%= baseUrl %>/maze.html">🏃 墨陣</a>
-    <a href="<%= baseUrl %>/leaderboard.html">🏆 排行</a>
-    <a href="<%= baseUrl %>/news.html">📰 新聞</a>
+    <a href="<%= baseUrl %>/about">ℹ️ 關於</a>
+    <a href="<%= baseUrl %>/contact">✉️ 聯絡</a>
     <a href="<%= baseUrl %>/post/<%= post.id %>/edit">✏️ 編輯</a>
     <button class="search-toggle" onclick="toggleSearch()">🔍 搜尋</button>
     <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn">🌙 深色</button>
@@ -284,6 +317,11 @@
         <h1><%= post.title %></h1>
         <div class="post-meta">
           <span><%= new Date(post.created_at).toLocaleDateString('zh-TW') %></span>
+          <% if (post.updated_at && post.updated_at !== post.created_at) { %>
+          <span style="color:var(--text-secondary);font-size:0.8rem;">（更新：<%= new Date(post.updated_at).toLocaleDateString('zh-TW') %>）</span>
+          <% } %>
+          <span class="reading-time" id="readingTime">⏱ <span id="readTimeMinutes">?</span> 分鐘</span>
+          <span>👤 墨</span>
           <% if (post.tags && post.tags.length > 0) { %>
           <div class="tags">
             <% post.tags.forEach(tag => { %>
@@ -305,6 +343,14 @@
       <!-- Article Body -->
       <div class="article-body" id="articleBody">
         <%- post.content %>
+      </div>
+
+      <!-- Share -->
+      <div class="share-section">
+        <span>分享這篇文章</span>
+        <a class="share-btn facebook" href="https://www.facebook.com/sharer/sharer.php?u=<%= encodeURIComponent(baseUrl + '/post/' + post.id) %>" target="_blank" rel="noopener">📘 Facebook</a>
+        <a class="share-btn line" href="https://social-plugins.line.me/lineit/share?url=<%= encodeURIComponent(baseUrl + '/post/' + post.id) %>" target="_blank" rel="noopener">💬 LINE</a>
+        <a class="share-btn twitter" href="https://twitter.com/intent/tweet?text=<%= encodeURIComponent(post.title + ' - 墨') %>&url=<%= encodeURIComponent(baseUrl + '/post/' + post.id) %>" target="_blank" rel="noopener"> 𝕏 Twitter</a>
       </div>
 
       <!-- Playground (if code present) -->
@@ -366,6 +412,8 @@
     </article>
   </div>
 
+  <%- include('partials/footer') %>
+
   <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/line-numbers/prism-line-numbers.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js" data-autoloader-path="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/"></script>
@@ -376,6 +424,17 @@
     window.addEventListener('scroll', () => {
       document.getElementById('backToTop').style.display = window.scrollY > 400 ? 'block' : 'none';
     });
+
+    // Reading time
+    (function() {
+      const body = document.getElementById('articleBody');
+      if (body) {
+        const text = body.textContent || '';
+        const charCount = text.replace(/\s/g, '').length;
+        const minutes = Math.max(1, Math.ceil(charCount / 500));
+        document.getElementById('readTimeMinutes').textContent = minutes;
+      }
+    })();
 
     function deletePost() {
       if (!confirm('⚠️ 確定要刪除這篇文章嗎？此操作無法還原。')) return;

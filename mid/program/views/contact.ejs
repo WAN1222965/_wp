@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="zh-TW" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>聯絡我們 - 墨</title>
+  <meta name="description" content="透過聯絡表單與墨交流，提供合作邀約、建議或任何想法。">
+  <meta property="og:title" content="聯絡我們 - 墨">
+  <meta property="og:description" content="透過聯絡表單與墨交流。">
+  <meta property="og:url" content="<%= baseUrl %>/contact">
+  <link rel="canonical" href="<%= baseUrl %>/contact">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #f2f0e9; --bg-card: rgba(255,255,255,0.8); --text: #1a1a1a; --text-secondary: #555;
+      --border: rgba(0,0,0,0.1); --accent: #000; --shadow: rgba(0,0,0,0.08);
+      --hover-bg: rgba(0,0,0,0.05); --tag-bg: #e8e6df;
+    }
+    [data-theme="dark"] {
+      --bg: #1a1a1a; --bg-card: rgba(30,30,30,0.9); --text: #e0e0e0; --text-secondary: #999;
+      --border: rgba(255,255,255,0.1); --accent: #fff; --shadow: rgba(0,0,0,0.3);
+      --hover-bg: rgba(255,255,255,0.08); --tag-bg: #2a2a2a;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; padding: 0; font-family: 'Noto Serif TC', serif;
+      background: var(--bg); color: var(--text);
+      transition: background 0.3s, color 0.3s;
+      display: flex; flex-direction: column; align-items: center; min-height: 100vh;
+    }
+    .container { width: 90%; max-width: 720px; padding: 40px 0; flex: 1; }
+
+    .site-nav { width: 100%; margin-bottom: 40px; }
+    .nav-inner {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 12px 0; border-bottom: 1px solid var(--border);
+    }
+    .nav-toggle { display: none; }
+    .nav-hamburger { display: none; flex-direction: column; gap: 4px; cursor: pointer; padding: 4px; }
+    .nav-hamburger span { display: block; width: 22px; height: 2px; background: var(--text); border-radius: 2px; transition: 0.3s; }
+    .nav-brand { font-size: 1.2rem; font-weight: 700; letter-spacing: 3px; text-decoration: none; color: var(--text); }
+    .nav-links { display: flex; gap: 6px; flex-wrap: wrap; }
+    .nav-links a {
+      padding: 4px 12px; border: 1px solid var(--border); border-radius: 20px;
+      text-decoration: none; color: var(--text-secondary); font-size: 0.82rem;
+      background: var(--bg-card); transition: 0.2s;
+    }
+    .nav-links a:hover { background: var(--hover-bg); color: var(--text); }
+
+    h1 { font-size: 2rem; margin: 0 0 8px; }
+    .subtitle { color: var(--text-secondary); margin-bottom: 32px; }
+
+    .contact-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; }
+    .contact-info h2 { font-size: 1.1rem; margin: 0 0 16px; }
+    .contact-info p { line-height: 1.7; color: var(--text-secondary); margin: 0 0 12px; font-size: 0.95rem; }
+    .contact-links { margin-top: 20px; }
+    .contact-links a {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 8px 16px; border: 1px solid var(--border); border-radius: 20px;
+      text-decoration: none; color: var(--text-secondary); font-size: 0.85rem;
+      background: var(--bg-card); margin: 0 8px 8px 0; transition: 0.2s;
+    }
+    .contact-links a:hover { background: var(--hover-bg); color: var(--text); }
+
+    .form-card {
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: 8px; padding: 24px;
+    }
+    .form-card label { display: block; font-size: 0.9rem; font-weight: 700; margin: 0 0 4px; }
+    .form-card input, .form-card textarea {
+      width: 100%; padding: 10px 14px; border: 1px solid var(--border); border-radius: 6px;
+      font-size: 1rem; background: var(--bg); color: var(--text);
+      font-family: 'Noto Serif TC', serif; outline: none; margin-bottom: 16px;
+      box-sizing: border-box; transition: 0.2s;
+    }
+    .form-card input:focus, .form-card textarea:focus { border-color: var(--accent); }
+    .form-card textarea { min-height: 140px; resize: vertical; }
+    .form-card button {
+      width: 100%; padding: 12px; background: var(--accent); color: var(--bg);
+      border: none; border-radius: 6px; font-size: 1rem;
+      font-family: 'Noto Serif TC', serif; cursor: pointer; transition: 0.2s;
+    }
+    .form-card button:hover { opacity: 0.85; }
+    .form-card .help-text { font-size: 0.8rem; color: var(--text-secondary); margin: -12px 0 16px; }
+    .success-msg {
+      padding: 16px; background: #d4edda; border: 1px solid #c3e6cb; border-radius: 6px;
+      color: #155724; margin-bottom: 20px; text-align: center;
+    }
+    .error-msg {
+      padding: 16px; background: #f8d7da; border: 1px solid #f5c6cb; border-radius: 6px;
+      color: #721c24; margin-bottom: 20px; text-align: center;
+    }
+
+    .site-footer {
+      width: 100%; border-top: 1px solid var(--border);
+      padding: 32px 0 16px; margin-top: 40px;
+    }
+    .footer-inner {
+      width: 90%; max-width: 720px; margin: 0 auto;
+      display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 24px;
+    }
+    .footer-col h4 { margin: 0 0 8px; font-size: 0.95rem; }
+    .footer-desc { font-size: 0.85rem; color: var(--text-secondary); line-height: 1.6; margin: 0; }
+    .footer-col a { display: block; padding: 3px 0; font-size: 0.85rem; color: var(--text-secondary); text-decoration: none; }
+    .footer-col a:hover { color: var(--text); }
+    .footer-bottom {
+      width: 90%; max-width: 720px; margin: 24px auto 0;
+      padding-top: 16px; border-top: 1px solid var(--border);
+      display: flex; justify-content: space-between; align-items: center;
+      font-size: 0.8rem; color: var(--text-secondary);
+    }
+    .footer-legal a { color: var(--text-secondary); text-decoration: none; }
+    .footer-legal a:hover { color: var(--text); }
+
+    @media (max-width: 600px) {
+      .container { width: 95%; padding: 20px 0; }
+      .contact-grid { grid-template-columns: 1fr; }
+      .footer-inner { grid-template-columns: 1fr; gap: 16px; }
+      .footer-bottom { flex-direction: column; gap: 4px; text-align: center; }
+      .nav-hamburger { display: flex; }
+      .nav-links {
+        display: none; position: absolute; top: 100%; left: 0; right: 0;
+        background: var(--bg-card); backdrop-filter: blur(12px);
+        border: 1px solid var(--border); border-radius: 8px;
+        padding: 12px; flex-direction: column; z-index: 100;
+        box-shadow: 0 8px 24px var(--shadow);
+      }
+      .nav-toggle:checked ~ .nav-links { display: flex; }
+      .nav-inner { position: relative; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <%- include('partials/navbar') %>
+    <h1>✉️ 聯絡我們</h1>
+    <p class="subtitle">有任何合作邀約、建議或想法？歡迎與我交流。</p>
+
+    <% if (locals.success) { %>
+    <div class="success-msg">✅ 感謝你的訊息！我會盡快回覆。</div>
+    <% } %>
+    <% if (locals.error) { %>
+    <div class="error-msg">❌ <%= error %></div>
+    <% } %>
+
+    <div class="contact-grid">
+      <div class="contact-info">
+        <h2>📬 其他聯繫方式</h2>
+        <p>除了填寫表單，也可以透過以下管道找到我：</p>
+        <div class="contact-links">
+          <a href="<%= baseUrl %>/rss.xml" target="_blank">📡 RSS 訂閱</a>
+          <a href="https://github.com" target="_blank">💻 GitHub</a>
+        </div>
+        <p style="margin-top:24px;font-size:0.85rem;color:var(--text-secondary);">
+          💡 通常會在 2–3 個工作日內回覆。
+        </p>
+      </div>
+
+      <div class="form-card">
+        <form action="<%= baseUrl %>/contact" method="POST">
+          <label for="name">你的名稱</label>
+          <input type="text" id="name" name="name" required placeholder="如何稱呼你？">
+
+          <label for="email">電子信箱</label>
+          <input type="email" id="email" name="email" required placeholder="your@email.com">
+          <p class="help-text">不會公開顯示，僅供回覆使用</p>
+
+          <label for="subject">主旨</label>
+          <input type="text" id="subject" name="subject" required placeholder="合作邀約 / 建議 / 問題回報...">
+
+          <label for="message">訊息內容</label>
+          <textarea id="message" name="message" required placeholder="請詳細描述你的想法..."></textarea>
+
+          <button type="submit">送出訊息</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <%- include('partials/footer') %>
+
+  <script>
+    (function() {
+      const t = localStorage.getItem('theme');
+      const sys = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+      document.documentElement.setAttribute('data-theme', t || sys);
+    })();
+  </script>
+</body>
+</html>

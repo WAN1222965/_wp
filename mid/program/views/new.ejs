@@ -59,25 +59,39 @@
       font-family: 'Noto Serif TC', serif; text-decoration: none;
     }
     .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text); }
-    .site-nav { display:flex; justify-content:center; gap:8px; flex-wrap:wrap; padding:12px 0; border-bottom:1px solid var(--border); margin-bottom:24px; }
-    .site-nav a { padding:4px 14px; text-decoration:none; color:var(--text-secondary); font-size:0.82rem; border:1px solid var(--border); border-radius:20px; background:var(--bg-card); transition:0.2s; }
-    .site-nav a:hover { background:var(--hover-bg); color:var(--text); }
-    .site-nav a.nav-brand { font-weight:700; letter-spacing:2px; color:var(--text); border-color:var(--accent); }
-    @media (max-width: 600px) { .container { width: 95%; } }
+    .site-nav { width: 100%; margin-bottom: 24px; }
+    .nav-inner { display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid var(--border); }
+    .nav-toggle { display: none; }
+    .nav-hamburger { display: none; flex-direction: column; gap: 4px; cursor: pointer; padding: 4px; }
+    .nav-hamburger span { display: block; width: 22px; height: 2px; background: var(--text); border-radius: 2px; transition: 0.3s; }
+    .nav-brand { font-size: 1.2rem; font-weight: 700; letter-spacing: 3px; text-decoration: none; color: var(--text); }
+    .nav-links { display: flex; gap: 6px; flex-wrap: wrap; }
+    .nav-links a { padding: 4px 12px; border: 1px solid var(--border); border-radius: 20px; text-decoration: none; color: var(--text-secondary); font-size: 0.82rem; background: var(--bg-card); transition: 0.2s; }
+    .nav-links a:hover { background: var(--hover-bg); color: var(--text); }
+    /* Footer */
+    .site-footer { width: 100%; border-top: 1px solid var(--border); padding: 32px 0 16px; margin-top: 40px; }
+    .footer-inner { max-width: 760px; margin: 0 auto; display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 24px; }
+    .footer-col h4 { margin: 0 0 8px; font-size: 0.95rem; }
+    .footer-desc { font-size: 0.85rem; color: var(--text-secondary); line-height: 1.6; margin: 0; }
+    .footer-col a { display: block; padding: 3px 0; font-size: 0.85rem; color: var(--text-secondary); text-decoration: none; }
+    .footer-col a:hover { color: var(--text); }
+    .footer-bottom { max-width: 760px; margin: 24px auto 0; padding-top: 16px; border-top: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; font-size: 0.8rem; color: var(--text-secondary); }
+    .footer-legal a { color: var(--text-secondary); text-decoration: none; }
+    .footer-legal a:hover { color: var(--text); }
+    @media (max-width: 600px) {
+      .container { width: 95%; }
+      .footer-inner { grid-template-columns: 1fr; gap: 16px; }
+      .footer-bottom { flex-direction: column; gap: 4px; text-align: center; }
+      .nav-hamburger { display: flex; }
+      .nav-links { display: none; position: absolute; top: 100%; left: 0; right: 0; background: var(--bg-card); backdrop-filter: blur(12px); border: 1px solid var(--border); border-radius: 8px; padding: 12px; flex-direction: column; z-index: 100; box-shadow: 0 8px 24px var(--shadow); }
+      .nav-toggle:checked ~ .nav-links { display: flex; }
+      .nav-inner { position: relative; }
+    }
   </style>
 </head>
 <body>
   <div class="container">
-    <nav class="site-nav">
-      <a href="<%= baseUrl %>/" class="nav-brand">墨</a>
-      <a href="<%= baseUrl %>/">📝 網誌</a>
-      <a href="<%= baseUrl %>/notes">✏️ 隨筆</a>
-      <a href="<%= baseUrl %>/snake.html">🐍 貪吃蛇</a>
-      <a href="<%= baseUrl %>/whack.html">🎯 捕墨</a>
-      <a href="<%= baseUrl %>/maze.html">🏃 墨陣</a>
-      <a href="<%= baseUrl %>/leaderboard.html">🏆 排行</a>
-      <a href="<%= baseUrl %>/news.html">📰 新聞</a>
-    </nav>
+    <%- include('partials/navbar') %>
     <h1>✏️ 新增文章</h1>
     <form action="<%= baseUrl %>/posts" method="POST">
       <label>標題</label>
@@ -88,6 +102,9 @@
 
       <label>AI 摘要 (選填，100 字內)</label>
       <textarea name="summary" style="min-height:60px;" placeholder="簡短描述文章重點..."></textarea>
+
+      <label>Meta 描述 (選填，SEO 用)</label>
+      <input type="text" name="meta_description" placeholder="搜尋結果中顯示的摘要，約 150 字" style="font-size:0.9rem;">
 
       <label>內文 (Markdown)</label>
       <div class="toolbar">
@@ -121,6 +138,8 @@
       </div>
     </form>
   </div>
+
+  <%- include('partials/footer') %>
 
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <script>
