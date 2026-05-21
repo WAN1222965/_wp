@@ -27,7 +27,7 @@
   - [2. Markdown 編輯器](#2-markdown-編輯器)
   - [3. 搜尋引擎](#3-搜尋引擎)
   - [4. 水墨動畫背景](#4-水墨動畫背景)
-  - [5. 深色模式](#5-深色模式)
+  - [5. 經典部落格主題](#5-經典部落格主題)
   - [6. RSS / Sitemap / SEO](#6-rss--sitemap--seo)
   - [7. 圖片上傳](#7-圖片上傳)
   - [8. 使用者認證](#8-使用者認證)
@@ -35,6 +35,7 @@
   - [10. 遊戲模組](#10-遊戲模組)
   - [11. 時事新聞聚合](#11-時事新聞聚合)
   - [12. 排行榜](#12-排行榜)
+  - [13. 靜態頁面（關於 / 聯絡 / 隱私權）](#13-靜態頁面關於--聯絡--隱私權)
 - [部署指南](#部署指南)
 - [技術債與未來展望](#技術債與未來展望)
 
@@ -68,6 +69,7 @@ npm start
 資料庫：SQLite3 (blog.db)
 基礎路徑：/s111410509/
 連接埠：3000
+主題風格：經典部落格（黑/白/灰，仿 WordPress 雙欄佈局）
 ```
 
 ```
@@ -88,14 +90,15 @@ Express 伺服器 (server.js)
     │
     ▼
 SQLite3 (blog.db)
-    ├─ users     — 使用者
-    ├─ posts     — 文章
-    ├─ tags      — 標籤
-    ├─ post_tags — 多對多關聯
-    ├─ comments  — 留言
-    ├─ scores    — 遊戲分數
-    ├─ news_likes    — 新聞按讚
-    └─ news_comments — 新聞留言
+    ├─ users            — 使用者
+    ├─ posts            — 文章
+    ├─ tags             — 標籤
+    ├─ post_tags        — 多對多關聯
+    ├─ comments         — 留言
+    ├─ scores           — 遊戲分數
+    ├─ news_likes       — 新聞按讚
+    ├─ news_comments    — 新聞留言
+    └─ contact_messages — 聯絡表單訊息
 ```
 
 ---
@@ -107,9 +110,9 @@ SQLite3 (blog.db)
 | 📝 部落格 CRUD | 文章新增/編輯/刪除/列表 | 分頁、標籤篩選、關聯推薦 |
 | ✏️ Markdown 編輯器 | 所見即所得預覽 + 工具列 | marked 渲染、分頁切換、草稿自動儲存 |
 | 🔍 客戶端搜尋引擎 | 即時搜尋文章 | 雙層架構 (SQL LIKE + 客戶端索引評分) |
-| 🎨 水墨動畫背景 | Canvas 粒子系統 | 滑鼠互動 + 深色模式自動切換 |
-| 🌙 深色模式 | 系統偏好 + 手動切換 + 跨頁面持久化 | localStorage + CSS 變數 |
-| 📡 RSS / Sitemap | 標準 RSS 2.0 + XML Sitemap | SEO 優化 |
+| 🎨 水墨動畫背景 | Canvas 粒子系統 | 滑鼠互動、深色模式自動切換 |
+| 🖼️ 經典部落格主題 | 仿 WordPress 雙欄佈局 | 黑白灰色調、首頁橫幅圖片、側邊欄 |
+| 📡 RSS / Sitemap | 標準 RSS 2.0 + XML Sitemap | SEO 優化、協議自動偵測 |
 | 🖼 圖片上傳 | 拖放/選取上傳 | multer + UUID 重新命名 + 限制 5MB |
 | 👤 使用者認證 | 註冊/登入 | localStorage Token |
 | 🐍 貪吃蛇 | 20×20 Canvas 遊戲 | 蛇身漸層、分數提交 |
@@ -117,6 +120,9 @@ SQLite3 (blog.db)
 | 🏃 墨陣 (迷宮) | 10×10 迷宮 | 撞牆水墨特效、起終點標示 |
 | 📰 時事新聞 | RSS 聚合 + 國際新聞 | 按讚/留言系統 |
 | 🏆 排行榜 | 遊戲分數排名 | SQL 排序取前 5 名 |
+| ℹ️ 關於頁面 | 網站介紹、價值主張 | EJS 伺服端渲染 |
+| ✉️ 聯絡表單 | 姓名/Email/主旨/訊息 | SQLite 持久化、表單驗證 |
+| 🔒 隱私權政策 | 靜態資訊頁面 | EJS 渲染 |
 
 ---
 
@@ -132,14 +138,17 @@ mid/program/
 ├── README.md                  # 本文件
 │
 ├── views/                     # EJS 樣板 (伺服端渲染)
-│   ├── index.ejs              # 部落格首頁 (列表 + 分頁 + 搜尋 + 標籤雲)
-│   ├── post.ejs               # 文章檢視頁 (TOC + 程式碼區塊 + 留言 + 電子報)
+│   ├── index.ejs              # 部落格首頁 (雙欄佈局、橫幅圖片、側邊欄)
+│   ├── post.ejs               # 文章檢視頁 (TOC + 程式碼區塊 + 留言 + 相關文章)
 │   ├── new.ejs                # 新增文章 (Markdown 編輯器 + 圖片上傳)
-│   └── edit.ejs               # 編輯文章
+│   ├── edit.ejs               # 編輯文章
+│   ├── about.ejs              # 關於頁面
+│   ├── contact.ejs            # 聯絡表單
+│   ├── privacy.ejs            # 隱私權政策
 │
 ├── public/                    # 靜態資源 (客戶端)
 │   ├── uploads/               # 上傳圖片存放處
-│   ├── style.css              # 主樣式表 (CSS 變數 + 深色模式)
+│   ├── style.css              # 主樣式表 (經典部落格風格)
 │   ├── game_styles.css        # 迷宮遊戲專用樣式
 │   ├── blog.js                # 部落格客戶端互動邏輯 (TOC、搜尋、留言、程式碼沙盒)
 │   ├── script.js              # 隨筆小站客戶端邏輯
@@ -230,6 +239,16 @@ CREATE TABLE news_comments (
   content    TEXT NOT NULL,
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
+
+-- 聯絡表單
+CREATE TABLE contact_messages (
+  id         INTEGER PRIMARY KEY AUTOINCREMENT,
+  name       TEXT NOT NULL,
+  email      TEXT NOT NULL,
+  subject    TEXT NOT NULL,
+  message    TEXT NOT NULL,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
 ```
 
 ---
@@ -311,12 +330,21 @@ CREATE TABLE news_comments (
 | GET | `/api/scores` | 前 5 名排行榜 |
 | POST | `/api/scores` | 提交分數 |
 
+### 靜態頁面
+
+| 方法 | 路徑 | 功能 |
+|------|------|------|
+| GET | `/about` | 關於頁面 (EJS) |
+| GET | `/contact` | 聯絡表單 (EJS) |
+| POST | `/contact` | 送出聯絡訊息 |
+| GET | `/privacy` | 隱私權政策 (EJS) |
+
 ### 其他
 
 | 方法 | 路徑 | 功能 |
 |------|------|------|
-| GET | `/rss.xml` | RSS 2.0 Feed (最新 20 篇) |
-| GET | `/sitemap.xml` | XML Sitemap |
+| GET | `/rss.xml` | RSS 2.0 Feed (最新 20 篇，自動偵測 HTTP/HTTPS) |
+| GET | `/sitemap.xml` | XML Sitemap (含靜態頁面 + 文章) |
 | POST | `/api/subscribe` | 電子報訂閱 (記憶體暫存) |
 
 ---
@@ -329,7 +357,7 @@ CREATE TABLE news_comments (
 
 | 方法 | 路徑 | 功能 | 樣板 |
 |------|------|------|------|
-| GET | `/` | 首頁（分頁列表，每頁 10 篇，支援標籤篩選） | `index.ejs` |
+| GET | `/` | 首頁（雙欄佈局、橫幅圖片、分頁列表、側邊欄搜尋與標籤雲） | `index.ejs` |
 | GET | `/post/new` | 新增文章表單 | `new.ejs` |
 | POST | `/posts` | 儲存新文章（含標籤） | — |
 | GET | `/post/:id` | 文章檢視 + TOC + 關聯推薦 + 留言 | `post.ejs` |
@@ -361,6 +389,8 @@ router.get('/', (req, res) => {
   // 先算總數 → 再查該頁文章 → 最後撈標籤組合 → 渲染
 });
 ```
+
+**首頁佈局**：採用雙欄設計（主欄 68% + 側邊欄 28%），頂部顯示 940px 橫幅圖片，側邊欄包含搜尋框與標籤雲。
 
 **標籤篩選**：點擊標籤連結 (`/?tag=標籤名`) 可篩選特定標籤的文章，頁面會顯示目前篩選的標籤與清除按鈕。
 
@@ -453,37 +483,43 @@ window.inkBg = { updateTheme };
   - 滑鼠移動：20% 機率噴 1 點
   - 滑鼠點擊：噴 5 點
   - 自動產生：每 2 秒，上限 50 點
-- **深色模式切換**：透過 `window.inkBg.updateTheme()` 動態讀取 `data-theme` 屬性
+- **主題支援**：透過 `window.inkBg.updateTheme()` 讀取 `data-theme` 屬性（部分頁面保留）
 
 ---
 
-### 5. 深色模式
+### 5. 經典部落格主題
 
-所有頁面統一透過 `localStorage` 持久化主題設定：
+首頁採用仿 WordPress 風格的經典部落格佈局：
 
-```javascript
-function applyTheme(theme) {
-  document.documentElement.setAttribute('data-theme', theme);
-  localStorage.setItem('theme', theme);
-}
+**視覺設計：**
+- **底色**：淺灰背景 `#f1f1f1` + 白色容器 `#fff`
+- **字型**：`Helvetica Neue` / `Arial` 無襯線字體（標題使用 `Georgia` 襯線字體）
+- **導覽列**：黑色水平全寬列，白色文字，懸停底線效果
+- **首頁橫幅**：940×198px Unsplash 森林自然圖片
+- **頁尾**：單行 flex 佈局（品牌名 + 版權 + 連結）
 
-// 系統偏好變更時自動切換（若使用者未手動指定）
-window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
-  if (!localStorage.getItem('theme')) applyTheme(e.matches ? 'dark' : 'light');
-});
+**雙欄佈局：**
+```
+內容區 (content-area)
+  ├── 主要欄位 (main-column) — 68% 寬度
+  │   ├── 搜尋列
+  │   ├── 文章列表
+  │   └── 分頁按鈕
+  └── 側邊欄 (sidebar) — 28% 寬度
+      ├── 搜尋小工具
+      └── 標籤雲
 ```
 
-**CSS 變數系統**：
-
-| CSS 變數 | 淺色模式 | 深色模式 |
-|----------|---------|---------|
-| `--bg` | `#f2f0e9` | `#1a1a1a` |
-| `--text` | `#1a1a1a` | `#e0e0e0` |
-| `--accent` | `#000` | `#fff` |
-| `--bg-card` | `rgba(255,255,255,0.8)` | `rgba(30,30,30,0.9)` |
-| `--border` | `rgba(0,0,0,0.1)` | `rgba(255,255,255,0.1)` |
-
-所有頁面（部落格、隨筆、遊戲、排行榜）均支援主題切換，切換後在任何頁面都會保留設定。
+**色彩系統：**
+| 用途 | 顏色 |
+|------|------|
+| 頁面背景 | `#f1f1f1` |
+| 容器背景 | `#fff` |
+| 主文字 | `#333` |
+| 標題 | `#000` |
+| 連結/懸停 | `#0066cc` |
+| 導覽列 | `#000` |
+| 頁尾裝飾線 | `#000`（4px 粗） |
 
 ---
 
@@ -513,7 +549,9 @@ window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e =
 
 #### Sitemap (`GET /sitemap.xml`)
 
-自動產生包含所有文章 URL 的 XML Sitemap，每篇文章標記 `changefreq=weekly`、`priority=0.8`。
+自動產生包含所有文章 URL 及靜態頁面（`/`、`/about`、`/contact`）的 XML Sitemap，每篇文章標記 `changefreq=weekly`、`priority=0.8`，靜態頁面為 `monthly`。
+
+> RSS 與 Sitemap 均使用 `req.protocol` 動態偵測 HTTP/HTTPS，支援反向代理後的 TLS 環境。
 
 #### SEO 標籤
 
@@ -586,6 +624,7 @@ const upload = multer({
 - 檢舉 (`POST /api/notes/:id/report`)
 - 留言系統 (`GET/POST /api/notes/:id/comments`)
 - 需登入才能操作
+- 所有路徑改為 JavaScript 動態解析 `BASE`（`window.location.pathname`），不再硬編碼 `/s111410509`
 
 ---
 
@@ -667,6 +706,34 @@ db.all('SELECT name, score, date FROM scores ORDER BY score DESC LIMIT 5', ...);
 
 ---
 
+### 13. 靜態頁面（關於 / 聯絡 / 隱私權）
+
+三個 EJS 伺服端渲染頁面，使用 Express Router 統一掛載：
+
+| 頁面 | 路由 | 功能 |
+|------|------|------|
+| 關於 | `GET /about` | 網站介紹、寫作初衷、技術棧、價值主張 |
+| 聯絡 | `GET /contact` | 聯絡表單（姓名、Email、主旨、訊息） |
+| 聯絡（送出） | `POST /contact` | 表單驗證 → 寫入 `contact_messages` 表 → 成功/錯誤提示 |
+| 隱私權 | `GET /privacy` | 資料收集與 Cookie 政策說明 |
+
+**聯絡表單流程：**
+
+```javascript
+router.post('/contact', (req, res) => {
+  const { name, email, subject, message } = req.body;
+  if (!name || !email || !subject || !message) {
+    return res.render('contact', { success: false, error: '所有欄位皆為必填' });
+  }
+  // INSERT INTO contact_messages ...
+  res.render('contact', { success: true, error: null });
+});
+```
+
+**Sitemap 整合**：`/about` 與 `/contact` 自動加入 `/sitemap.xml`，分別標記 `monthly` 更新頻率與 0.6 / 0.4 優先權。
+
+---
+
 ## 部署指南
 
 ### 本地部署
@@ -732,11 +799,17 @@ server {
 
 | 日期 | 變更 |
 |------|------|
+| 2026-05 | 全面改版為經典部落格主題（仿 WordPress 雙欄佈局，移除深色模式） |
+| 2026-05 | 新增「關於、聯絡表單、隱私權政策」三個 EJS 靜態頁面 |
+| 2026-05 | 新增 `contact_messages` 資料表與聯絡表單後端邏輯 |
 | 2026-05 | 修復 `ink_background.js` 全域 `const` 與遊戲腳本命名衝突（包裹 IIFE） |
 | 2026-05 | 貪吃蛇改為 `requestAnimationFrame` 驅動 + 霓虹視覺風格 |
 | 2026-05 | 迷宮改為 DFS 遞迴回溯演算法 + 深色霓虹視覺風格 |
 | 2026-05 | 伺服器加入 `EADDRINUSE` 自動 fallback 埠號機制 |
-| 2026-05 | 所有頁面加入 `localStorage` 主題同步，切換頁面保留深色/淺色設定 |
+| 2026-05 | 修復 `POST /api/news/like` 競爭條件（重新查詢實際讚數） |
+| 2026-05 | RSS/Sitemap 改用 `req.protocol` 動態偵測 HTTP/HTTPS |
+| 2026-05 | 搜尋索引 URL 前綴改為動態 `BASE` 變數 |
+| 2026-05 | 文章新增支援動態 `user_id`（讀取 `x-user-id` 標頭） |
 | 2026-05 | 修復圖片上傳按鈕選擇器（`button:last-child` → `[onclick*="imageUpload"]`） |
 
 ---

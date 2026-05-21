@@ -244,8 +244,9 @@ if (nextBtn) {
 }
 
 function submitScore() {
+  const BASE = window.location.pathname.replace(/\/[^/]*$/, '') || '';
   const score = Math.max(200 - wallsHit * 10 - moves + level * 20, 1);
-  fetch('/s111410509/api/scores', {
+  fetch(BASE + '/api/scores', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ name: '墨陣行者', score })

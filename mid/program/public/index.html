@@ -4,9 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>墨 - 極簡隨筆</title>
-    <link rel="alternate" type="application/rss+xml" title="墨 - 網誌 RSS" href="/s111410509/rss.xml">
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;700&display=swap">
-    <link rel="stylesheet" href="/s111410509/style.css">
+    <link rel="alternate" type="application/rss+xml" title="墨 - 網誌 RSS" id="rssLink">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;500;700&display=swap">
+    <link rel="stylesheet" id="cssLink">
 </head>
 <body>
     <canvas id="inkCanvas"></canvas>
@@ -15,37 +15,53 @@
         <header>
             <h1>墨</h1>
             <p class="subtitle">紀錄瞬間的思緒</p>
-            <div style="margin-top:12px;display:flex;justify-content:center;gap:8px;flex-wrap:wrap;">
-                <button onclick="toggleThemeFront()" id="themeBtnFront" class="game-link" style="border:none;background:none;cursor:pointer;font-size:0.9rem;">🌙 深色</button>
-                <a href="/s111410509/rss.xml" class="game-link" target="_blank">📡 RSS</a>
-            </div>
-            <nav class="nav-links" style="margin-top:12px;">
-                <a href="/s111410509/" class="game-link">📝 網誌</a>
-                <a href="/s111410509/snake.html" class="game-link">🐍 貪吃蛇</a>
-                <a href="/s111410509/whack.html" class="game-link">🎯 捕墨</a>
-                <a href="/s111410509/maze.html" class="game-link">🏃 墨陣</a>
-                <a href="/s111410509/leaderboard.html" class="game-link">🏆 排行</a>
-                <a href="/s111410509/news.html" class="game-link">📰 新聞</a>
+            
+            <nav class="nav-links" id="notesNav">
+                <a href="" class="nav-pill">📝 網誌</a>
+                <a href="" class="nav-pill">🐍 貪吃蛇</a>
+                <a href="" class="nav-pill">🎯 捕墨</a>
+                <a href="" class="nav-pill">🏃 墨陣</a>
+                <a href="" class="nav-pill">🏆 排行</a>
+                <a href="" class="nav-pill">📰 新聞</a>
+                <a href="" class="nav-pill" target="_blank">📡 RSS</a>
             </nav>
+
+            <div style="margin-top: 16px; display: flex; justify-content: center; gap: 10px; flex-wrap: wrap;">
+                <button onclick="toggleThemeFront()" id="themeBtnFront" class="theme-toggle">🌙 深色</button>
+            </div>
+
             <div class="user-section" id="userSection">
-                <a href="/s111410509/login.html" class="game-link" id="loginLink">登入</a>
+                <a href="" class="nav-pill" id="loginLink">登入</a>
             </div>
         </header>
 
-
-
         <section class="input-area">
-            <textarea id="noteInput" placeholder="在此研墨，書寫心情..."></textarea>
-            <button onclick="addNote()">落筆</button>
+            <div class="input-wrapper">
+                <textarea id="noteInput" placeholder="在此研墨，書寫心情..."></textarea>
+                <div class="input-actions">
+                    <button onclick="addNote()">落筆</button>
+                </div>
+            </div>
         </section>
 
         <section id="notesList" class="notes-list">
         </section>
     </div>
 
-    <script src="/s111410509/ink_background.js"></script>
-    <script src="/s111410509/script.js"></script>
     <script>
+        const BASE = window.location.pathname.replace(/\/notes.*$/, '') || '/s111410509';
+        document.getElementById('rssLink').href = BASE + '/rss.xml';
+        document.getElementById('cssLink').href = BASE + '/style.css';
+        const navPaths = ['', 'snake.html', 'whack.html', 'maze.html', 'leaderboard.html', 'news.html', 'rss.xml'];
+        document.querySelectorAll('#notesNav a').forEach((a, i) => { a.href = BASE + '/' + navPaths[i]; });
+        document.getElementById('loginLink').href = BASE + '/login.html';
+    </script>
+    <script src="" id="inkBgScript"></script>
+    <script src="" id="notesScript"></script>
+    <script>
+        document.getElementById('inkBgScript').src = BASE + '/ink_background.js';
+        document.getElementById('notesScript').src = BASE + '/script.js';
+        
         function getSystemTheme() { return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'; }
         function applyFrontTheme(t) {
             document.documentElement.setAttribute('data-theme', t);

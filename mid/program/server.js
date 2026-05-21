@@ -221,8 +221,10 @@ router.get('/post/new', (req, res) => {
 router.post('/posts', (req, res) => {
   const { title, content, summary, tags: tagsStr, meta_description } = req.body;
   if (!title || !content) return res.status(400).send('Title and content required');
-  const stmt = db.prepare('INSERT INTO posts (title, content, summary, meta_description, user_id) VALUES (?, ?, ?, ?, 1)');
-  stmt.run(title, content, summary || '', meta_description || '', function(err) {
+  const authUser = req.body.user_id || (req.headers['x-user-id'] ? parseInt(req.headers['x-user-id']) : 0);
+  const userId = authUser || 0;
+  const stmt = db.prepare('INSERT INTO posts (title, content, summary, meta_description, user_id) VALUES (?, ?, ?, ?, ?)');
+  stmt.run(title, content, summary || '', meta_description || '', userId, function(err) {
     if (err) return res.status(500).send(err.message);
     const postId = this.lastID;
     if (tagsStr) {
@@ -308,7 +310,7 @@ router.get('/api/search-index', (req, res) => {
       title: p.title || '',
       excerpt: cleanHtml(renderMarkdown(p.content)).substring(0, 200),
       tags: p.tags ? p.tags.split(',').filter(Boolean) : [],
-      url: '/s111410509/post/' + p.id,
+      url: BASE + '/post/' + p.id,
       created_at: p.created_at
     }));
     res.json(index);
@@ -364,7 +366,8 @@ router.get('/api/posts/:id/related', (req, res) => {
 
 router.get('/rss.xml', (req, res) => {
   const host = req.headers.host || `localhost:${PORT}`;
-  const baseUrl = `http://${host}${BASE}`;
+  const protocol = req.protocol || 'http';
+  const baseUrl = `${protocol}://${host}${BASE}`;
   db.all('SELECT id, title, content, created_at FROM posts ORDER BY created_at DESC LIMIT 20', [], (err, posts) => {
     if (err) return res.status(500).send(err.message);
     const buildDate = new Date().toUTCString();
@@ -403,7 +406,8 @@ router.get('/notes', (req, res) => res.sendFile(path.join(__dirname, 'public', '
 
 router.get('/sitemap.xml', (req, res) => {
   const host = req.headers.host || `localhost:${PORT}`;
-  const baseUrl = `http://${host}${BASE}`;
+  const protocol = req.protocol || 'http';
+  const baseUrl = `${protocol}://${host}${BASE}`;
   db.all('SELECT id, created_at, updated_at FROM posts ORDER BY created_at DESC', [], (err, posts) => {
     const urls = posts.map(p => `
   <url>
@@ -570,9 +574,12 @@ router.post('/api/news/like', (req, res) => {
   db.get('SELECT * FROM news_likes WHERE news_title = ? AND news_link = ?', [title, link], (err, row) => {
     if (err) return res.status(500).json({ error: err.message });
     if (row) {
-      db.run('UPDATE news_likes SET likes = likes + 1 WHERE id = ?', [row.id], (err) => {
+      db.run('UPDATE news_likes SET likes = likes + 1 WHERE id = ?', [row.id], function(err) {
         if (err) return res.status(500).json({ error: err.message });
-        res.json({ message: '已按讚', likes: row.likes + 1 });
+        db.get('SELECT likes FROM news_likes WHERE id = ?', [row.id], (err, updated) => {
+          if (err) return res.status(500).json({ error: err.message });
+          res.json({ message: '已按讚', likes: updated.likes });
+        });
       });
     } else {
       const stmt = db.prepare('INSERT INTO news_likes (news_title, news_link, likes) VALUES (?, ?, 1)');

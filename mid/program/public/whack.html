@@ -2,40 +2,78 @@
 <html lang="zh-TW" data-theme="light">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>捕墨 - 墨跡反應挑戰</title>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@700&display=swap">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;500;700&display=swap">
     <link rel="stylesheet" href="/s111410509/style.css">
     <style>
-        .game-container { text-align: center; z-index: 1; position: relative; }
+        .game-container { 
+            text-align: center; 
+            z-index: 1; 
+            position: relative; 
+            animation: fadeInUp 0.5s ease;
+        }
+        .game-header {
+            margin-bottom: 24px;
+        }
+        .game-header h1 {
+            font-size: 2.8rem;
+            letter-spacing: 14px;
+            margin-bottom: 8px;
+        }
+        .stats {
+            font-size: 1.3rem;
+            margin: 16px 0;
+            padding: 12px 24px;
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 50px;
+            display: inline-block;
+            backdrop-filter: blur(10px);
+        }
+        .sub-stats { 
+            font-size: 0.95rem; 
+            color: var(--text-secondary); 
+            margin: 12px 0;
+            display: flex; 
+            justify-content: center; 
+            gap: 24px; 
+        }
         .grid {
             display: grid;
-            grid-template-columns: repeat(3, 120px);
-            grid-gap: 20px;
+            grid-template-columns: repeat(3, 110px);
+            grid-gap: 16px;
             justify-content: center;
             margin: 30px auto;
         }
         .hole {
-            width: 120px;
-            height: 120px;
-            background: #e0ddd5;
+            width: 110px;
+            height: 110px;
+            background: var(--card-bg);
             border-radius: 50%;
-            border: 4px solid #333;
+            border: 3px solid var(--border);
             position: relative;
             overflow: hidden;
             cursor: pointer;
+            transition: all 0.2s ease;
+            backdrop-filter: blur(10px);
+        }
+        .hole:hover {
+            border-color: var(--border-strong);
+            transform: scale(1.02);
         }
         .ink-blot {
-            width: 80%;
-            height: 80%;
-            background: #000;
+            width: 75%;
+            height: 75%;
+            background: var(--accent);
             border-radius: 50%;
             position: absolute;
             top: 110%;
-            left: 10%;
+            left: 12.5%;
             transition: top 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            filter: blur(2px);
+            filter: blur(1px);
         }
-        .hole.up .ink-blot { top: 10%; }
+        .hole.up .ink-blot { top: 12.5%; }
 
         .splashed { animation: splash 0.3s forwards; }
         @keyframes splash {
@@ -47,7 +85,7 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            font-size: 1.8rem;
+            font-size: 1.6rem;
             font-weight: bold;
             color: #b02528;
             pointer-events: none;
@@ -60,20 +98,33 @@
             opacity: 0;
         }
 
-        .stats { font-size: 1.5rem; margin-bottom: 10px; }
-        .sub-stats { font-size: 1rem; color: var(--text-secondary); margin-bottom: 10px; display: flex; justify-content: center; gap: 20px; }
+        #startBtn {
+            margin-top: 8px;
+        }
+
+        @media (max-width: 480px) {
+            .grid {
+                grid-template-columns: repeat(3, 90px);
+                grid-gap: 12px;
+            }
+            .hole {
+                width: 90px;
+                height: 90px;
+            }
+        }
     </style>
 </head>
 <body>
     <canvas id="inkCanvas"></canvas>
     <div class="main-container game-container">
-        <header>
+        <header class="game-header">
             <h1>捕墨</h1>
-            <div style="margin-top:8px;display:flex;justify-content:center;gap:8px;flex-wrap:wrap;">
-                <button onclick="toggleTheme()" id="themeBtn" style="border:1px solid var(--border);background:var(--card-bg);cursor:pointer;font-size:0.85rem;padding:4px 14px;border-radius:20px;color:var(--text-secondary);font-family:inherit;">🌙 深色</button>
+            <p class="subtitle">考驗你的反應速度</p>
+            <div style="margin-top: 16px; display: flex; justify-content: center; gap: 10px; flex-wrap: wrap;">
+                <button onclick="toggleTheme()" id="themeBtn" class="theme-toggle">🌙 深色</button>
             </div>
             <div class="stats">
-                得分：<span id="score">0</span> | 剩餘時間：<span id="timeLeft">30</span>s
+                得分：<span id="score">0</span> | 時間：<span id="timeLeft">30</span>s
             </div>
             <div class="sub-stats">
                 <span>連擊：<span id="combo">0</span></span>
@@ -95,12 +146,11 @@
         </div>
 
         <nav class="nav-links">
-            <a href="/s111410509/" class="game-link">📝 網誌</a>
-            <a href="/s111410509/notes" class="game-link">✏️ 隨筆</a>
-            <a href="/s111410509/snake.html" class="game-link">🐍 貪吃蛇</a>
-            <a href="/s111410509/maze.html" class="game-link">🏃 墨陣</a>
-            <a href="/s111410509/leaderboard.html" class="game-link">🏆 排行</a>
-            <a href="/s111410509/news.html" class="game-link">📰 新聞</a>
+            <a href="/s111410509/" class="nav-pill">📝 網誌</a>
+            <a href="/s111410509/snake.html" class="nav-pill">🐍 貪吃蛇</a>
+            <a href="/s111410509/maze.html" class="nav-pill">🏃 墨陣</a>
+            <a href="/s111410509/leaderboard.html" class="nav-pill">🏆 排行</a>
+            <a href="/s111410509/news.html" class="nav-pill">📰 新聞</a>
         </nav>
     </div>
 

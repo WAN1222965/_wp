@@ -87,11 +87,25 @@
       copyBtn.className = 'copy-btn';
       copyBtn.textContent = '複製';
       copyBtn.addEventListener('click', () => {
-        navigator.clipboard.writeText(code.textContent).then(() => {
+        const text = code.textContent;
+        if (navigator.clipboard && window.isSecureContext) {
+          navigator.clipboard.writeText(text).then(() => {
+            copyBtn.textContent = '已複製!';
+            copyBtn.classList.add('copied');
+            setTimeout(() => { copyBtn.textContent = '複製'; copyBtn.classList.remove('copied'); }, 2000);
+          });
+        } else {
+          const ta = document.createElement('textarea');
+          ta.value = text;
+          ta.style.position = 'fixed'; ta.style.left = '-9999px';
+          document.body.appendChild(ta);
+          ta.select();
+          document.execCommand('copy');
+          document.body.removeChild(ta);
           copyBtn.textContent = '已複製!';
           copyBtn.classList.add('copied');
           setTimeout(() => { copyBtn.textContent = '複製'; copyBtn.classList.remove('copied'); }, 2000);
-        });
+        }
       });
       header.appendChild(copyBtn);
 
@@ -302,7 +316,7 @@
     const name = document.getElementById('commentName').value.trim() || '匿名';
     const content = document.getElementById('commentInput').value.trim();
     if (!content) return;
-    let userId = 1;
+    let userId = 0;
     try {
       const user = JSON.parse(localStorage.getItem('user'));
       if (user && user.id) userId = user.id;

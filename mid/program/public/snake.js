@@ -110,7 +110,8 @@ canvas.addEventListener('touchend', e => {
 });
 
 async function submitScore(finalScore) {
-  await fetch('/s111410509/api/scores', {
+  const BASE = window.location.pathname.replace(/\/[^/]*$/, '') || '';
+  await fetch(BASE + '/api/scores', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ name: '無名書生', score: finalScore })

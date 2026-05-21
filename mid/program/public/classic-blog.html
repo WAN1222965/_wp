@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>墨 - Classic Blog</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body.classic-bg {
+  background-color: #f1f1f1;
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  color: #333;
+  margin: 0;
+  padding: 20px 0;
+}
+
+.site-container {
+  max-width: 940px;
+  margin: 0 auto;
+  background-color: #fff;
+}
+
+.site-header {
+  padding: 30px 20px 0 20px;
+  position: relative;
+}
+.site-title {
+  font-family: "Georgia", serif;
+  font-size: 34px;
+  font-weight: bold;
+  margin: 0 0 10px 0;
+  color: #000;
+}
+.site-description {
+  font-style: italic;
+  color: #777;
+  position: absolute;
+  top: 45px;
+  right: 20px;
+  margin: 0;
+  font-size: 14px;
+}
+.header-banner {
+  width: 100%;
+  height: 198px;
+  object-fit: cover;
+  display: block;
+  margin-top: 20px;
+}
+
+.site-nav {
+  background-color: #000;
+}
+.site-nav ul {
+  list-style: none;
+  margin: 0;
+  padding: 0 20px;
+  display: flex;
+}
+.site-nav li a {
+  color: #fff;
+  text-decoration: none;
+  display: block;
+  padding: 10px 20px;
+  font-size: 14px;
+}
+.site-nav li a:hover {
+  text-decoration: underline;
+}
+
+.content-area {
+  display: flex;
+  padding: 40px 20px;
+  gap: 40px;
+}
+.main-content {
+  width: 68%;
+}
+.sidebar {
+  width: 28%;
+}
+
+.post {
+  margin-bottom: 40px;
+}
+.post-title {
+  font-size: 24px;
+  margin: 0 0 5px 0;
+  color: #000;
+}
+.post-title a {
+  color: #000;
+  text-decoration: none;
+}
+.post-title a:hover {
+  color: #0066cc;
+}
+.post-meta {
+  color: #888;
+  font-size: 12px;
+  margin-bottom: 15px;
+}
+.post-excerpt {
+  font-size: 14px;
+  line-height: 1.7;
+  color: #555;
+  margin-bottom: 10px;
+}
+.post-tags {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+.post-tag {
+  padding: 2px 10px;
+  background: #f1f1f1;
+  border-radius: 12px;
+  font-size: 12px;
+  color: #888;
+  text-decoration: none;
+}
+.post-tag:hover {
+  color: #0066cc;
+}
+.read-more {
+  color: #0066cc;
+  text-decoration: none;
+  font-size: 14px;
+}
+.read-more:hover {
+  text-decoration: underline;
+}
+
+.sidebar .widget {
+  margin-bottom: 28px;
+  font-size: 13px;
+  line-height: 1.7;
+}
+.sidebar .widget h3 {
+  font-family: "Georgia", serif;
+  font-size: 16px;
+  font-weight: bold;
+  color: #000;
+  margin-bottom: 10px;
+}
+.sidebar .widget ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.sidebar .widget ul li {
+  padding: 3px 0;
+}
+.sidebar .widget ul li a {
+  color: #0066cc;
+  text-decoration: none;
+  font-size: 13px;
+}
+.sidebar .widget ul li a:hover {
+  text-decoration: underline;
+}
+
+.search-form {
+  display: flex;
+  border: 1px solid #ccc;
+}
+.search-form .search-input {
+  flex: 1;
+  border: none;
+  padding: 6px 8px;
+  font-size: 13px;
+  outline: none;
+}
+.search-form .search-btn {
+  border: none;
+  background: #000;
+  color: #fff;
+  padding: 6px 12px;
+  cursor: pointer;
+  font-size: 13px;
+}
+.search-form .search-btn:hover {
+  background: #333;
+}
+
+.tag-cloud-items {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.tag-cloud-items a {
+  padding: 2px 10px;
+  background: #f1f1f1;
+  border-radius: 12px;
+  font-size: 12px;
+  color: #888;
+  text-decoration: none;
+}
+.tag-cloud-items a:hover {
+  color: #0066cc;
+}
+
+.site-footer {
+  border-top: 4px solid #000;
+  padding: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 12px;
+  color: #666;
+}
+.site-footer strong {
+  font-size: 16px;
+  color: #000;
+}
+
+@media (max-width: 768px) {
+  body.classic-bg { padding: 10px 0; }
+  .content-area { flex-direction: column; padding: 20px 16px; gap: 20px; }
+  .main-content, .sidebar { width: 100%; }
+  .site-description { position: static; text-align: right; margin-top: -5px; }
+  .site-title { font-size: 26px; }
+  .header-banner { height: 120px; }
+  .site-nav ul { padding: 0 10px; flex-wrap: wrap; }
+  .site-nav li a { padding: 8px 12px; font-size: 13px; }
+  .site-footer { flex-direction: column; gap: 8px; text-align: center; }
+}
+</style>
+</head>
+<body class="classic-bg">
+<div class="site-container">
+  <header class="site-header">
+    <h1 class="site-title">紀錄瞬間的思緒</h1>
+    <p class="site-description">以專業視角解析技術與時事，在資訊爆炸的時代提供沉澱後的觀點。</p>
+    <img src="https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=940&h=198&fit=crop&q=80" alt="水墨意境橫幅" class="header-banner">
+  </header>
+  <nav class="site-nav">
+    <ul>
+      <li><a href="#">網誌</a></li>
+      <li><a href="#">關於</a></li>
+      <li><a href="#">隨筆</a></li>
+      <li><a href="#">捕墨</a></li>
+      <li><a href="#">墨陣</a></li>
+    </ul>
+  </nav>
+  <div class="content-area">
+    <main class="main-content">
+      <article class="post">
+        <h2 class="post-title"><a href="#">hi</a></h2>
+        <div class="post-meta">Posted on 2026/5/15</div>
+        <div class="post-excerpt">hi ...</div>
+        <a href="#" class="read-more">閱讀更多 &rarr;</a>
+      </article>
+    </main>
+    <aside class="sidebar">
+      <div class="widget">
+        <div class="search-form">
+          <input type="text" placeholder="搜尋文章..." class="search-input">
+          <button class="search-btn">Search</button>
+        </div>
+      </div>
+      <div class="widget">
+        <h3>熱門標籤</h3>
+        <div class="tag-cloud-items">
+          <a href="#">hi (1)</a>
+          <a href="#">w (1)</a>
+          <a href="#">貓meme (1)</a>
+        </div>
+      </div>
+    </aside>
+  </div>
+  <footer class="site-footer">
+    <div class="footer-left"><strong>墨</strong></div>
+    <div class="footer-right">&copy; 2026 墨. All rights reserved.</div>
+  </footer>
+</div>
+</body>
+</html>

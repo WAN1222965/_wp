@@ -2,88 +2,47 @@
 <html lang="zh-TW" data-theme="light">
 <head>
     <meta charset="UTF-8">
-    <title>排行榜 - 墨跡</title>
-    <link rel="stylesheet" href="/s111410509/style.css">
-    <style>
-        .leaderboard {
-            background: var(--card-bg);
-            padding: 30px;
-            border-radius: 4px;
-            box-shadow: 0 3px 15px var(--shadow);
-            border: 1px solid var(--border);
-        }
-        .leaderboard h2 {
-            text-align: center;
-            margin-bottom: 25px;
-            font-weight: 400;
-            letter-spacing: 0.2em;
-            color: var(--text);
-        }
-        .score-item {
-            display: flex;
-            justify-content: space-between;
-            padding: 15px;
-            border-bottom: 1px solid var(--border);
-            color: var(--text);
-        }
-        .score-item:first-child {
-            background: linear-gradient(180deg, rgba(139, 90, 43, 0.1) 0%, rgba(139, 90, 43, 0.05) 100%);
-        }
-        .score-rank {
-            font-weight: bold;
-            margin-right: 15px;
-            color: #8b5a2b;
-        }
-        .score-name {
-            flex: 1;
-        }
-        .score-value {
-            font-weight: bold;
-            color: var(--text);
-        }
-        .score-date {
-            color: var(--text-secondary);
-            font-size: 0.85rem;
-            margin-left: 15px;
-        }
-        .back-link {
-            display: block;
-            text-align: center;
-            margin-top: 25px;
-            color: var(--text-secondary);
-            text-decoration: none;
-        }
-    </style>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>墨 - 排行榜</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;500;700&display=swap">
+    <link rel="stylesheet" id="cssLink">
 </head>
 <body>
     <canvas id="inkCanvas"></canvas>
-    <div class="container" style="position:relative;z-index:1;">
+    <div class="main-container">
         <header>
             <h1>墨</h1>
-            <p>排行榜</p>
-            <div style="margin-top:8px;display:flex;justify-content:center;gap:8px;flex-wrap:wrap;">
-                <button onclick="toggleTheme()" id="themeBtn" style="border:1px solid var(--border);background:var(--card-bg);cursor:pointer;font-size:0.85rem;padding:4px 14px;border-radius:20px;color:var(--text-secondary);font-family:inherit;">🌙 深色</button>
+            <p class="subtitle">排行榜</p>
+            <div style="margin-top: 16px; display: flex; justify-content: center; gap: 10px; flex-wrap: wrap;">
+                <button onclick="toggleTheme()" id="themeBtn" class="theme-toggle">🌙 深色</button>
             </div>
+            <nav class="nav-links" id="leaderNav">
+                <a href="" class="nav-pill">📝 網誌</a>
+                <a href="" class="nav-pill">🐍 貪吃蛇</a>
+                <a href="" class="nav-pill">🎯 捕墨</a>
+                <a href="" class="nav-pill">🏃 墨陣</a>
+                <a href="" class="nav-pill">📰 新聞</a>
+            </nav>
         </header>
-
-        <nav class="nav-links">
-            <a href="/s111410509/" class="game-link">📝 網誌</a>
-            <a href="/s111410509/notes" class="game-link">✏️ 隨筆</a>
-            <a href="/s111410509/snake.html" class="game-link">🐍 貪吃蛇</a>
-            <a href="/s111410509/whack.html" class="game-link">🎯 捕墨</a>
-            <a href="/s111410509/maze.html" class="game-link">🏃 墨陣</a>
-            <a href="/s111410509/news.html" class="game-link">📰 新聞</a>
-        </nav>
 
         <div class="leaderboard">
             <h2>墨跡排行</h2>
             <div id="scoresList"></div>
         </div>
 
-        <a href="/s111410509/snake.html" class="back-link">開始遊戲</a>
+        <a href="" class="back-link" id="backLink">開始遊戲 →</a>
     </div>
-    <script src="/s111410509/ink_background.js"></script>
     <script>
+        const BASE = window.location.pathname.replace(/\/leaderboard.*$/, '') || '/s111410509';
+        document.getElementById('cssLink').href = BASE + '/style.css';
+        const navPaths = ['', 'snake.html', 'whack.html', 'maze.html', 'news.html'];
+        document.querySelectorAll('#leaderNav a').forEach((a, i) => { a.href = BASE + '/' + navPaths[i]; });
+        document.getElementById('backLink').href = BASE + '/snake.html';
+    </script>
+    <script src="" id="inkScript"></script>
+    <script>
+        document.getElementById('inkScript').src = BASE + '/ink_background.js';
+
         (function() {
             const t = localStorage.getItem('theme');
             const sys = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
@@ -102,18 +61,18 @@
         };
 
         async function loadScores() {
-            const response = await fetch('/s111410509/api/scores');
+            const response = await fetch(BASE + '/api/scores');
             const scores = await response.json();
             const list = document.getElementById('scoresList');
             
             if (scores.length === 0) {
-                list.innerHTML = '<p style="text-align:center;color:var(--text-secondary);">尚無紀錄</p>';
+                list.innerHTML = '<p style="text-align:center;color:var(--text-muted);padding:20px;">尚無紀錄</p>';
                 return;
             }
             
             list.innerHTML = scores.map((s, i) => `
                 <div class="score-item">
-                    <span class="score-rank">${i + 1}.</span>
+                    <span class="score-rank">${i + 1}</span>
                     <span class="score-name">${s.name}</span>
                     <span class="score-value">${s.score} 分</span>
                     <span class="score-date">${s.date}</span>

@@ -123,8 +123,9 @@ document.addEventListener('keydown', (e) => {
 });
 
 async function submitScore(finalScore) {
+    const BASE = window.location.pathname.replace(/\/[^/]*$/, '') || '';
     try {
-        await fetch('/s111410509/api/scores', {
+        await fetch(BASE + '/api/scores', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ name: "捕墨手", score: finalScore })

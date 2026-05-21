@@ -1,245 +1,397 @@
 <!DOCTYPE html>
-<html lang="zh-TW" data-theme="light">
+<html lang="zh-TW">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>墨 - 網誌</title>
-  <meta name="description" content="墨 - 紀錄瞬間的思緒。一個簡潔優雅的技術筆記與文章平台。">
+  <meta name="description" content="墨 - 紀錄瞬間的思緒。以專業視角解析技術與時事，在資訊爆炸的時代提供沉澱後的觀點。">
   <meta name="keywords" content="部落格,技術部落格,程式設計,網頁開發,JavaScript">
   <meta property="og:title" content="墨 - 網誌">
-  <meta property="og:description" content="墨 - 紀錄瞬間的思緒。一個簡潔優雅的技術筆記與文章平台。">
+  <meta property="og:description" content="墨 - 紀錄瞬間的思緒。以專業視角解析技術與時事，在資訊爆炸的時代提供沉澱後的觀點。">
   <meta property="og:type" content="website">
   <meta property="og:url" content="<%= baseUrl %>/">
   <link rel="canonical" href="<%= baseUrl %>/">
   <link rel="alternate" type="application/rss+xml" title="墨 - 網誌 RSS" href="<%= baseUrl %>/rss.xml">
   <link rel="sitemap" type="application/xml" title="Sitemap" href="<%= baseUrl %>/sitemap.xml">
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;700&display=swap" rel="stylesheet">
   <style>
-    :root {
-      --bg: #f2f0e9; --bg-card: rgba(255,255,255,0.8); --text: #1a1a1a; --text-secondary: #555;
-      --border: rgba(0,0,0,0.1); --accent: #000; --shadow: rgba(0,0,0,0.08);
-      --hover-bg: rgba(0,0,0,0.05); --tag-bg: #e8e6df;
+    body.classic-bg {
+      background-color: #f1f1f1;
+      font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+      color: #333;
+      margin: 0;
+      padding: 20px 0;
     }
-    [data-theme="dark"] {
-      --bg: #1a1a1a; --bg-card: rgba(30,30,30,0.9); --text: #e0e0e0; --text-secondary: #999;
-      --border: rgba(255,255,255,0.1); --accent: #fff; --shadow: rgba(0,0,0,0.3);
-      --hover-bg: rgba(255,255,255,0.08); --tag-bg: #2a2a2a;
-    }
-    * { box-sizing: border-box; }
-    body {
-      margin: 0; padding: 0; font-family: 'Noto Serif TC', serif;
-      background: var(--bg); color: var(--text); transition: background 0.3s, color 0.3s;
-      display: flex; justify-content: center;
-    }
-    .container { width: 90%; max-width: 720px; padding: 40px 0; }
-    header { text-align: center; margin-bottom: 40px; position: relative; }
-    header h1 { font-size: 3rem; letter-spacing: 10px; margin: 0; }
-    header h1 a { text-decoration: none; color: var(--text); }
-    .subtitle { color: var(--text-secondary); font-style: italic; margin: 8px 0 0; }
-    .top-actions, .site-nav {
-      display: flex; justify-content: center; gap: 8px; margin-top: 16px; flex-wrap: wrap;
-    }
-    .top-actions a, .top-actions button, .site-nav a {
-      padding: 4px 14px; border: 1px solid var(--border); border-radius: 20px;
-      text-decoration: none; color: var(--text-secondary); font-size: 0.82rem;
-      background: var(--bg-card); cursor: pointer; transition: 0.2s;
-      font-family: 'Noto Serif TC', serif;
-    }
-    .top-actions a:hover, .top-actions button:hover, .site-nav a:hover { background: var(--hover-bg); color: var(--text); }
-    .site-nav a.nav-brand { font-weight: 700; letter-spacing: 2px; color: var(--text); border-color: var(--accent); }
-    .search-box { margin: 20px 0; }
-    .search-box input {
-      width: 100%; padding: 12px 16px; border: 1px solid var(--border); border-radius: 8px;
-      font-size: 1rem; background: var(--bg-card); color: var(--text);
-      font-family: 'Noto Serif TC', serif; outline: none; transition: 0.2s;
-    }
-    .search-box input:focus { border-color: var(--accent); }
-    .search-results { margin-top: 8px; }
-    .search-result-item {
-      padding: 12px 16px; border-bottom: 1px solid var(--border);
-      cursor: pointer; transition: 0.2s; text-decoration: none; display: block; color: var(--text);
-    }
-    .search-result-item:hover { background: var(--hover-bg); }
-    .search-result-item h4 { margin: 0 0 4px; font-size: 1rem; }
-    .search-result-item p { margin: 0; font-size: 0.85rem; color: var(--text-secondary); }
-    .post-card {
-      background: var(--bg-card); padding: 24px; margin-bottom: 20px;
-      border-left: 4px solid var(--accent); border-radius: 0 8px 8px 0;
-      box-shadow: 0 2px 8px var(--shadow); transition: 0.2s;
-    }
-    .post-card:hover { transform: translateX(4px); }
-    .post-card h2 { margin: 0 0 8px; font-size: 1.2rem; }
-    .post-card h2 a { text-decoration: none; color: var(--text); }
-    .post-card h2 a:hover { text-decoration: underline; }
-    .post-meta { font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 8px; }
-    .post-excerpt { font-size: 0.95rem; line-height: 1.6; color: var(--text-secondary); margin-bottom: 12px; }
-    .post-tags { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px; }
-    .post-tag { padding: 2px 10px; background: var(--tag-bg); border-radius: 12px; font-size: 0.75rem; color: var(--text-secondary); text-decoration: none; }
-    .read-more { color: var(--accent); text-decoration: none; font-size: 0.9rem; }
-    .read-more:hover { text-decoration: underline; }
-    .tag-cloud { margin: 30px 0; padding: 20px; background: var(--bg-card); border-radius: 8px; border: 1px solid var(--border); }
-    .tag-cloud h3 { margin: 0 0 12px; font-size: 1rem; }
-    .tag-cloud-items { display: flex; flex-wrap: wrap; gap: 8px; }
-    .tag-cloud-item { padding: 4px 14px; background: var(--tag-bg); border-radius: 20px; text-decoration: none; color: var(--text-secondary); font-size: 0.85rem; transition: 0.2s; }
-    .tag-cloud-item:hover { background: var(--accent); color: var(--bg); }
-    .pagination { display: flex; justify-content: center; gap: 8px; margin-top: 30px; }
-    .pagination a, .pagination span {
-      padding: 6px 14px; border: 1px solid var(--border); border-radius: 6px;
-      text-decoration: none; color: var(--text-secondary); font-size: 0.9rem;
-    }
-    .pagination a:hover { background: var(--hover-bg); }
-    .pagination .current { background: var(--accent); color: var(--bg); border-color: var(--accent); }
-    /* Hero */
-    .hero {
-      text-align: center; padding: 24px 0 20px;
-      border-bottom: 1px solid var(--border); margin-bottom: 24px;
-    }
-    .hero h2 { font-size: 1.6rem; margin: 0 0 8px; }
-    .hero p { color: var(--text-secondary); line-height: 1.7; max-width: 520px; margin: 0 auto; font-size: 0.95rem; }
-    .hero-tags { display: flex; justify-content: center; gap: 6px; flex-wrap: wrap; margin-top: 12px; }
-    .hero-tag { padding: 3px 12px; background: var(--tag-bg); border-radius: 20px; font-size: 0.75rem; color: var(--text-secondary); text-decoration: none; }
-    .hero-tag:hover { background: var(--accent); color: var(--bg); }
-    /* Nav styles */
-    .site-nav { width: 100%; margin-bottom: 8px; }
-    .nav-inner {
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 12px 0; border-bottom: 1px solid var(--border);
-    }
-    .nav-toggle { display: none; }
-    .nav-hamburger { display: none; flex-direction: column; gap: 4px; cursor: pointer; padding: 4px; }
-    .nav-hamburger span { display: block; width: 22px; height: 2px; background: var(--text); border-radius: 2px; transition: 0.3s; }
-    .nav-brand { font-size: 1.2rem; font-weight: 700; letter-spacing: 3px; text-decoration: none; color: var(--text); }
-    .nav-links { display: flex; gap: 6px; flex-wrap: wrap; }
-    .nav-links a {
-      padding: 4px 12px; border: 1px solid var(--border); border-radius: 20px;
-      text-decoration: none; color: var(--text-secondary); font-size: 0.82rem;
-      background: var(--bg-card); transition: 0.2s;
-    }
-    .nav-links a:hover { background: var(--hover-bg); color: var(--text); }
-    .nav-links a.active { color: var(--text); border-color: var(--accent); }
-    /* Footer styles */
-    .site-footer { width: 100%; border-top: 1px solid var(--border); padding: 32px 0 16px; margin-top: 40px; }
-    .footer-inner { max-width: 720px; margin: 0 auto; display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 24px; }
-    .footer-col h4 { margin: 0 0 8px; font-size: 0.95rem; }
-    .footer-desc { font-size: 0.85rem; color: var(--text-secondary); line-height: 1.6; margin: 0; }
-    .footer-col a { display: block; padding: 3px 0; font-size: 0.85rem; color: var(--text-secondary); text-decoration: none; }
-    .footer-col a:hover { color: var(--text); }
-    .footer-bottom {
-      max-width: 720px; margin: 24px auto 0; padding-top: 16px; border-top: 1px solid var(--border);
-      display: flex; justify-content: space-between; align-items: center;
-      font-size: 0.8rem; color: var(--text-secondary);
-    }
-    .footer-legal a { color: var(--text-secondary); text-decoration: none; }
-    .footer-legal a:hover { color: var(--text); }
 
-    @media (max-width: 600px) {
-      .container { width: 95%; padding: 20px 0; }
-      header h1 { font-size: 2rem; }
-      .footer-inner { grid-template-columns: 1fr; gap: 16px; }
-      .footer-bottom { flex-direction: column; gap: 4px; text-align: center; }
-      .nav-hamburger { display: flex; }
-      .nav-links {
-        display: none; position: absolute; top: 100%; left: 0; right: 0;
-        background: var(--bg-card); backdrop-filter: blur(12px);
-        border: 1px solid var(--border); border-radius: 8px;
-        padding: 12px; flex-direction: column; z-index: 100;
-        box-shadow: 0 8px 24px var(--shadow);
-      }
-      .nav-toggle:checked ~ .nav-links { display: flex; }
-      .nav-inner { position: relative; }
-      .hero h2 { font-size: 1.3rem; }
+    .site-container {
+      max-width: 940px;
+      margin: 0 auto;
+      background-color: #fff;
+    }
+
+    .site-header {
+      padding: 30px 20px 0 20px;
+      position: relative;
+    }
+    .site-title {
+      font-family: "Georgia", serif;
+      font-size: 34px;
+      font-weight: bold;
+      margin: 0 0 10px 0;
+      color: #000;
+    }
+    .site-description {
+      font-style: italic;
+      color: #777;
+      position: absolute;
+      top: 45px;
+      right: 20px;
+      margin: 0;
+      font-size: 14px;
+    }
+    .header-banner {
+      width: 100%;
+      height: 198px;
+      object-fit: cover;
+      display: block;
+      margin-top: 20px;
+    }
+
+    .site-nav {
+      background-color: #000;
+    }
+    .site-nav ul {
+      list-style: none;
+      margin: 0;
+      padding: 0 20px;
+      display: flex;
+    }
+    .site-nav li a {
+      color: #fff;
+      text-decoration: none;
+      display: block;
+      padding: 10px 20px;
+      font-size: 14px;
+    }
+    .site-nav li a:hover {
+      text-decoration: underline;
+    }
+
+    .content-area {
+      display: flex;
+      padding: 40px 20px;
+      gap: 40px;
+    }
+    .main-content {
+      width: 68%;
+    }
+    .sidebar {
+      width: 28%;
+    }
+
+    .post {
+      margin-bottom: 40px;
+    }
+    .post-title {
+      font-size: 24px;
+      margin: 0 0 5px 0;
+      color: #000;
+    }
+    .post-title a {
+      color: #000;
+      text-decoration: none;
+    }
+    .post-title a:hover {
+      color: #0066cc;
+    }
+    .post-meta {
+      color: #888;
+      font-size: 12px;
+      margin-bottom: 15px;
+    }
+    .post-excerpt {
+      font-size: 14px;
+      line-height: 1.7;
+      color: #555;
+      margin-bottom: 10px;
+    }
+    .post-tags {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-bottom: 12px;
+    }
+    .post-tag {
+      padding: 2px 10px;
+      background: #f1f1f1;
+      border-radius: 12px;
+      font-size: 12px;
+      color: #888;
+      text-decoration: none;
+    }
+    .post-tag:hover {
+      color: #0066cc;
+    }
+    .read-more {
+      color: #0066cc;
+      text-decoration: none;
+      font-size: 14px;
+    }
+    .read-more:hover {
+      text-decoration: underline;
+    }
+
+    .sidebar .widget {
+      margin-bottom: 28px;
+      font-size: 13px;
+      line-height: 1.7;
+    }
+    .sidebar .widget h3 {
+      font-family: "Georgia", serif;
+      font-size: 16px;
+      font-weight: bold;
+      color: #000;
+      margin-bottom: 10px;
+    }
+    .sidebar .widget ul {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+    }
+    .sidebar .widget ul li {
+      padding: 3px 0;
+    }
+    .sidebar .widget ul li a {
+      color: #0066cc;
+      text-decoration: none;
+      font-size: 13px;
+    }
+    .sidebar .widget ul li a:hover {
+      text-decoration: underline;
+    }
+
+    .search-form {
+      display: flex;
+      border: 1px solid #ccc;
+    }
+    .search-form .search-input {
+      flex: 1;
+      border: none;
+      padding: 6px 8px;
+      font-size: 13px;
+      outline: none;
+    }
+    .search-form .search-btn {
+      border: none;
+      background: #000;
+      color: #fff;
+      padding: 6px 12px;
+      cursor: pointer;
+      font-size: 13px;
+    }
+    .search-form .search-btn:hover {
+      background: #333;
+    }
+
+    .tag-list li a {
+      color: #0066cc;
+      text-decoration: none;
+    }
+    .tag-list li a:hover {
+      text-decoration: underline;
+    }
+
+    .pagination {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      margin-top: 30px;
+    }
+    .pagination a, .pagination span {
+      padding: 6px 14px;
+      border: 1px solid #ccc;
+      text-decoration: none;
+      color: #888;
+      font-size: 14px;
+    }
+    .pagination a:hover {
+      background: #f1f1f1;
+    }
+    .pagination .current {
+      background: #000;
+      color: #fff;
+      border-color: #000;
+    }
+
+    .site-footer {
+      border-top: 4px solid #000;
+      padding: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 12px;
+      color: #666;
+    }
+    .site-footer strong {
+      font-size: 16px;
+      color: #000;
+    }
+    .site-footer a {
+      color: #888;
+      text-decoration: none;
+    }
+    .site-footer a:hover {
+      color: #0066cc;
+      text-decoration: underline;
+    }
+
+    .filter-bar {
+      color: #888;
+      font-size: 13px;
+      margin-bottom: 20px;
+    }
+    .filter-bar a {
+      color: #0066cc;
+      margin-left: 8px;
+    }
+
+    .tag-cloud-items {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    .tag-cloud-items a {
+      padding: 2px 10px;
+      background: #f1f1f1;
+      border-radius: 12px;
+      font-size: 12px;
+      color: #888;
+      text-decoration: none;
+    }
+    .tag-cloud-items a:hover {
+      color: #0066cc;
+    }
+
+    @media (max-width: 768px) {
+      body.classic-bg { padding: 10px 0; }
+      .content-area { flex-direction: column; padding: 20px 16px; gap: 20px; }
+      .main-content, .sidebar { width: 100%; }
+      .site-description { position: static; text-align: right; margin-top: -5px; }
+      .site-title { font-size: 26px; }
+      .header-banner { height: 120px; }
+      .site-nav ul { padding: 0 10px; flex-wrap: wrap; }
+      .site-nav li a { padding: 8px 12px; font-size: 13px; }
+      .site-footer { flex-direction: column; gap: 8px; text-align: center; }
     }
   </style>
 </head>
-<body>
-  <div class="container">
-    <%- include('partials/navbar') %>
+<body class="classic-bg">
+  <div class="site-container">
 
-    <div class="hero">
-      <h2>紀錄瞬間的思緒</h2>
-      <p>以專業視角解析技術與時事，在資訊爆炸的時代提供沉澱後的觀點。</p>
-      <div class="hero-tags">
-        <a href="<%= baseUrl %>/post/new" class="hero-tag" style="background:var(--accent);color:var(--bg);">✏️ 新文章</a>
-        <a href="<%= baseUrl %>/rss.xml" target="_blank" class="hero-tag">📡 RSS</a>
-        <button onclick="toggleTheme()" class="hero-tag theme-btn-label" style="cursor:pointer;border:none;font-family:inherit;">🌙 深色</button>
-      </div>
-    </div>
+    <header class="site-header">
+      <h1 class="site-title">紀錄瞬間的思緒</h1>
+      <p class="site-description">以專業視角解析技術與時事，在資訊爆炸的時代提供沉澱後的觀點。</p>
+      <img src="https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=940&h=198&fit=crop&q=80" alt="水墨意境橫幅" class="header-banner">
+    </header>
 
-    <div class="search-box">
-      <input type="text" id="searchInput" placeholder="搜尋文章..." oninput="doSearch(this.value)">
-      <div class="search-results" id="searchResults"></div>
-    </div>
+    <nav class="site-nav">
+      <ul>
+        <li><a href="<%= baseUrl %>/">網誌</a></li>
+        <li><a href="<%= baseUrl %>/about">關於</a></li>
+        <li><a href="<%= baseUrl %>/notes">隨筆</a></li>
+        <li><a href="<%= baseUrl %>/snake.html">貪吃蛇</a></li>
+        <li><a href="<%= baseUrl %>/whack.html">捕墨</a></li>
+        <li><a href="<%= baseUrl %>/maze.html">墨陣</a></li>
+      </ul>
+    </nav>
 
-    <div class="tag-cloud" id="tagCloud">
-      <h3>🏷️ 熱門標籤</h3>
-      <div class="tag-cloud-items" id="tagCloudItems"></div>
-    </div>
+    <div class="content-area">
+      <main class="main-content">
 
-    <% if (tagFilter) { %>
-    <p style="color:var(--text-secondary);font-size:0.9rem;margin-bottom:16px;">
-      篩選標籤：<strong style="color:var(--accent);"><%= tagFilter %></strong>
-      <a href="<%= baseUrl %>/" style="color:var(--accent);margin-left:12px;">✕ 清除篩選</a>
-    </p>
-    <% } %>
-
-    <section id="postsList">
-      <% posts.forEach(post => { %>
-      <div class="post-card">
-        <h2><a href="<%= baseUrl %>/post/<%= post.id %>"><%= post.title %></a></h2>
-        <div class="post-meta"><%= new Date(post.created_at).toLocaleDateString('zh-TW') %></div>
-        <% if (post.tags && post.tags.length > 0) { %>
-        <div class="post-tags">
-          <% post.tags.forEach(tag => { %>
-          <a href="<%= baseUrl %>/?tag=<%= tag %>" class="post-tag"><%= tag %></a>
-          <% }) %>
+        <% if (tagFilter) { %>
+        <div class="filter-bar">
+          篩選標籤：<strong><%= tagFilter %></strong>
+          <a href="<%= baseUrl %>/">✕ 清除篩選</a>
         </div>
         <% } %>
-        <div class="post-excerpt"><%- (post.html || '').replace(/<[^>]*>/g, '').substring(0, 150) %>...</div>
-        <a href="<%= baseUrl %>/post/<%= post.id %>" class="read-more">閱讀更多 →</a>
-      </div>
-      <% }) %>
-    </section>
 
-    <% if (totalPages > 1) { %>
-    <div class="pagination">
-      <% if (currentPage > 1) { %>
-      <a href="<%= baseUrl %>/?page=<%= currentPage - 1 %><%= tagFilter ? '&tag=' + encodeURIComponent(tagFilter) : '' %>">‹ 上一頁</a>
-      <% } %>
-      <% for (let i = 1; i <= totalPages; i++) { %>
-        <% if (i === currentPage) { %>
-        <span class="current"><%= i %></span>
-        <% } else { %>
-        <a href="<%= baseUrl %>/?page=<%= i %><%= tagFilter ? '&tag=' + encodeURIComponent(tagFilter) : '' %>"><%= i %></a>
+        <div class="search-form" style="margin-bottom:20px;">
+          <input type="text" id="searchInput" placeholder="搜尋文章..." class="search-input">
+          <button class="search-btn" onclick="doSearch(document.getElementById('searchInput').value)">Search</button>
+        </div>
+        <div id="searchResults"></div>
+
+        <% posts.forEach(post => { %>
+        <article class="post">
+          <h2 class="post-title"><a href="<%= baseUrl %>/post/<%= post.id %>"><%= post.title %></a></h2>
+          <div class="post-meta">Posted on <%= new Date(post.created_at).toLocaleDateString('zh-TW') %></div>
+          <% if (post.tags && post.tags.length > 0) { %>
+          <div class="post-tags">
+            <% post.tags.forEach(tag => { %>
+            <a href="<%= baseUrl %>/?tag=<%= tag %>" class="post-tag"><%= tag %></a>
+            <% }) %>
+          </div>
+          <% } %>
+          <div class="post-excerpt"><%= (post.html || '').replace(/<[^>]*>/g, '').substring(0, 200) %></div>
+          <a href="<%= baseUrl %>/post/<%= post.id %>" class="read-more">閱讀更多 &rarr;</a>
+        </article>
+        <% }) %>
+
+        <% if (totalPages > 1) { %>
+        <div class="pagination">
+          <% if (currentPage > 1) { %>
+          <a href="<%= baseUrl %>/?page=<%= currentPage - 1 %><%= tagFilter ? '&tag=' + encodeURIComponent(tagFilter) : '' %>">‹ 上一頁</a>
+          <% } %>
+          <% for (let i = 1; i <= totalPages; i++) { %>
+            <% if (i === currentPage) { %>
+            <span class="current"><%= i %></span>
+            <% } else { %>
+            <a href="<%= baseUrl %>/?page=<%= i %><%= tagFilter ? '&tag=' + encodeURIComponent(tagFilter) : '' %>"><%= i %></a>
+            <% } %>
+          <% } %>
+          <% if (currentPage < totalPages) { %>
+          <a href="<%= baseUrl %>/?page=<%= currentPage + 1 %><%= tagFilter ? '&tag=' + encodeURIComponent(tagFilter) : '' %>">下一頁 &rsaquo;</a>
+          <% } %>
+        </div>
         <% } %>
-      <% } %>
-      <% if (currentPage < totalPages) { %>
-      <a href="<%= baseUrl %>/?page=<%= currentPage + 1 %><%= tagFilter ? '&tag=' + encodeURIComponent(tagFilter) : '' %>">下一頁 ›</a>
-      <% } %>
-    </div>
-    <% } %>
-  </div>
 
-  <%- include('partials/footer') %>
+      </main>
+
+      <aside class="sidebar">
+        <div class="widget">
+          <div class="search-form">
+            <input type="text" id="sidebarSearch" placeholder="搜尋文章..." class="search-input">
+            <button class="search-btn" onclick="doSearch(document.getElementById('sidebarSearch').value)">Search</button>
+          </div>
+        </div>
+        
+        <div class="widget">
+          <h3>熱門標籤</h3>
+          <div class="tag-cloud-items" id="tagCloudItems"></div>
+        </div>
+      </aside>
+    </div>
+
+    <footer class="site-footer">
+      <div class="footer-left">
+        <strong>墨</strong>
+      </div>
+      <div class="footer-right">
+        &copy; <%= new Date().getFullYear() %> 墨. All rights reserved.
+      </div>
+    </footer>
+
+  </div>
 
   <script>
     const BASE = '<%= baseUrl %>';
 
-    // Theme
-    function getSystemTheme() { return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'; }
-    function applyTheme(t) {
-      document.documentElement.setAttribute('data-theme', t);
-      localStorage.setItem('theme', t);
-      document.querySelectorAll('.theme-btn-label').forEach(btn => {
-        btn.textContent = t === 'dark' ? '☀️ 淺色' : '🌙 深色';
-      });
-    }
-    window.toggleTheme = function() {
-      const c = document.documentElement.getAttribute('data-theme');
-      applyTheme(c === 'dark' ? 'light' : 'dark');
-    };
-    applyTheme(localStorage.getItem('theme') || getSystemTheme());
-    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
-      if (!localStorage.getItem('theme')) applyTheme(e.matches ? 'dark' : 'light');
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') {
+        const active = document.activeElement;
+        if (active && active.classList.contains('search-input')) {
+          window.doSearch(active.value);
+        }
+      }
     });
 
     // Search Engine (client-side index)
@@ -263,8 +415,7 @@
     window.doSearch = function(q) {
       clearTimeout(searchTimeout);
       const results = document.getElementById('searchResults');
-      const list = document.getElementById('postsList');
-      if (!q || q.length < 2) { results.innerHTML = ''; if (list) list.style.display = ''; return; }
+      if (!q || q.length < 2) { results.innerHTML = ''; return; }
       searchTimeout = setTimeout(async () => {
         try {
           const index = await getSearchIndex();
@@ -281,14 +432,13 @@
           }).filter(s => s.score > 0)
             .sort((a, b) => b.score - a.score)
             .slice(0, 20);
-          if (list) list.style.display = 'none';
           results.innerHTML = scored.length
             ? scored.map(s => `
-              <a href="${BASE}/post/${s.item.id}" class="search-result-item">
-                <h4>${s.item.title}</h4>
-                <p>${(s.item.excerpt || '').substring(0, 120)}</p>
-              </a>`).join('')
-            : '<p style="color:var(--text-secondary);font-size:0.9rem;padding:12px;">找不到相關文章</p>';
+              <div style="padding:8px 0;border-bottom:1px solid #eee;">
+                <a href="${BASE}/post/${s.item.id}" style="color:#0066cc;text-decoration:none;font-weight:bold;">${s.item.title}</a>
+                <p style="margin:4px 0 0;font-size:12px;color:#888;">${(s.item.excerpt || '').substring(0, 120)}</p>
+              </div>`).join('')
+            : '<p style="font-size:12px;color:#888;padding:8px 0;">找不到相關文章</p>';
         } catch { results.innerHTML = ''; }
       }, 150);
     };
@@ -300,7 +450,6 @@
       try {
         const res = await fetch(BASE + '/api/tags');
         const tags = await res.json();
-        if (tags.length === 0) { document.getElementById('tagCloud')?.remove(); return; }
         c.innerHTML = tags.map(t =>
           '<a href="' + BASE + '/?tag=' + encodeURIComponent(t.name) + '" class="tag-cloud-item">' + t.name + ' (' + t.count + ')</a>'
         ).join('');

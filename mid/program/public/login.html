@@ -4,90 +4,48 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>墨 - 登入</title>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;700&display=swap">
-    <link rel="stylesheet" href="/s111410509/style.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;500;700&display=swap">
+    <script>
+        const BASE = window.location.pathname.replace(/\/login.*$/, '') || '/s111410509';
+    </script>
+    <link rel="stylesheet" href="" id="styleLink">
     <style>
-        .auth-container {
+        .login-header {
             position: relative;
             z-index: 1;
-            max-width: 400px;
-            margin: 100px auto;
-            padding: 40px;
-            background: rgba(255,255,255,0.9);
-            border-radius: 8px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-        }
-        .auth-container h1 {
             text-align: center;
-            font-size: 2.5rem;
-            letter-spacing: 15px;
-            margin-bottom: 30px;
+            margin-top: 30px;
         }
-        .form-group {
-            margin-bottom: 20px;
-        }
-        .form-group label {
-            display: block;
-            margin-bottom: 8px;
-            font-size: 0.9rem;
-            color: #555;
-        }
-        .form-group input {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            font-size: 1rem;
-            font-family: inherit;
-        }
-        .form-group input:focus {
-            outline: none;
-            border-color: #333;
-        }
-        .btn-group {
-            display: flex;
-            gap: 10px;
-        }
-        .btn-group button {
-            flex: 1;
-            padding: 12px;
-            font-size: 1rem;
-        }
-        .switch-link {
-            text-align: center;
-            margin-top: 20px;
-            color: #666;
-            font-size: 0.9rem;
-        }
-        .switch-link a {
-            color: #000;
-            text-decoration: underline;
-            cursor: pointer;
-        }
-        .error-msg {
-            color: #d32f2f;
-            font-size: 0.85rem;
-            text-align: center;
-            margin-bottom: 15px;
-            display: none;
+
+        .login-header .nav-links {
+            margin-top: 16px;
         }
     </style>
 </head>
 <body>
     <canvas id="inkCanvas"></canvas>
 
-    <nav class="nav-links" style="position:relative;z-index:1;margin-top:20px;">
-        <a href="/s111410509/" class="game-link">📝 網誌</a>
-        <a href="/s111410509/notes" class="game-link">✏️ 隨筆</a>
-        <a href="/s111410509/snake.html" class="game-link">🐍 貪吃蛇</a>
-        <a href="/s111410509/whack.html" class="game-link">🎯 捕墨</a>
-        <a href="/s111410509/maze.html" class="game-link">🏃 墨陣</a>
-        <a href="/s111410509/leaderboard.html" class="game-link">🏆 排行</a>
-        <a href="/s111410509/news.html" class="game-link">📰 新聞</a>
-    </nav>
+    <header class="login-header">
+        <nav class="nav-links" id="loginNav">
+            <a href="" class="nav-pill">📝 網誌</a>
+            <a href="" class="nav-pill">🐍 貪吃蛇</a>
+            <a href="" class="nav-pill">🎯 捕墨</a>
+            <a href="" class="nav-pill">🏃 墨陣</a>
+            <a href="" class="nav-pill">🏆 排行</a>
+            <a href="" class="nav-pill">📰 新聞</a>
+        </nav>
+    </header>
+    <script>
+        document.getElementById('styleLink').href = BASE + '/style.css';
+        document.querySelectorAll('#loginNav a').forEach((a, i) => {
+            const paths = ['', 'snake.html', 'whack.html', 'maze.html', 'leaderboard.html', 'news.html'];
+            a.href = BASE + '/' + paths[i];
+        });
+    </script>
     
     <div class="auth-container" id="loginForm">
         <h1>墨</h1>
+        <p class="subtitle">落筆之前，先留名</p>
         <p class="error-msg" id="loginError"></p>
         <div class="form-group">
             <label>帳號</label>
@@ -105,6 +63,7 @@
 
     <div class="auth-container" id="registerForm" style="display:none;">
         <h1>墨</h1>
+        <p class="subtitle">留下你的墨寶</p>
         <p class="error-msg" id="registerError"></p>
         <div class="form-group">
             <label>暱稱</label>
@@ -124,18 +83,21 @@
         </div>
     </div>
 
-    <script src="/s111410509/ink_background.js"></script>
+    <script src="" id="inkScript"></script>
     <script>
+        document.getElementById('inkScript').src = BASE + '/ink_background.js';
+        
         (function() {
             const t = localStorage.getItem('theme');
             const sys = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
             document.documentElement.setAttribute('data-theme', t || sys);
         })();
 
-        let currentUser = JSON.parse(localStorage.getItem('user')) || null;
+        let currentUser = null;
+        try { currentUser = JSON.parse(localStorage.getItem('user')); } catch {}
         
         if (currentUser) {
-            window.location.href = '/s111410509/notes';
+            window.location.href = BASE + '/notes';
         }
 
         function showRegister() {
@@ -157,7 +119,7 @@
                 return;
             }
 
-            const res = await fetch('/s111410509/api/auth/login', {
+            const res = await fetch(BASE + '/api/auth/login', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ username, password })
@@ -166,7 +128,7 @@
             if (res.ok) {
                 const user = await res.json();
                 localStorage.setItem('user', JSON.stringify(user));
-                window.location.href = '/s111410509/notes';
+                window.location.href = BASE + '/notes';
             } else {
                 const err = await res.json();
                 document.getElementById('loginError').textContent = err.error;
@@ -184,7 +146,7 @@
                 return;
             }
 
-            const res = await fetch('/s111410509/api/auth/register', {
+            const res = await fetch(BASE + '/api/auth/register', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ username, nickname, password })
@@ -193,7 +155,7 @@
             if (res.ok) {
                 const user = await res.json();
                 localStorage.setItem('user', JSON.stringify(user));
-                window.location.href = '/s111410509/notes';
+                window.location.href = BASE + '/notes';
             } else {
                 const err = await res.json();
                 document.getElementById('registerError').textContent = err.error;

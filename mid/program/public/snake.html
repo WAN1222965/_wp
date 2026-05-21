@@ -4,103 +4,143 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>墨跡貪吃蛇</title>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/s111410509/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
         :root {
             --snake-bg: #0f172a;
+            --snake-surface: rgba(255, 255, 255, 0.05);
+            --snake-border: rgba(255, 255, 255, 0.1);
             --snake-accent: #38bdf8;
-            --snake-goal: #f43f5e;
+            --snake-accent-glow: rgba(56, 189, 248, 0.2);
+            --snake-text: #e2e8f0;
+            --snake-text-muted: #64748b;
         }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
             background: var(--snake-bg);
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
             min-height: 100vh;
             margin: 0;
             font-family: 'Noto Serif TC', serif;
+            color: var(--snake-text);
         }
-        #inkCanvas { display: none; }
         .game-area {
             display: flex;
             flex-direction: column;
             align-items: center;
-            padding: 20px;
+            padding: 30px 20px;
+            max-width: 500px;
+            width: 100%;
         }
         .game-header {
             text-align: center;
-            margin-bottom: 16px;
+            margin-bottom: 20px;
+            animation: fadeInDown 0.6s ease;
+        }
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
         }
         .game-header h1 {
             color: #fff;
-            font-size: 2.5rem;
-            letter-spacing: 15px;
+            font-size: 2.8rem;
+            letter-spacing: 16px;
             margin: 0;
-            text-shadow: 0 0 20px rgba(255,255,255,0.15);
+            text-shadow: 0 0 25px rgba(255, 255, 255, 0.12);
+            position: relative;
+            display: inline-block;
+        }
+        .game-header h1::after {
+            content: '';
+            position: absolute;
+            bottom: -6px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 50px;
+            height: 2px;
+            background: var(--snake-accent);
+            opacity: 0.5;
         }
         .score-board {
-            font-size: 1.3rem;
+            font-size: 1.2rem;
             color: var(--snake-accent);
-            margin-bottom: 12px;
-            padding: 8px 24px;
-            background: rgba(255,255,255,0.06);
+            margin-bottom: 16px;
+            padding: 10px 28px;
+            background: var(--snake-surface);
+            border: 1px solid var(--snake-border);
             border-radius: 50px;
             backdrop-filter: blur(10px);
         }
-        .score-board strong { font-size: 1.8rem; }
+        .score-board strong { 
+            font-size: 1.6rem;
+            font-weight: 700;
+        }
         #snakeGame {
-            border: 3px solid #1e293b;
-            box-shadow: 0 0 30px rgba(56, 189, 248, 0.15);
-            border-radius: 8px;
+            border: 2px solid var(--snake-border);
+            box-shadow: 0 0 40px var(--snake-accent-glow);
+            border-radius: 12px;
             max-width: 100%;
         }
+        .hint {
+            color: var(--snake-text-muted);
+            font-size: 0.85rem;
+            margin-top: 12px;
+            letter-spacing: 1px;
+        }
         .nav-links {
-            margin-top: 20px;
+            margin-top: 24px;
             display: flex;
             justify-content: center;
             gap: 8px;
             flex-wrap: wrap;
         }
-        .nav-links a {
-            padding: 6px 16px;
-            border: 1px solid rgba(255,255,255,0.15);
-            border-radius: 20px;
+        .nav-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 14px;
+            border: 1px solid var(--snake-border);
+            border-radius: 50px;
             text-decoration: none;
-            color: #94a3b8;
-            font-size: 0.82rem;
-            background: rgba(255,255,255,0.05);
-            transition: 0.2s;
+            color: var(--snake-text-muted);
+            font-size: 0.84rem;
+            background: var(--snake-surface);
+            transition: all 0.25s ease;
         }
-        .nav-links a:hover { background: rgba(255,255,255,0.12); color: #fff; }
-        .hint {
-            color: #64748b;
-            font-size: 0.85rem;
-            margin-top: 10px;
+        .nav-pill:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            transform: translateY(-2px);
         }
         .theme-btn {
             position: fixed;
             top: 16px;
             right: 16px;
             z-index: 50;
-            background: rgba(255,255,255,0.08);
-            border: 1px solid rgba(255,255,255,0.15);
-            color: #94a3b8;
-            padding: 6px 16px;
-            border-radius: 20px;
+            background: var(--snake-surface);
+            border: 1px solid var(--snake-border);
+            color: var(--snake-text-muted);
+            padding: 8px 16px;
+            border-radius: 50px;
             cursor: pointer;
             font-size: 0.85rem;
             font-family: inherit;
-            transition: 0.2s;
+            transition: all 0.25s ease;
         }
-        .theme-btn:hover { background: rgba(255,255,255,0.15); color: #fff; }
+        .theme-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+        }
     </style>
 </head>
 <body>
+    <button class="theme-btn" onclick="toggleTheme()" id="themeBtn">🌙 深色</button>
+
     <div class="game-area">
         <header class="game-header">
-            <h1>墨 跡</h1>
+            <h1>墨跡</h1>
         </header>
 
         <div class="score-board">
@@ -112,16 +152,14 @@
         <div class="hint">方向鍵控制方向 · 撞到自己則結束</div>
 
         <nav class="nav-links">
-            <a href="/s111410509/">📝 網誌</a>
-            <a href="/s111410509/notes">✏️ 隨筆</a>
-            <a href="/s111410509/whack.html">🎯 捕墨</a>
-            <a href="/s111410509/maze.html">🏃 墨陣</a>
-            <a href="/s111410509/leaderboard.html">🏆 排行</a>
-            <a href="/s111410509/news.html">📰 新聞</a>
+            <a href="/s111410509/" class="nav-pill">📝 網誌</a>
+            <a href="/s111410509/notes" class="nav-pill">✏️ 隨筆</a>
+            <a href="/s111410509/whack.html" class="nav-pill">🎯 捕墨</a>
+            <a href="/s111410509/maze.html" class="nav-pill">🏃 墨陣</a>
+            <a href="/s111410509/leaderboard.html" class="nav-pill">🏆 排行</a>
+            <a href="/s111410509/news.html" class="nav-pill">📰 新聞</a>
         </nav>
     </div>
-
-    <button class="theme-btn" onclick="toggleTheme()" id="themeBtn">🌙 深色</button>
 
     <script src="/s111410509/ink_background.js"></script>
     <script>

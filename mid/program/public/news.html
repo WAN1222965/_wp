@@ -341,12 +341,12 @@
             <h1>墨・時事評論</h1>
             <div class="subtitle">以專業視角解析新聞，在合理範圍內引用、評論</div>
             <nav class="news-nav">
-                <a href="/s111410509/">📝 網誌</a>
-                <a href="/s111410509/notes">✏️ 隨筆</a>
-                <a href="/s111410509/snake.html">🐍 貪吃蛇</a>
-                <a href="/s111410509/whack.html">🎯 捕墨</a>
-                <a href="/s111410509/maze.html">🏃 墨陣</a>
-                <a href="/s111410509/leaderboard.html">🏆 排行</a>
+    <a href="" class="news-nav-blog">📝 網誌</a>
+    <a href="" class="news-nav-notes">✏️ 隨筆</a>
+    <a href="" class="news-nav-snake">🐍 貪吃蛇</a>
+    <a href="" class="news-nav-whack">🎯 捕墨</a>
+    <a href="" class="news-nav-maze">🏃 墨陣</a>
+    <a href="" class="news-nav-leaderboard">🏆 排行</a>
             </nav>
         </header>
 
@@ -441,11 +441,21 @@
             return m ? m[1] : '';
         }
 
+        const BASE = window.location.pathname.replace(/\/news.*$/, '') || '/s111410509';
+
+        document.querySelectorAll('.news-nav a').forEach(a => {
+            const cls = Array.from(a.classList).find(c => c.startsWith('news-nav-'));
+            if (cls) {
+                const map = { 'news-nav-blog': '', 'news-nav-notes': 'notes', 'news-nav-snake': 'snake.html', 'news-nav-whack': 'whack.html', 'news-nav-maze': 'maze.html', 'news-nav-leaderboard': 'leaderboard.html' };
+                a.href = BASE + '/' + (map[cls] || '');
+            }
+        });
+
         async function loadCommentary(category) {
             const list = document.getElementById(category + '-list');
             list.innerHTML = '<div class="loading">載入中...</div>';
             try {
-                const res = await fetch('/s111410509/api/news/commentary/' + category);
+                const res = await fetch(BASE + '/api/news/commentary/' + category);
                 const posts = await res.json();
                 if (posts.length === 0) {
                     list.innerHTML = '<div class="empty-state"><p>尚無評論文章</p><div class="sub">等待筆者撰寫深入分析…</div></div>';
@@ -510,7 +520,7 @@
 
         async function loadLikes() {
             try {
-                const res = await fetch('/s111410509/api/news/likes');
+                const res = await fetch(BASE + '/api/news/likes');
                 const likes = await res.json();
                 likes.forEach(item => {
                     document.querySelectorAll('.like-btn[data-title="' + item.news_title.replace(/"/g, '&quot;') + '"]').forEach(btn => {
@@ -525,7 +535,7 @@
             const title = btn.getAttribute('data-title');
             const link = btn.getAttribute('data-link');
             try {
-                const res = await fetch('/s111410509/api/news/like', {
+                const res = await fetch(BASE + '/api/news/like', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ title, link })
@@ -556,7 +566,7 @@
             const list = card.querySelector('.comments-list');
             const countSpan = card.querySelector('.comment-count');
             try {
-                const res = await fetch('/s111410509/api/news/comments?title=' + encodeURIComponent(title));
+                const res = await fetch(BASE + '/api/news/comments?title=' + encodeURIComponent(title));
                 const comments = await res.json();
                 countSpan.textContent = comments.length;
                 list.innerHTML = comments.map(c =>
@@ -576,7 +586,7 @@
             const content = contentInput.value.trim();
             if (!username || !content) { alert('請填寫暱稱和留言內容'); return; }
             try {
-                const res = await fetch('/s111410509/api/news/comment', {
+                const res = await fetch(BASE + '/api/news/comment', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ title, link, username, content })
@@ -615,7 +625,7 @@
         async function openEditModal(id) {
             const category = document.querySelector('.news-section.active').id.replace('-section', '');
             try {
-                const res = await fetch('/s111410509/api/news/commentary/' + category);
+                const res = await fetch(BASE + '/api/news/commentary/' + category);
                 const posts = await res.json();
                 const post = posts.find(p => p.id === id);
                 if (!post) { alert('找不到該文章'); return; }
@@ -654,7 +664,7 @@
             };
 
             try {
-                const url = id ? '/s111410509/api/news/commentary/' + id : '/s111410509/api/news/commentary';
+                const url = id ? BASE + '/api/news/commentary/' + id : BASE + '/api/news/commentary';
                 const method = id ? 'PUT' : 'POST';
                 const res = await fetch(url, {
                     method,
@@ -677,7 +687,7 @@
             if (!confirm('確定刪除此評論文章？')) return;
             const category = document.querySelector('.news-section.active').id.replace('-section', '');
             try {
-                const res = await fetch('/s111410509/api/news/commentary/' + id, { method: 'DELETE' });
+                const res = await fetch(BASE + '/api/news/commentary/' + id, { method: 'DELETE' });
                 if (!res.ok) { alert('刪除失敗'); return; }
                 await loadCommentary(category);
             } catch(e) { alert('刪除失敗'); }

@@ -1,4 +1,4 @@
-const PREFIX = '/s111410509';
+const PREFIX = window.location.pathname.replace(/\/notes.*$/, '') || '/s111410509';
 const API_URL = PREFIX + '/api/notes';
 
 function escapeHtml(str) {
@@ -8,7 +8,8 @@ function escapeHtml(str) {
 }
 
 function getUser() {
-    return JSON.parse(localStorage.getItem('user'));
+    try { return JSON.parse(localStorage.getItem('user')); }
+    catch { return null; }
 }
 
 function checkLogin() {

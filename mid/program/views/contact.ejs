@@ -30,22 +30,10 @@
     }
     .container { width: 90%; max-width: 720px; padding: 40px 0; flex: 1; }
 
-    .site-nav { width: 100%; margin-bottom: 40px; }
-    .nav-inner {
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 12px 0; border-bottom: 1px solid var(--border);
-    }
-    .nav-toggle { display: none; }
-    .nav-hamburger { display: none; flex-direction: column; gap: 4px; cursor: pointer; padding: 4px; }
-    .nav-hamburger span { display: block; width: 22px; height: 2px; background: var(--text); border-radius: 2px; transition: 0.3s; }
-    .nav-brand { font-size: 1.2rem; font-weight: 700; letter-spacing: 3px; text-decoration: none; color: var(--text); }
-    .nav-links { display: flex; gap: 6px; flex-wrap: wrap; }
-    .nav-links a {
-      padding: 4px 12px; border: 1px solid var(--border); border-radius: 20px;
-      text-decoration: none; color: var(--text-secondary); font-size: 0.82rem;
-      background: var(--bg-card); transition: 0.2s;
-    }
-    .nav-links a:hover { background: var(--hover-bg); color: var(--text); }
+    .site-nav { background-color: #000; margin-bottom: 40px; }
+    .site-nav ul { list-style: none; margin: 0; padding: 0 10px; display: flex; flex-wrap: wrap; }
+    .site-nav li a { color: #fff; text-decoration: none; display: block; padding: 8px 14px; font-size: 14px; }
+    .site-nav li a:hover { text-decoration: underline; }
 
     h1 { font-size: 2rem; margin: 0 0 8px; }
     .subtitle { color: var(--text-secondary); margin-bottom: 32px; }
@@ -91,42 +79,22 @@
       color: #721c24; margin-bottom: 20px; text-align: center;
     }
 
-    .site-footer {
-      width: 100%; border-top: 1px solid var(--border);
-      padding: 32px 0 16px; margin-top: 40px;
-    }
-    .footer-inner {
-      width: 90%; max-width: 720px; margin: 0 auto;
-      display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 24px;
-    }
-    .footer-col h4 { margin: 0 0 8px; font-size: 0.95rem; }
-    .footer-desc { font-size: 0.85rem; color: var(--text-secondary); line-height: 1.6; margin: 0; }
-    .footer-col a { display: block; padding: 3px 0; font-size: 0.85rem; color: var(--text-secondary); text-decoration: none; }
-    .footer-col a:hover { color: var(--text); }
-    .footer-bottom {
-      width: 90%; max-width: 720px; margin: 24px auto 0;
-      padding-top: 16px; border-top: 1px solid var(--border);
-      display: flex; justify-content: space-between; align-items: center;
-      font-size: 0.8rem; color: var(--text-secondary);
-    }
-    .footer-legal a { color: var(--text-secondary); text-decoration: none; }
-    .footer-legal a:hover { color: var(--text); }
+    .site-footer { border-top: 4px solid #000; padding: 20px; display: flex; justify-content: space-between; align-items: center; font-size: 12px; color: #666; margin-top: 40px; }
+    .site-footer strong { font-size: 16px; color: #000; }
+    .footer-desc { font-size: 12px; color: #888; margin-left: 8px; }
+    .footer-right { text-align: right; }
+    .footer-links { margin-left: 12px; }
+    .footer-links a { color: #888; text-decoration: none; margin-left: 8px; }
+    .footer-links a:hover { color: #0066cc; text-decoration: underline; }
+    .site-footer a { color: #888; text-decoration: none; }
+    .site-footer a:hover { color: #0066cc; text-decoration: underline; }
 
     @media (max-width: 600px) {
       .container { width: 95%; padding: 20px 0; }
       .contact-grid { grid-template-columns: 1fr; }
-      .footer-inner { grid-template-columns: 1fr; gap: 16px; }
-      .footer-bottom { flex-direction: column; gap: 4px; text-align: center; }
-      .nav-hamburger { display: flex; }
-      .nav-links {
-        display: none; position: absolute; top: 100%; left: 0; right: 0;
-        background: var(--bg-card); backdrop-filter: blur(12px);
-        border: 1px solid var(--border); border-radius: 8px;
-        padding: 12px; flex-direction: column; z-index: 100;
-        box-shadow: 0 8px 24px var(--shadow);
-      }
-      .nav-toggle:checked ~ .nav-links { display: flex; }
-      .nav-inner { position: relative; }
+      .site-footer { flex-direction: column; gap: 8px; text-align: center; }
+      .footer-right { text-align: center; }
+      .footer-desc { display: none; }
     }
   </style>
 </head>

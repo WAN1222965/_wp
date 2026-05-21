@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Classic WordPress Blog (Twenty Ten)</title>
+<style>
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background: #f5f5f2;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 15px;
+  line-height: 1.6;
+  color: #333;
+}
+
+.wrapper {
+  max-width: 960px;
+  margin: 20px auto;
+  background: #fff;
+  box-shadow: 0 1px 4px rgba(0,0,0,.08);
+  border: 1px solid #e8e8e4;
+}
+
+/* ── Header ── */
+.header-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 36px 24px 0;
+}
+
+.site-title a {
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 36px;
+  font-weight: 700;
+  color: #000;
+  text-decoration: none;
+  letter-spacing: -.5px;
+}
+
+.site-title a:hover {
+  color: #1982d1;
+}
+
+.tagline {
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 13px;
+  font-style: italic;
+  color: #999;
+  white-space: nowrap;
+}
+
+/* ── Hero Image ── */
+.hero {
+  margin-top: 20px;
+  width: 100%;
+}
+
+.hero img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+/* ── Navigation ── */
+.nav-bar {
+  background: #000;
+}
+
+.nav-bar ul {
+  list-style: none;
+  display: flex;
+  padding: 0 12px;
+}
+
+.nav-bar li a {
+  display: block;
+  padding: 10px 16px;
+  color: #fff;
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.nav-bar li a:hover {
+  background: #333;
+}
+
+/* ── Two-column ── */
+.content-area {
+  display: flex;
+  gap: 0;
+  padding: 24px 0;
+}
+
+.main-column {
+  flex: 0 0 70%;
+  max-width: 70%;
+  padding: 0 24px;
+  border-right: 1px solid #e8e8e4;
+}
+
+.sidebar {
+  flex: 0 0 30%;
+  max-width: 30%;
+  padding: 0 24px;
+}
+
+/* ── Article ── */
+article {
+  margin-bottom: 48px;
+}
+
+article + article {
+  padding-top: 32px;
+  border-top: 1px solid #e8e8e4;
+}
+
+.entry-title {
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 26px;
+  font-weight: 700;
+  line-height: 1.3;
+  margin-bottom: 4px;
+}
+
+.entry-title a {
+  color: #000;
+  text-decoration: none;
+}
+
+.entry-title a:hover {
+  color: #1982d1;
+}
+
+.entry-meta {
+  font-size: 12px;
+  color: #999;
+  margin-bottom: 14px;
+}
+
+.entry-meta a {
+  color: #999;
+  text-decoration: underline;
+}
+
+.entry-content {
+  font-size: 15px;
+  line-height: 1.7;
+}
+
+.entry-content p {
+  margin-bottom: 14px;
+}
+
+.entry-content a {
+  color: #06c;
+  text-decoration: none;
+}
+
+.entry-content a:hover {
+  text-decoration: underline;
+}
+
+/* ── Sidebar Widgets ── */
+.widget {
+  margin-bottom: 32px;
+}
+
+.widget-title {
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 16px;
+  font-weight: 700;
+  color: #000;
+  margin-bottom: 10px;
+}
+
+.widget input[type="text"],
+.widget input[type="search"] {
+  width: 100%;
+  padding: 6px 8px;
+  border: 1px solid #ccc;
+  font-size: 13px;
+  background: #f9f9f9;
+}
+
+.widget ul {
+  list-style: none;
+}
+
+.widget li {
+  padding: 4px 0;
+  border-bottom: 1px solid #eee;
+  font-size: 13px;
+}
+
+.widget li a {
+  color: #06c;
+  text-decoration: none;
+}
+
+.widget li a:hover {
+  text-decoration: underline;
+}
+
+/* ── Footer ── */
+.footer {
+  border-top: 4px solid #000;
+  display: flex;
+  justify-content: space-between;
+  padding: 18px 24px;
+  font-size: 12px;
+  color: #999;
+}
+
+.footer a {
+  color: #999;
+  text-decoration: underline;
+}
+
+.footer a:hover {
+  color: #333;
+}
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  .content-area {
+    flex-direction: column;
+  }
+  .main-column,
+  .sidebar {
+    flex: 0 0 100%;
+    max-width: 100%;
+    border-right: none;
+  }
+  .sidebar {
+    border-top: 1px solid #e8e8e4;
+    padding-top: 24px;
+  }
+  .header-top {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+}
+</style>
+</head>
+<body>
+
+<div class="wrapper">
+
+  <!-- Header -->
+  <header>
+    <div class="header-top">
+      <div class="site-title"><a href="#">Classic WordPress Blog</a></div>
+      <div class="tagline">Just another WordPress weblog</div>
+    </div>
+    <div class="hero">
+      <img src="https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=960&h=300&fit=crop" alt="Landscape hero image">
+    </div>
+  </header>
+
+  <!-- Navigation -->
+  <nav class="nav-bar">
+    <ul>
+      <li><a href="#">Home</a></li>
+      <li><a href="#">Tietoja</a></li>
+      <li><a href="#">Blog</a></li>
+      <li><a href="#">Archives</a></li>
+      <li><a href="#">Contact</a></li>
+    </ul>
+  </nav>
+
+  <!-- Content + Sidebar -->
+  <div class="content-area">
+
+    <main class="main-column">
+
+      <article>
+        <h2 class="entry-title"><a href="#">The Art of Vintage Blogging</a></h2>
+        <div class="entry-meta">
+          Posted on <a href="#">May 18, 2026</a> by <a href="#">Admin</a>
+        </div>
+        <div class="entry-content">
+          <p>Welcome to the classic WordPress experience. This layout is inspired by the <strong>Twenty Ten</strong> theme — the first default theme introduced with WordPress 3.0. It paired a traditional two-column layout with a clean, typography-driven design that set the standard for modern blogging.</p>
+          <p>Twenty Ten was designed by the WordPress team and released in June 2010. It features a header image, a top navigation bar, a sidebar with widget areas, and a footer with site information. The design emphasizes readability and simplicity.</p>
+          <p>Learn more at the <a href="#">WordPress Codex</a> or browse our <a href="#">archives</a>.</p>
+        </div>
+      </article>
+
+      <article>
+        <h2 class="entry-title"><a href="#">Why Serif Headings Still Matter</a></h2>
+        <div class="entry-meta">
+          Posted on <a href="#">May 15, 2026</a> by <a href="#">Staff</a>
+        </div>
+        <div class="entry-content">
+          <p>In an era of minimalist sans-serif everything, there's something refreshing about serif headlines. Georgia and Times New Roman bring warmth, authority, and a sense of permanence to long-form reading. The Twenty Ten theme understood this well.</p>
+          <p>Pairing Georgia headlines with Arial body text created a clear visual hierarchy — one that guided the reader's eye naturally from title to content. It wasn't just a design choice; it was a statement about what blogging should be: thoughtful, approachable, and human.</p>
+          <p>Read more about typography best practices <a href="#">here</a>.</p>
+        </div>
+      </article>
+
+    </main>
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+
+      <div class="widget">
+        <h3 class="widget-title">Search</h3>
+        <form>
+          <input type="search" placeholder="Search...">
+        </form>
+      </div>
+
+      <div class="widget">
+        <h3 class="widget-title">Recent Posts</h3>
+        <ul>
+          <li><a href="#">The Art of Vintage Blogging</a></li>
+          <li><a href="#">Why Serif Headings Still Matter</a></li>
+          <li><a href="#">A Look Back at Twenty Ten</a></li>
+          <li><a href="#">Building a Classic Layout</a></li>
+          <li><a href="#">CSS Then and Now</a></li>
+        </ul>
+      </div>
+
+      <div class="widget">
+        <h3 class="widget-title">Recent Comments</h3>
+        <ul>
+          <li><a href="#">Jane</a> on <a href="#">The Art of Vintage Blogging</a></li>
+          <li><a href="#">Mark</a> on <a href="#">Why Serif Headings Still Matter</a></li>
+          <li><a href="#">Emma</a> on <a href="#">A Look Back at Twenty Ten</a></li>
+        </ul>
+      </div>
+
+      <div class="widget">
+        <h3 class="widget-title">Archives</h3>
+        <ul>
+          <li><a href="#">May 2026</a></li>
+          <li><a href="#">April 2026</a></li>
+          <li><a href="#">March 2026</a></li>
+          <li><a href="#">February 2026</a></li>
+        </ul>
+      </div>
+
+    </aside>
+
+  </div>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <span>Classic WordPress Blog</span>
+    <span>Proudly powered by <a href="#">WordPress</a></span>
+  </footer>
+
+</div>
+
+</body>
+</html>
