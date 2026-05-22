@@ -39,7 +39,14 @@
         document.querySelectorAll('#leaderNav a').forEach((a, i) => { a.href = BASE + '/' + navPaths[i]; });
         document.getElementById('backLink').href = BASE + '/snake.html';
     </script>
-    <script src="" id="inkScript"></script>
+    <script>
+        function loadScript(url) {
+            var s = document.createElement('script');
+            s.src = url;
+            document.body.appendChild(s);
+        }
+        if (document.getElementById('inkCanvas')) loadScript(BASE + '/ink_background.js');
+    </script>
     <script>
         document.getElementById('inkScript').src = BASE + '/ink_background.js';
 

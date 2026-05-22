@@ -13,6 +13,7 @@
       </ul>
     </li>
     <li><a href="<%= baseUrl %>/news.html"><span>📰</span> 新聞</a></li>
+    <li><a href="<%= baseUrl %>/market.html"><span>📊</span> 行情</a></li>
     <li><a href="<%= baseUrl %>/contact"><span>✉️</span> 聯絡</a></li>
     <li><a href="<%= baseUrl %>/login.html"><span>🔑</span> 登入</a></li>
   </ul>
@@ -33,4 +34,18 @@ document.addEventListener('click', function(e) {
     if (!d.contains(e.target)) d.classList.remove('active');
   });
 });
+(function() {
+  var user;
+  try { user = JSON.parse(localStorage.getItem('user')); } catch(e) {}
+  if (user) {
+    var links = document.querySelectorAll('.site-nav a');
+    for (var i = 0; i < links.length; i++) {
+      if (links[i].textContent.includes('登入')) {
+        links[i].innerHTML = '<span>👤</span> ' + (user.nickname || user.username);
+        links[i].href = '<%= baseUrl %>/notes';
+        break;
+      }
+    }
+  }
+})();
 </script>

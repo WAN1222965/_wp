@@ -43,88 +43,109 @@
         });
     </script>
     
-    <div class="auth-container" id="loginForm">
-        <h1>墨</h1>
-        <p class="subtitle">落筆之前，先留名</p>
-        <p class="error-msg" id="loginError"></p>
-        <div class="form-group">
-            <label>帳號</label>
-            <input type="text" id="loginUsername" placeholder="輸入帳號">
+    <div id="authContainer">
+        <div class="auth-container" id="loginForm">
+            <h1>墨</h1>
+            <p class="subtitle">落筆之前，先留名</p>
+            <p class="error-msg" id="loginError"></p>
+            <div class="form-group">
+                <label>帳號</label>
+                <input type="text" id="loginUsername" placeholder="輸入帳號">
+            </div>
+            <div class="form-group">
+                <label>密碼</label>
+                <input type="password" id="loginPassword" placeholder="輸入密碼">
+            </div>
+            <div class="btn-group">
+                <button onclick="login()">登入</button>
+                <button onclick="showRegister()">註冊</button>
+            </div>
         </div>
-        <div class="form-group">
-            <label>密碼</label>
-            <input type="password" id="loginPassword" placeholder="輸入密碼">
-        </div>
-        <div class="btn-group">
-            <button onclick="login()">登入</button>
-            <button onclick="showRegister()">註冊</button>
+
+        <div class="auth-container" id="registerForm" style="display:none;">
+            <h1>墨</h1>
+            <p class="subtitle">留下你的墨寶</p>
+            <p class="error-msg" id="registerError"></p>
+            <div class="form-group">
+                <label>暱稱</label>
+                <input type="text" id="regNickname" placeholder="設定暱稱">
+            </div>
+            <div class="form-group">
+                <label>帳號</label>
+                <input type="text" id="regUsername" placeholder="設定帳號">
+            </div>
+            <div class="form-group">
+                <label>密碼</label>
+                <input type="password" id="regPassword" placeholder="設定密碼">
+            </div>
+            <div class="btn-group">
+                <button onclick="register()">註冊</button>
+                <button onclick="showLogin()">返回登入</button>
+            </div>
         </div>
     </div>
 
-    <div class="auth-container" id="registerForm" style="display:none;">
-        <h1>墨</h1>
-        <p class="subtitle">留下你的墨寶</p>
-        <p class="error-msg" id="registerError"></p>
-        <div class="form-group">
-            <label>暱稱</label>
-            <input type="text" id="regNickname" placeholder="設定暱稱">
-        </div>
-        <div class="form-group">
-            <label>帳號</label>
-            <input type="text" id="regUsername" placeholder="設定帳號">
-        </div>
-        <div class="form-group">
-            <label>密碼</label>
-            <input type="password" id="regPassword" placeholder="設定密碼">
-        </div>
-        <div class="btn-group">
-            <button onclick="register()">註冊</button>
-            <button onclick="showLogin()">返回登入</button>
-        </div>
-    </div>
-
-    <script src="" id="inkScript"></script>
     <script>
-        document.getElementById('inkScript').src = BASE + '/ink_background.js';
-        
+        function loadScript(url) {
+            var s = document.createElement('script');
+            s.src = url;
+            document.body.appendChild(s);
+        }
+        loadScript(BASE + '/ink_background.js');
+
         (function() {
             const t = localStorage.getItem('theme');
             const sys = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
             document.documentElement.setAttribute('data-theme', t || sys);
         })();
 
-        let currentUser = null;
-        try { currentUser = JSON.parse(localStorage.getItem('user')); } catch {}
-        
-        if (currentUser) {
-            window.location.href = BASE + '/notes';
+    let currentUser = null;
+    try { currentUser = JSON.parse(localStorage.getItem('user')); } catch {}
+    
+    function doLogout() {
+        localStorage.removeItem('user');
+        window.location.reload();
+    }
+
+    const authContainer = document.getElementById('authContainer');
+    
+    if (currentUser) {
+        authContainer.innerHTML = `
+            <div class="auth-container" style="text-align:center;">
+                <h1>墨</h1>
+                <p class="subtitle">你已登入為 <strong>${currentUser.nickname || currentUser.username}</strong></p>
+                <div class="btn-group" style="justify-content:center;">
+                    <button onclick="window.location.href=BASE+'/notes'">前往隨筆</button>
+                    <button onclick="doLogout()" style="background:transparent;border:1px solid var(--border);">登出</button>
+                </div>
+            </div>
+        `;
+    }
+
+    function showRegister() {
+        document.getElementById('loginForm').style.display = 'none';
+        document.getElementById('registerForm').style.display = 'block';
+    }
+
+    function showLogin() {
+        document.getElementById('registerForm').style.display = 'none';
+        document.getElementById('loginForm').style.display = 'block';
+    }
+
+    async function login() {
+        const username = document.getElementById('loginUsername').value.trim();
+        const password = document.getElementById('loginPassword').value.trim();
+        if (!username || !password) {
+            document.getElementById('loginError').textContent = '請輸入帳號和密碼';
+            document.getElementById('loginError').style.display = 'block';
+            return;
         }
-
-        function showRegister() {
-            document.getElementById('loginForm').style.display = 'none';
-            document.getElementById('registerForm').style.display = 'block';
-        }
-
-        function showLogin() {
-            document.getElementById('registerForm').style.display = 'none';
-            document.getElementById('loginForm').style.display = 'block';
-        }
-
-        async function login() {
-            const username = document.getElementById('loginUsername').value.trim();
-            const password = document.getElementById('loginPassword').value.trim();
-            if (!username || !password) {
-                document.getElementById('loginError').textContent = '請輸入帳號和密碼';
-                document.getElementById('loginError').style.display = 'block';
-                return;
-            }
-
+        try {
             const res = await fetch(BASE + '/api/auth/login', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ username, password })
             });
-
             if (res.ok) {
                 const user = await res.json();
                 localStorage.setItem('user', JSON.stringify(user));
@@ -134,24 +155,27 @@
                 document.getElementById('loginError').textContent = err.error;
                 document.getElementById('loginError').style.display = 'block';
             }
+        } catch {
+            document.getElementById('loginError').textContent = '網路錯誤，請稍後再試';
+            document.getElementById('loginError').style.display = 'block';
         }
+    }
 
-        async function register() {
-            const nickname = document.getElementById('regNickname').value.trim();
-            const username = document.getElementById('regUsername').value.trim();
-            const password = document.getElementById('regPassword').value.trim();
-            if (!username || !password) {
-                document.getElementById('registerError').textContent = '請輸入帳號和密碼';
-                document.getElementById('registerError').style.display = 'block';
-                return;
-            }
-
+    async function register() {
+        const nickname = document.getElementById('regNickname').value.trim();
+        const username = document.getElementById('regUsername').value.trim();
+        const password = document.getElementById('regPassword').value.trim();
+        if (!username || !password) {
+            document.getElementById('registerError').textContent = '請輸入帳號和密碼';
+            document.getElementById('registerError').style.display = 'block';
+            return;
+        }
+        try {
             const res = await fetch(BASE + '/api/auth/register', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ username, nickname, password })
             });
-
             if (res.ok) {
                 const user = await res.json();
                 localStorage.setItem('user', JSON.stringify(user));
@@ -161,7 +185,11 @@
                 document.getElementById('registerError').textContent = err.error;
                 document.getElementById('registerError').style.display = 'block';
             }
+        } catch {
+            document.getElementById('registerError').textContent = '網路錯誤，請稍後再試';
+            document.getElementById('registerError').style.display = 'block';
         }
+    }
     </script>
 </body>
 </html>

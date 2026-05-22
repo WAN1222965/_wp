@@ -73,12 +73,15 @@
             }
         });
     </script>
-    <script src="" id="inkBgScript"></script>
-    <script src="" id="notesScript"></script>
     <script>
-        document.getElementById('inkBgScript').src = BASE + '/ink_background.js';
-        document.getElementById('notesScript').src = BASE + '/script.js';
-        
+        function loadScript(url) {
+            var s = document.createElement('script');
+            s.src = url;
+            document.body.appendChild(s);
+        }
+        loadScript(BASE + '/ink_background.js');
+        loadScript(BASE + '/script.js');
+
         function getSystemTheme() { return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'; }
         function applyFrontTheme(t) {
             document.documentElement.setAttribute('data-theme', t);

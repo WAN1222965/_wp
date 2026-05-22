@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="zh-TW" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>市場行情 - 墨</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;500;700&display=swap">
+    <script>
+        const BASE = window.location.pathname.replace(/\/market.*$/, '') || '/s111410509';
+    </script>
+    <style>
+        :root { --bg: #f2f0e9; --text: #1a1a1a; --border: rgba(0,0,0,0.1); --accent: #000; --card-bg: rgba(255,255,255,0.8); --tag-bg: #e8e6df; --text-secondary: #555; }
+        [data-theme="dark"] { --bg: #1a1a1a; --text: #e0e0e0; --border: rgba(255,255,255,0.1); --accent: #fff; --card-bg: rgba(30,30,30,0.9); --tag-bg: #2a2a2a; --text-secondary: #999; }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            margin: 0; padding: 0; font-family: 'Noto Serif TC', serif;
+            background: var(--bg); color: var(--text);
+            transition: background 0.3s, color 0.3s;
+            display: flex; flex-direction: column; align-items: center; min-height: 100vh;
+        }
+        .container { width: 90%; max-width: 900px; padding: 40px 0; flex: 1; }
+        h1 { font-size: 1.8rem; margin-bottom: 8px; }
+        .subtitle { color: var(--text-secondary); margin-bottom: 32px; }
+        .market-section { margin-bottom: 36px; }
+        .market-section h2 { font-size: 1.2rem; margin-bottom: 12px; padding-bottom: 6px; border-bottom: 2px solid var(--accent); display: flex; align-items: center; gap: 8px; }
+        .market-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; }
+        .market-card {
+            padding: 16px; background: var(--card-bg); border: 1px solid var(--border);
+            border-radius: 8px; transition: 0.2s;
+        }
+        .market-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+        .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .card-symbol { font-weight: 700; font-size: 1rem; }
+        .card-price { font-size: 1.3rem; font-weight: 700; }
+        .card-change { font-size: 0.85rem; font-weight: 700; padding: 2px 8px; border-radius: 4px; display: inline-block; }
+        .card-change.up { color: #fff; background: #e74c3c; }
+        .card-change.down { color: #fff; background: #27ae60; }
+        .card-details { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 10px; font-size: 0.8rem; color: var(--text-secondary); }
+        .card-details span { display: flex; justify-content: space-between; }
+        .card-details .val { color: var(--text); font-weight: 500; }
+        .loading, .error { text-align: center; padding: 40px; font-size: 0.95rem; color: var(--text-secondary); }
+        .error { color: #c00; }
+        .nav-links { margin: 16px 0 24px; display: flex; flex-wrap: wrap; gap: 8px; }
+        .nav-pill {
+            display: inline-flex; align-items: center; gap: 4px;
+            padding: 6px 14px; border: 1px solid var(--border); border-radius: 20px;
+            background: var(--card-bg); color: var(--text-secondary); text-decoration: none;
+            font-size: 0.85rem; transition: 0.2s;
+        }
+        .nav-pill:hover { color: var(--accent); border-color: var(--border); background: var(--card-bg); }
+        .section-nav { display: flex; gap: 10px; margin-bottom: 24px; flex-wrap: wrap; }
+        .section-btn {
+            padding: 8px 18px; border: 1px solid var(--border); border-radius: 20px;
+            background: var(--card-bg); color: var(--text-secondary); cursor: pointer;
+            font-size: 0.85rem; font-family: inherit; transition: 0.2s;
+        }
+        .section-btn:hover { border-color: var(--accent); color: var(--text); }
+        .last-update { font-size: 0.75rem; color: var(--text-secondary); margin-top: 24px; text-align: center; }
+        @media (max-width: 600px) {
+            .container { width: 95%; padding: 20px 0; }
+            .market-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📊 市場行情</h1>
+        <p class="subtitle">加密貨幣 · 台股 · 美股 即時報價</p>
+
+        <div class="section-nav">
+            <button class="section-btn" onclick="document.getElementById('crypto').scrollIntoView({behavior:'smooth'})">🪙 加密貨幣</button>
+            <button class="section-btn" onclick="document.getElementById('tw-stock').scrollIntoView({behavior:'smooth'})">🇹🇼 台股</button>
+            <button class="section-btn" onclick="document.getElementById('us-stocks').scrollIntoView({behavior:'smooth'})">🇺🇸 美股</button>
+        </div>
+
+        <div class="loading" id="loading">載入市場數據中...</div>
+        <div class="error" id="error" style="display:none;"></div>
+
+        <div id="content" style="display:none;">
+
+            <div class="market-section" id="crypto">
+                <h2>🪙 加密貨幣</h2>
+                <div class="market-grid" id="cryptoGrid"></div>
+            </div>
+
+            <div class="market-section" id="tw-stock">
+                <h2>🇹🇼 台股</h2>
+                <div class="market-grid" id="twGrid"></div>
+            </div>
+
+            <div class="market-section" id="us-stocks">
+                <h2>🇺🇸 美股</h2>
+                <div class="market-grid" id="usGrid"></div>
+            </div>
+
+            <div class="last-update" id="updateTime"></div>
+        </div>
+    </div>
+
+    <script>
+        function loadScript(url) {
+            var s = document.createElement('script');
+            s.src = url;
+            document.body.appendChild(s);
+        }
+
+        function fmt(n) {
+            if (n == null) return '-';
+            if (n >= 1e12) return (n / 1e12).toFixed(2) + 'T';
+            if (n >= 1e9) return (n / 1e9).toFixed(2) + 'B';
+            if (n >= 1e6) return (n / 1e6).toFixed(2) + 'M';
+            if (n >= 1e3) return (n / 1e3).toFixed(2) + 'K';
+            return n.toLocaleString(undefined, { maximumFractionDigits: 2 });
+        }
+
+        function fmtPrice(n) {
+            if (n == null) return '-';
+            if (n < 0.01) return '$' + n.toFixed(6);
+            if (n < 1) return '$' + n.toFixed(4);
+            if (n < 100) return '$' + n.toFixed(2);
+            return '$' + n.toLocaleString(undefined, { maximumFractionDigits: 2 });
+        }
+
+        function cardHTML(item, isCrypto) {
+            var cls = item.change >= 0 ? 'up' : 'down';
+            var sign = item.change >= 0 ? '+' : '';
+            var details = '';
+            if (isCrypto && item.market_cap) {
+                details += '<span>市值 <span class="val">' + fmt(item.market_cap) + '</span></span>';
+            }
+            if (item.volume) {
+                details += '<span>成交量 <span class="val">' + fmt(item.volume) + '</span></span>';
+            }
+            if (item.high != null) {
+                details += '<span>今日高 <span class="val">' + fmtPrice(item.high) + '</span></span>';
+            }
+            if (item.low != null) {
+                details += '<span>今日低 <span class="val">' + fmtPrice(item.low) + '</span></span>';
+            }
+            if (item.prevClose != null) {
+                details += '<span>前收盤 <span class="val">' + fmtPrice(item.prevClose) + '</span></span>';
+            }
+            var name = item.label || item.symbol || '';
+            var ticker = item.label && item.symbol ? '<span style="font-size:0.7rem;color:var(--text-secondary);font-weight:400;"> ' + item.symbol + '</span>' : '';
+            return '<div class="market-card">'
+                + '<div class="card-header"><span class="card-symbol">' + name + ticker + '</span><span class="card-change ' + cls + '">' + sign + item.change.toFixed(2) + '%</span></div>'
+                + '<div class="card-price">' + fmtPrice(item.price) + '</div>'
+                + (details ? '<div class="card-details">' + details + '</div>' : '')
+                + '</div>';
+        }
+
+        async function loadMarket() {
+            var loading = document.getElementById('loading');
+            var error = document.getElementById('error');
+            var content = document.getElementById('content');
+            try {
+                var [crypto, twStock, usStocks] = await Promise.all([
+                    fetch(BASE + '/api/market/crypto').then(function(r) { return r.json(); }),
+                    fetch(BASE + '/api/market/tw-stock').then(function(r) { return r.json(); }),
+                    fetch(BASE + '/api/market/us-stocks').then(function(r) { return r.json(); })
+                ]);
+                loading.style.display = 'none';
+                content.style.display = 'block';
+
+                // Crypto
+                var cg = document.getElementById('cryptoGrid');
+                if (Array.isArray(crypto) && crypto.length) {
+                    cg.innerHTML = crypto.map(function(c) { return cardHTML(c, true); }).join('');
+                } else {
+                    cg.innerHTML = '<div class="market-card" style="text-align:center;color:var(--text-secondary);">暫無資料</div>';
+                }
+
+                // TW Stocks
+                var tg = document.getElementById('twGrid');
+                if (Array.isArray(twStock) && twStock.length) {
+                    tg.innerHTML = twStock.map(function(s) { return cardHTML(s, false); }).join('');
+                } else if (twStock && twStock.price != null) {
+                    tg.innerHTML = cardHTML(twStock, false);
+                } else {
+                    tg.innerHTML = '<div class="market-card" style="text-align:center;color:var(--text-secondary);">暫無資料</div>';
+                }
+
+                // US Stocks
+                var ug = document.getElementById('usGrid');
+                if (Array.isArray(usStocks) && usStocks.length) {
+                    ug.innerHTML = usStocks.map(function(s) { return cardHTML(s, false); }).join('');
+                } else if (usStocks && usStocks.price != null) {
+                    ug.innerHTML = cardHTML(usStocks, false);
+                } else {
+                    ug.innerHTML = '<div class="market-card" style="text-align:center;color:var(--text-secondary);">暫無資料</div>';
+                }
+
+                document.getElementById('updateTime').textContent = '最後更新：' + new Date().toLocaleString('zh-TW');
+            } catch (err) {
+                loading.style.display = 'none';
+                error.style.display = 'block';
+                error.textContent = '無法取得市場數據，請稍後再試。';
+            }
+        }
+
+        loadMarket();
+    </script>
+</body>
+</html>

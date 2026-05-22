@@ -11,6 +11,11 @@ let timeLeft = 30;
 let countdown;
 let combo = 0;
 let highScore = parseInt(localStorage.getItem('whackHighScore')) || 0;
+const scoreDetails = document.querySelector('#scoreDetails');
+const bestComboBoard = document.querySelector('#bestCombo');
+let bestCombo = 0;
+let totalHits = 0;
+let totalMisses = 0;
 
 if (highScoreBoard) highScoreBoard.textContent = highScore;
 
@@ -27,9 +32,9 @@ function randomHole(holes) {
 }
 
 function getDifficulty() {
-    if (timeLeft > 20) return { min: 600, max: 1200 };
-    if (timeLeft > 10) return { min: 400, max: 900 };
-    return { min: 250, max: 600 };
+    if (timeLeft > 20) return { min: 1800, max: 2800 };
+    if (timeLeft > 10) return { min: 1400, max: 2200 };
+    return { min: 1000, max: 1600 };
 }
 
 function peep() {
@@ -37,9 +42,11 @@ function peep() {
     const diff = getDifficulty();
     const time = randomTime(diff.min, diff.max);
     const hole = randomHole(holes);
+    hole.dataset.appear = Date.now();
     hole.classList.add('up');
     setTimeout(() => {
         hole.classList.remove('up');
+        delete hole.dataset.appear;
         if (!timeUp) peep();
     }, time);
 }
@@ -60,9 +67,14 @@ function startGame() {
     timeLeft = 30;
     timeUp = false;
     combo = 0;
+    bestCombo = 0;
+    totalHits = 0;
+    totalMisses = 0;
     scoreBoard.textContent = 0;
     timeLeftBoard.textContent = timeLeft;
     if (comboBoard) comboBoard.textContent = '0';
+    if (bestComboBoard) bestComboBoard.textContent = '0';
+    if (scoreDetails) scoreDetails.textContent = '';
     startBtn.style.display = 'none';
 
     peep();
@@ -90,20 +102,34 @@ function startGame() {
 function bonk(e) {
     if (!e.isTrusted) return;
     if (!this.classList.contains('up')) {
+        if (combo > bestCombo) bestCombo = combo;
         combo = 0;
+        totalMisses++;
         if (comboBoard) comboBoard.textContent = '0';
         return;
     }
 
     this.classList.remove('up');
+    totalHits++;
     combo++;
-    let points = 1;
-    if (combo >= 5) points = 3;
-    else if (combo >= 3) points = 2;
+    if (combo > bestCombo) bestCombo = combo;
+
+    // Base: 1pt + combo bonus every 3 streaks
+    let base = 1 + Math.floor(combo / 3);
+
+    // Reaction bonus: hit within 500ms
+    const elapsed = Date.now() - parseInt(this.dataset.appear || Date.now());
+    let bonus = 0;
+    if (elapsed < 300) bonus = 2;
+    else if (elapsed < 600) bonus = 1;
+
+    const points = base + bonus;
 
     score += points;
     scoreBoard.textContent = score;
     if (comboBoard) comboBoard.textContent = combo;
+    if (bestComboBoard) bestComboBoard.textContent = bestCombo;
+    if (scoreDetails) scoreDetails.textContent = base + '+' + bonus;
 
     const blot = this.querySelector('.ink-blot');
     if (blot) {

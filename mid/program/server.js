@@ -711,20 +711,20 @@ router.delete('/api/news/commentary/:id', (req, res) => {
 
 router.get('/api/market/crypto', async (req, res) => {
   try {
-    const ids = 'bitcoin,ethereum,solana,ripple,cardano,dogecoin';
-    const r = await fetch(`https://api.coingecko.com/api/v3/simple/price?ids=${ids}&vs_currencies=usd&include_24hr_change=true`, { timeout: 5000 });
+    const ids = 'bitcoin,ethereum,solana,ripple,cardano,dogecoin,polkadot,avalanche-2,tron,litecoin';
+    const r = await fetch(`https://api.coingecko.com/api/v3/simple/price?ids=${ids}&vs_currencies=usd&include_24hr_change=true&include_market_cap=true&include_24hr_vol=true`, { timeout: 5000 });
     const data = await r.json();
-    const map = { bitcoin: 'BTC', ethereum: 'ETH', solana: 'SOL', ripple: 'XRP', cardano: 'ADA', dogecoin: 'DOGE' };
-    const result = Object.entries(data).map(([k, v]) => ({ symbol: map[k] || k.toUpperCase(), price: v.usd, change: v.usd_24h_change }));
+    const map = { bitcoin: 'BTC', ethereum: 'ETH', solana: 'SOL', ripple: 'XRP', cardano: 'ADA', dogecoin: 'DOGE', polkadot: 'DOT', 'avalanche-2': 'AVAX', tron: 'TRX', litecoin: 'LTC' };
+    const result = Object.entries(data).map(([k, v]) => ({ symbol: map[k] || k.toUpperCase(), price: v.usd, change: v.usd_24h_change, market_cap: v.usd_market_cap, volume: v.usd_24h_vol }));
     res.json(result);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
 
-router.get('/api/market/tw-stock', async (req, res) => {
+async function fetchYahoo(symbol, label) {
   try {
-    const r = await fetch('https://query1.finance.yahoo.com/v8/finance/chart/%5ETWII?interval=1d&range=5d', { timeout: 5000 });
+    const r = await fetch(`https://query1.finance.yahoo.com/v8/finance/chart/${symbol}?interval=1d&range=5d`, { timeout: 5000 });
     const data = await r.json();
     const result = data.chart.result[0];
     const meta = result.meta;
@@ -733,7 +733,36 @@ router.get('/api/market/tw-stock', async (req, res) => {
     const prev = quotes.close[idx - 1] || meta.chartPreviousClose;
     const price = quotes.close[idx];
     const change = ((price - prev) / prev * 100);
-    res.json({ symbol: 'TAIEX', name: '加權指數', price, change });
+    const high = quotes.high[idx];
+    const low = quotes.low[idx];
+    const volume = quotes.volume[idx];
+    return { symbol, label, price, change, high, low, volume, prevClose: meta.chartPreviousClose };
+  } catch (e) {
+    return null;
+  }
+}
+
+router.get('/api/market/tw-stock', async (req, res) => {
+  try {
+    const stocks = [
+      { sym: '%5ETWII', label: '加權指數' },
+      { sym: '2330.TW', label: '台積電' },
+      { sym: '2454.TW', label: '聯發科' },
+      { sym: '2317.TW', label: '鴻海' },
+      { sym: '2308.TW', label: '台達電' },
+      { sym: '2412.TW', label: '中華電' },
+      { sym: '1303.TW', label: '南亞' },
+      { sym: '1301.TW', label: '台塑' },
+      { sym: '2002.TW', label: '中鋼' },
+      { sym: '2881.TW', label: '富邦金' },
+      { sym: '2882.TW', label: '國泰金' },
+      { sym: '2886.TW', label: '兆豐金' },
+      { sym: '2891.TW', label: '中信金' },
+      { sym: '3008.TW', label: '大立光' },
+      { sym: '3711.TW', label: '日月光' }
+    ];
+    const results = (await Promise.all(stocks.map(s => fetchYahoo(s.sym, s.label)))).filter(Boolean);
+    res.json(results);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -741,23 +770,24 @@ router.get('/api/market/tw-stock', async (req, res) => {
 
 router.get('/api/market/us-stocks', async (req, res) => {
   try {
-    const symbols = [
-      { sym: '%5EGSPC', name: 'S&P 500', label: 'S&P 500' },
-      { sym: '%5EDJI', name: 'Dow Jones', label: '道瓊' },
-      { sym: '%5EIXIC', name: 'NASDAQ', label: '那斯達克' }
+    const stocks = [
+      { sym: '%5EGSPC', label: 'S&P 500' },
+      { sym: '%5EDJI', label: '道瓊' },
+      { sym: '%5EIXIC', label: '那斯達克' },
+      { sym: 'AAPL', label: 'Apple' },
+      { sym: 'MSFT', label: 'Microsoft' },
+      { sym: 'GOOGL', label: 'Alphabet' },
+      { sym: 'AMZN', label: 'Amazon' },
+      { sym: 'NVDA', label: 'NVIDIA' },
+      { sym: 'META', label: 'Meta' },
+      { sym: 'TSLA', label: 'Tesla' },
+      { sym: 'JPM', label: 'JPMorgan' },
+      { sym: 'V', label: 'Visa' },
+      { sym: 'JNJ', label: 'J&J' },
+      { sym: 'WMT', label: 'Walmart' },
+      { sym: 'PG', label: 'P&G' }
     ];
-    const results = await Promise.all(symbols.map(async (s) => {
-      const r = await fetch(`https://query1.finance.yahoo.com/v8/finance/chart/${s.sym}?interval=1d&range=5d`, { timeout: 5000 });
-      const data = await r.json();
-      const result = data.chart.result[0];
-      const meta = result.meta;
-      const quotes = result.indicators.quote[0];
-      const idx = quotes.close.length - 1;
-      const prev = quotes.close[idx - 1] || meta.chartPreviousClose;
-      const price = quotes.close[idx];
-      const change = ((price - prev) / prev * 100);
-      return { symbol: s.name, label: s.label, price, change };
-    }));
+    const results = (await Promise.all(stocks.map(s => fetchYahoo(s.sym, s.label)))).filter(Boolean);
     res.json(results);
   } catch (err) {
     res.status(500).json({ error: err.message });

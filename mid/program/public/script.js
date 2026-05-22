@@ -132,12 +132,20 @@ function logout() {
     window.location.href = PREFIX + '/login.html';
 }
 
-const user = getUser();
-if (user) {
-    const section = document.getElementById('userSection');
-    if (section) {
-        section.innerHTML = `<span>${user.username}</span><button onclick="logout()" style="padding:8px 15px;letter-spacing:2px;">登出</button>`;
+function initNotes() {
+    const user = getUser();
+    if (user) {
+        const section = document.getElementById('userSection');
+        if (section) {
+            section.innerHTML = `<span>${user.username}</span><button onclick="logout()" style="padding:8px 15px;letter-spacing:2px;">登出</button>`;
+        }
+        document.getElementById('loginLink')?.remove();
     }
+    loadNotes();
 }
 
-loadNotes();
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initNotes);
+} else {
+    initNotes();
+}

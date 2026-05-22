@@ -346,21 +346,7 @@
       <img src="https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=940&h=198&fit=crop&q=80" alt="水墨意境橫幅" class="header-banner">
     </header>
 
-    <nav class="site-nav">
-      <ul>
-        <li><a href="<%= baseUrl %>/">網誌</a></li>
-        <li><a href="<%= baseUrl %>/about">關於</a></li>
-        <li><a href="<%= baseUrl %>/notes">隨筆</a></li>
-        <li class="dropdown">
-          <a href="#" onclick="toggleDropdown(event)">互動專案 <span class="arrow">▾</span></a>
-          <ul class="dropdown-menu">
-            <li><a href="<%= baseUrl %>/snake.html">貪吃蛇</a></li>
-            <li><a href="<%= baseUrl %>/whack.html">捕墨</a></li>
-            <li><a href="<%= baseUrl %>/maze.html">墨陣</a></li>
-          </ul>
-        </li>
-      </ul>
-    </nav>
+    <%- include('partials/navbar') %>
 
     <div class="content-area">
       <main class="main-content">
@@ -429,15 +415,15 @@
           <div id="marketError" style="font-size:12px;color:#c00;display:none;"></div>
           <div id="marketContent" style="display:none;">
             <div class="market-section">
-              <div class="market-section-title">加密貨幣</div>
+              <a href="<%= baseUrl %>/market.html#crypto" class="market-section-title" style="text-decoration:none;cursor:pointer;">加密貨幣 ›</a>
               <div id="cryptoList"></div>
             </div>
             <div class="market-section">
-              <div class="market-section-title">台股</div>
+              <a href="<%= baseUrl %>/market.html#tw-stock" class="market-section-title" style="text-decoration:none;cursor:pointer;">台股 ›</a>
               <div id="twStockList"></div>
             </div>
             <div class="market-section">
-              <div class="market-section-title">美股</div>
+              <a href="<%= baseUrl %>/market.html#us-stocks" class="market-section-title" style="text-decoration:none;cursor:pointer;">美股 ›</a>
               <div id="usStockList"></div>
             </div>
           </div>
@@ -457,18 +443,6 @@
   </div>
 
   <script>
-    function toggleDropdown(e) {
-      e.preventDefault();
-      e.stopPropagation();
-      e.currentTarget.parentElement.classList.toggle('active');
-    }
-
-    document.addEventListener('click', function(e) {
-      document.querySelectorAll('.dropdown.active').forEach(function(d) {
-        if (!d.contains(e.target)) d.classList.remove('active');
-      });
-    });
-
     const BASE = '<%= baseUrl %>';
 
     document.addEventListener('keydown', function(e) {
@@ -569,25 +543,22 @@
           cryptoList.innerHTML = '<div style="font-size:11px;color:#999;">暫無資料</div>';
         }
 
-        // TW Stock
-        const twList = document.getElementById('twStockList');
-        if (twStock && twStock.price) {
-          const cls = twStock.change >= 0 ? 'up' : 'down';
-          twList.innerHTML = '<div class="market-item"><span class="sym">' + twStock.symbol + '</span><span class="price">' + twStock.price.toFixed(2) + '</span><span class="change ' + cls + '">' + (twStock.change >= 0 ? '+' : '') + twStock.change.toFixed(2) + '%</span></div>';
-        } else {
-          twList.innerHTML = '<div style="font-size:11px;color:#999;">暫無資料</div>';
+        function renderItems(list, data, max) {
+          const arr = Array.isArray(data) ? data : (data ? [data] : []);
+          const items = arr.slice(0, max || arr.length);
+          if (items.length) {
+            list.innerHTML = items.map(s => {
+              const cls = s.change >= 0 ? 'up' : 'down';
+              const name = s.label || s.symbol || '';
+              return '<div class="market-item"><span class="sym">' + name + '</span><span class="price">' + (s.price != null ? s.price.toLocaleString(undefined,{maximumFractionDigits:2}) : '-') + '</span><span class="change ' + cls + '">' + (s.change >= 0 ? '+' : '') + (s.change != null ? s.change.toFixed(2) : '0') + '%</span></div>';
+            }).join('');
+          } else {
+            list.innerHTML = '<div style="font-size:11px;color:#999;">暫無資料</div>';
+          }
         }
 
-        // US Stocks
-        const usList = document.getElementById('usStockList');
-        if (Array.isArray(usStocks) && usStocks.length) {
-          usList.innerHTML = usStocks.map(s => {
-            const cls = s.change >= 0 ? 'up' : 'down';
-            return '<div class="market-item"><span class="sym">' + s.label + '</span><span class="price">' + s.price.toFixed(2) + '</span><span class="change ' + cls + '">' + (s.change >= 0 ? '+' : '') + s.change.toFixed(2) + '%</span></div>';
-          }).join('');
-        } else {
-          usList.innerHTML = '<div style="font-size:11px;color:#999;">暫無資料</div>';
-        }
+        renderItems(document.getElementById('twStockList'), twStock, 5);
+        renderItems(document.getElementById('usStockList'), usStocks, 5);
       } catch (err) {
         loading.style.display = 'none';
         error.style.display = 'block';

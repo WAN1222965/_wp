@@ -5,7 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>捕墨 - 墨跡反應挑戰</title>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;500;700&display=swap">
-    <link rel="stylesheet" href="/s111410509/style.css">
+    <script>const BASE = window.location.pathname.replace(/\/[^/]*$/, '') || '/s111410509';</script>
+    <link rel="stylesheet" href="" id="styleLink">
     <style>
         .game-container { 
             text-align: center; 
@@ -128,6 +129,8 @@
             </div>
             <div class="sub-stats">
                 <span>連擊：<span id="combo">0</span></span>
+                <span>最佳連擊：<span id="bestCombo">0</span></span>
+                <span>得分明細：<span id="scoreDetails" style="color:var(--accent);">-</span></span>
                 <span>最高分：<span id="highScore">0</span></span>
             </div>
             <button id="startBtn" onclick="startGame()">開始研墨</button>
@@ -145,17 +148,26 @@
             <div class="hole"><div class="ink-blot"></div></div>
         </div>
 
-        <nav class="nav-links">
-            <a href="/s111410509/" class="nav-pill">📝 網誌</a>
-            <a href="/s111410509/snake.html" class="nav-pill">🐍 貪吃蛇</a>
-            <a href="/s111410509/maze.html" class="nav-pill">🏃 墨陣</a>
-            <a href="/s111410509/leaderboard.html" class="nav-pill">🏆 排行</a>
-            <a href="/s111410509/news.html" class="nav-pill">📰 新聞</a>
-        </nav>
+        <nav class="nav-links" id="gameNav"></nav>
     </div>
 
-    <script src="/s111410509/ink_background.js"></script>
     <script>
+        document.getElementById('styleLink').href = BASE + '/style.css';
+        var navPaths = ['', 'snake.html', 'maze.html', 'leaderboard.html', 'news.html'];
+        var navLabels = ['📝 網誌', '🐍 貪吃蛇', '🏃 墨陣', '🏆 排行', '📰 新聞'];
+        var navHtml = '';
+        for (var i = 0; i < navPaths.length; i++) {
+            navHtml += '<a href="' + BASE + '/' + navPaths[i] + '" class="nav-pill">' + navLabels[i] + '</a>';
+        }
+        document.getElementById('gameNav').innerHTML = navHtml;
+
+        function loadScript(url) {
+            var s = document.createElement('script');
+            s.src = url;
+            document.body.appendChild(s);
+        }
+        loadScript(BASE + '/ink_background.js');
+
         (function() {
             const t = localStorage.getItem('theme');
             const sys = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
@@ -173,7 +185,8 @@
             if (btn) btn.textContent = t === 'dark' ? '☀️ 淺色' : '🌙 深色';
             if (window.inkBg && window.inkBg.updateTheme) window.inkBg.updateTheme();
         };
+
+        loadScript(BASE + '/whack.js');
     </script>
-    <script src="/s111410509/whack.js"></script>
 </body>
 </html>

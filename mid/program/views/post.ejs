@@ -241,6 +241,23 @@
     .share-btn.twitter:hover { background: #000; color: #fff; border-color: #000; }
     /* Reading time */
     .reading-time { color: var(--text-secondary); font-size: 0.85rem; display: inline-flex; align-items: center; gap: 4px; }
+    /* Article Collapse */
+    .article-collapse { position: relative; overflow: hidden; transition: max-height 0.4s ease; }
+    .article-collapse.collapsed { max-height: 600px; }
+    .article-fade {
+      position: absolute; bottom: 0; left: 0; right: 0; height: 120px;
+      background: linear-gradient(transparent, var(--bg));
+      pointer-events: none; transition: opacity 0.3s ease;
+    }
+    .article-collapse:not(.collapsed) .article-fade { opacity: 0; }
+    .article-toggle {
+      display: none; width: 100%; padding: 12px; margin-top: 0;
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: 0 0 8px 8px; cursor: pointer; font-size: 0.9rem;
+      color: var(--accent); font-family: inherit; transition: 0.2s; text-align: center;
+    }
+    .article-toggle:hover { background: var(--hover-bg); }
+    .article-toggle.visible { display: block; }
     /* Footer */
     .site-footer { border-top: 4px solid #000; padding: 20px; display: flex; justify-content: space-between; align-items: center; font-size: 12px; color: #666; margin-top: 40px; }
     .site-footer strong { font-size: 16px; color: #000; }
@@ -338,9 +355,13 @@
       <% } %>
 
       <!-- Article Body -->
-      <div class="article-body" id="articleBody">
-        <%- post.content %>
+      <div class="article-collapse" id="articleCollapse">
+        <div class="article-body" id="articleBody">
+          <%- post.content %>
+        </div>
+        <div class="article-fade" id="articleFade"></div>
       </div>
+      <button class="article-toggle" id="articleToggle" onclick="toggleArticle()">顯示更多 ▾</button>
 
       <!-- Share -->
       <div class="share-section">
@@ -422,7 +443,7 @@
       document.getElementById('backToTop').style.display = window.scrollY > 400 ? 'block' : 'none';
     });
 
-    // Reading time
+    // Reading time & article collapse
     (function() {
       const body = document.getElementById('articleBody');
       if (body) {
@@ -431,7 +452,27 @@
         const minutes = Math.max(1, Math.ceil(charCount / 500));
         document.getElementById('readTimeMinutes').textContent = minutes;
       }
+      var collapse = document.getElementById('articleCollapse');
+      var toggle = document.getElementById('articleToggle');
+      if (collapse && toggle && collapse.scrollHeight > 600) {
+        collapse.classList.add('collapsed');
+        toggle.classList.add('visible');
+      }
     })();
+    var articleExpanded = false;
+    function toggleArticle() {
+      var collapse = document.getElementById('articleCollapse');
+      var toggle = document.getElementById('articleToggle');
+      if (!collapse) return;
+      if (articleExpanded) {
+        collapse.classList.add('collapsed');
+        toggle.textContent = '顯示更多 ▾';
+      } else {
+        collapse.classList.remove('collapsed');
+        toggle.textContent = '收合 ▴';
+      }
+      articleExpanded = !articleExpanded;
+    }
 
     function deletePost() {
       if (!confirm('⚠️ 確定要刪除這篇文章嗎？此操作無法還原。')) return;
