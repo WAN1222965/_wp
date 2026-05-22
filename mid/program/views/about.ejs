@@ -35,6 +35,11 @@
     .site-nav ul { list-style: none; margin: 0; padding: 0 10px; display: flex; flex-wrap: wrap; }
     .site-nav li a { color: #fff; text-decoration: none; display: block; padding: 8px 14px; font-size: 14px; }
     .site-nav li a:hover { text-decoration: underline; }
+    .dropdown { position: relative; }
+    .dropdown-menu { display: none; position: absolute; top: 100%; left: 0; background: #000; flex-direction: column; min-width: 120px; z-index: 100; padding: 0; margin: 0; list-style: none; }
+    .dropdown.active .dropdown-menu { display: flex; }
+    .dropdown-menu li a { white-space: nowrap; padding: 8px 14px; }
+    .dropdown > a .arrow { display: inline-block; transition: transform 0.25s ease; font-size: 0.7rem; margin-left: 4px; }
 
     h1 { font-size: 2rem; margin: 0 0 8px; }
     .subtitle { color: var(--text-secondary); margin-bottom: 32px; }

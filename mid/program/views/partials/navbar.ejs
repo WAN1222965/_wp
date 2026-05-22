@@ -3,11 +3,34 @@
     <li><a href="<%= baseUrl %>/"><span>📝</span> 網誌</a></li>
     <li><a href="<%= baseUrl %>/about"><span>ℹ️</span> 關於</a></li>
     <li><a href="<%= baseUrl %>/notes"><span>✏️</span> 隨筆</a></li>
-    <li><a href="<%= baseUrl %>/whack.html"><span>🎯</span> 捕墨</a></li>
-    <li><a href="<%= baseUrl %>/maze.html"><span>🏃</span> 墨陣</a></li>
-    <li><a href="<%= baseUrl %>/snake.html"><span>🐍</span> 貪吃蛇</a></li>
-    <li><a href="<%= baseUrl %>/leaderboard.html"><span>🏆</span> 排行</a></li>
+    <li class="dropdown">
+      <a href="#" onclick="toggleDropdown(event)"><span>🎮</span> 互動專案 <span class="arrow">▾</span></a>
+      <ul class="dropdown-menu">
+        <li><a href="<%= baseUrl %>/snake.html"><span>🐍</span> 貪吃蛇</a></li>
+        <li><a href="<%= baseUrl %>/whack.html"><span>🎯</span> 捕墨</a></li>
+        <li><a href="<%= baseUrl %>/maze.html"><span>🏃</span> 墨陣</a></li>
+        <li><a href="<%= baseUrl %>/leaderboard.html"><span>🏆</span> 排行</a></li>
+      </ul>
+    </li>
     <li><a href="<%= baseUrl %>/news.html"><span>📰</span> 新聞</a></li>
     <li><a href="<%= baseUrl %>/contact"><span>✉️</span> 聯絡</a></li>
+    <li><a href="<%= baseUrl %>/login.html"><span>🔑</span> 登入</a></li>
   </ul>
 </nav>
+<style>
+.dropdown.active > a .arrow {
+  transform: rotate(180deg);
+}
+</style>
+<script>
+function toggleDropdown(e) {
+  e.preventDefault();
+  e.stopPropagation();
+  e.currentTarget.parentElement.classList.toggle('active');
+}
+document.addEventListener('click', function(e) {
+  document.querySelectorAll('.dropdown.active').forEach(function(d) {
+    if (!d.contains(e.target)) d.classList.remove('active');
+  });
+});
+</script>

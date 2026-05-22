@@ -8,6 +8,7 @@ const Parser = require('rss-parser');
 const { marked } = require('marked');
 const multer = require('multer');
 const { v4: uuidv4 } = require('uuid');
+const fetch = require('node-fetch');
 
 // Multer config — local file storage (swap to S3 by changing storage)
 const storage = multer.diskStorage({
@@ -704,6 +705,63 @@ router.delete('/api/news/commentary/:id', (req, res) => {
     if (this.changes === 0) return res.status(404).json({ error: '找不到該評論' });
     res.json({ message: '刪除成功' });
   });
+});
+
+// ===== Market Data (Crypto / TW Stock / US Stock) =====
+
+router.get('/api/market/crypto', async (req, res) => {
+  try {
+    const ids = 'bitcoin,ethereum,solana,ripple,cardano,dogecoin';
+    const r = await fetch(`https://api.coingecko.com/api/v3/simple/price?ids=${ids}&vs_currencies=usd&include_24hr_change=true`, { timeout: 5000 });
+    const data = await r.json();
+    const map = { bitcoin: 'BTC', ethereum: 'ETH', solana: 'SOL', ripple: 'XRP', cardano: 'ADA', dogecoin: 'DOGE' };
+    const result = Object.entries(data).map(([k, v]) => ({ symbol: map[k] || k.toUpperCase(), price: v.usd, change: v.usd_24h_change }));
+    res.json(result);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+router.get('/api/market/tw-stock', async (req, res) => {
+  try {
+    const r = await fetch('https://query1.finance.yahoo.com/v8/finance/chart/%5ETWII?interval=1d&range=5d', { timeout: 5000 });
+    const data = await r.json();
+    const result = data.chart.result[0];
+    const meta = result.meta;
+    const quotes = result.indicators.quote[0];
+    const idx = quotes.close.length - 1;
+    const prev = quotes.close[idx - 1] || meta.chartPreviousClose;
+    const price = quotes.close[idx];
+    const change = ((price - prev) / prev * 100);
+    res.json({ symbol: 'TAIEX', name: '加權指數', price, change });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+router.get('/api/market/us-stocks', async (req, res) => {
+  try {
+    const symbols = [
+      { sym: '%5EGSPC', name: 'S&P 500', label: 'S&P 500' },
+      { sym: '%5EDJI', name: 'Dow Jones', label: '道瓊' },
+      { sym: '%5EIXIC', name: 'NASDAQ', label: '那斯達克' }
+    ];
+    const results = await Promise.all(symbols.map(async (s) => {
+      const r = await fetch(`https://query1.finance.yahoo.com/v8/finance/chart/${s.sym}?interval=1d&range=5d`, { timeout: 5000 });
+      const data = await r.json();
+      const result = data.chart.result[0];
+      const meta = result.meta;
+      const quotes = result.indicators.quote[0];
+      const idx = quotes.close.length - 1;
+      const prev = quotes.close[idx - 1] || meta.chartPreviousClose;
+      const price = quotes.close[idx];
+      const change = ((price - prev) / prev * 100);
+      return { symbol: s.name, label: s.label, price, change };
+    }));
+    res.json(results);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 app.use(BASE, router);
