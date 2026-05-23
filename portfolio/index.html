@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WP 專案總覽</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+      background: #0f0f0f;
+      color: #e0e0e0;
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+    .bg-particles {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      overflow: hidden;
+      z-index: 0;
+    }
+    .bg-particles span {
+      position: absolute;
+      width: 2px;
+      height: 2px;
+      background: rgba(255,255,255,0.08);
+      border-radius: 50%;
+      animation: float linear infinite;
+    }
+    @keyframes float {
+      0% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+      10% { opacity: 1; }
+      90% { opacity: 1; }
+      100% { transform: translateY(-10vh) rotate(720deg); opacity: 0; }
+    }
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 40px 24px;
+      position: relative;
+      z-index: 1;
+    }
+    header {
+      text-align: center;
+      padding: 60px 0 50px;
+    }
+    header h1 {
+      font-size: 3rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, #a78bfa, #60a5fa, #34d399);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      letter-spacing: -0.02em;
+    }
+    header p {
+      color: #888;
+      font-size: 1.1rem;
+      margin-top: 12px;
+    }
+    header .badge {
+      display: inline-block;
+      margin-top: 16px;
+      padding: 6px 18px;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 20px;
+      font-size: 0.85rem;
+      color: #999;
+    }
+    .section-title {
+      font-size: 1.4rem;
+      font-weight: 600;
+      margin: 48px 0 24px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      color: #ccc;
+    }
+    .grid {
+      display: grid;
+      gap: 20px;
+    }
+    .grid-2 { grid-template-columns: repeat(auto-fill, minmax(480px, 1fr)); }
+    .grid-3 { grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); }
+    @media (max-width: 600px) {
+      .grid-2, .grid-3 { grid-template-columns: 1fr; }
+      header h1 { font-size: 2rem; }
+    }
+    .card {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 16px;
+      padding: 24px;
+      transition: all 0.3s ease;
+    }
+    .card:hover {
+      background: rgba(255,255,255,0.07);
+      border-color: rgba(255,255,255,0.12);
+      transform: translateY(-2px);
+    }
+    .card-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+      margin-bottom: 14px;
+    }
+    .card h3 {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: #f0f0f0;
+      margin-bottom: 6px;
+    }
+    .card .tag {
+      display: inline-block;
+      padding: 2px 10px;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-weight: 500;
+      margin-bottom: 10px;
+    }
+    .tag-node { background: rgba(99,179,87,0.15); color: #63b357; }
+    .tag-html { background: rgba(241,101,41,0.15); color: #f16529; }
+    .tag-js   { background: rgba(247,223,30,0.15); color: #f7df1e; }
+    .tag-fullstack { background: rgba(167,139,250,0.15); color: #a78bfa; }
+    .tag-server { background: rgba(59,130,246,0.15); color: #3b82f6; }
+    .card p {
+      color: #999;
+      font-size: 0.9rem;
+      margin-bottom: 14px;
+    }
+    .card .links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .card .links a {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 5px 12px;
+      border-radius: 8px;
+      font-size: 0.8rem;
+      color: #bbb;
+      background: rgba(255,255,255,0.06);
+      text-decoration: none;
+      transition: all 0.2s;
+    }
+    .card .links a:hover {
+      background: rgba(167,139,250,0.15);
+      color: #a78bfa;
+    }
+    .card .hint {
+      font-size: 0.8rem;
+      color: #666;
+      margin-top: 8px;
+      padding: 8px 12px;
+      background: rgba(255,255,255,0.03);
+      border-radius: 8px;
+      border-left: 3px solid rgba(59,130,246,0.3);
+    }
+    .hw-group {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 12px;
+    }
+    .hw-item {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.05);
+      border-radius: 10px;
+      padding: 14px;
+      transition: all 0.2s;
+    }
+    .hw-item:hover {
+      background: rgba(255,255,255,0.06);
+      border-color: rgba(255,255,255,0.1);
+    }
+    .hw-item h4 {
+      font-size: 0.9rem;
+      color: #d0d0d0;
+      margin-bottom: 4px;
+    }
+    .hw-item .count {
+      font-size: 0.8rem;
+      color: #777;
+    }
+    .hw-item .files {
+      font-size: 0.75rem;
+      color: #666;
+      margin-top: 4px;
+    }
+    .hw-item .run-hint {
+      font-size: 0.7rem;
+      color: #555;
+      margin-top: 6px;
+      font-family: monospace;
+    }
+    .server-box {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 12px;
+      padding: 20px;
+    }
+    .server-box h3 {
+      font-size: 1rem;
+      color: #a78bfa;
+      margin-bottom: 8px;
+    }
+    .server-box code {
+      display: block;
+      background: rgba(0,0,0,0.3);
+      padding: 10px 14px;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      color: #ccc;
+    }
+    .server-box code .cmt { color: #666; }
+
+    .tagcloud-wrap {
+      position: relative;
+      width: 100%;
+      max-width: 600px;
+      height: 420px;
+      margin: 0 auto 20px;
+      cursor: grab;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+    .tagcloud-wrap:active { cursor: grabbing; }
+    .tagcloud-canvas {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+    .tagcloud-hint {
+      text-align: center;
+      font-size: 0.75rem;
+      color: #555;
+      margin-top: -10px;
+      margin-bottom: 40px;
+      letter-spacing: 0.05em;
+    }
+    .tagcloud-hint span {
+      display: inline-block;
+      animation: pulse-hint 2.5s ease-in-out infinite;
+    }
+    @keyframes pulse-hint {
+      0%, 100% { opacity: 0.4; }
+      50% { opacity: 1; }
+    }
+    .tag-tooltip {
+      position: fixed;
+      padding: 6px 14px;
+      background: rgba(20,20,20,0.92);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 8px;
+      font-size: 0.8rem;
+      color: #eee;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.2s;
+      z-index: 100;
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+    }
+    .tag-tooltip.show { opacity: 1; }
+    footer {
+      text-align: center;
+      padding: 40px 0;
+      color: #555;
+      font-size: 0.85rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="bg-particles">
+    <span style="left:10%;animation-duration:18s;animation-delay:0s"></span>
+    <span style="left:25%;animation-duration:22s;animation-delay:2s"></span>
+    <span style="left:40%;animation-duration:15s;animation-delay:4s"></span>
+    <span style="left:55%;animation-duration:20s;animation-delay:1s"></span>
+    <span style="left:70%;animation-duration:17s;animation-delay:3s"></span>
+    <span style="left:85%;animation-duration:24s;animation-delay:5s"></span>
+  </div>
+
+  <div class="container">
+    <header>
+      <h1>WP 專案總覽</h1>
+      <p>吳嘉恩 · 國立金門大學 資訊工程學系</p>
+      <span class="badge">s111410509 · Node.js · HTML · CSS · JavaScript</span>
+    </header>
+
+    <!-- 技術標籤雲 -->
+    <div class="tagcloud-wrap" id="tagCloud">
+      <canvas class="tagcloud-canvas" id="tagCanvas"></canvas>
+    </div>
+    <div class="tagcloud-hint"><span>🖱 拖曳旋轉 · 點擊查看</span></div>
+    <div class="tag-tooltip" id="tagTooltip"></div>
+
+    <!-- 主要專案 -->
+    <h2 class="section-title">主要專案</h2>
+    <div class="grid grid-2">
+
+      <div class="card">
+        <div class="card-icon" style="background:rgba(99,179,87,0.12)">📝</div>
+        <span class="tag tag-server">需啟動伺服器</span>
+        <h3>AI 部落格系統</h3>
+        <p>Node.js + Express + SQLite3 全端部落格。用戶註冊/登入、文章 CRUD、留言、好友系統、按讚/倒讚、分享。進階版含約會配對系統。</p>
+        <div class="links">
+          <a href="../AI/server.js">查看 server.js</a>
+          <a href="../AI/selo.js">查看 selo.js（進階版）</a>
+          <a href="../AI/README.md">說明文件</a>
+        </div>
+        <div class="hint">
+          💡 需先啟動伺服器：<code>cd AI && npm install && node server.js</code>，再連 <code>http://localhost:3000</code>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-icon" style="background:rgba(167,139,250,0.12)">🖌️</div>
+        <span class="tag tag-server">需啟動伺服器 / 可獨立開啟</span>
+        <h3>墨 · Ink 部落格（期中專案）</h3>
+        <p>全功能部落格：Markdown 編輯器、圖片上傳、RSS/Sitemap、搜尋、新聞聚合、股市/加密貨幣行情、三款遊戲（貪食蛇、打地鼠、迷宮）、排行榜、聯絡表單。水墨動畫背景。</p>
+        <div class="links">
+          <a href="../mid/program/public/classic-blog.html">📄 靜態部落格</a>
+          <a href="../mid/program/public/snake.html">🐍 貪食蛇</a>
+          <a href="../mid/program/public/whack.html">🔨 打地鼠</a>
+          <a href="../mid/program/public/maze.html">🌀 迷宮</a>
+          <a href="../mid/program/public/news.html">📰 新聞</a>
+          <a href="../mid/program/public/market.html">📊 行情</a>
+          <a href="../mid/program/public/leaderboard.html">🏆 排行榜</a>
+          <a href="../mid/program/public/login.html">🔑 登入</a>
+          <a href="../mid/program/README.md">說明文件</a>
+        </div>
+        <div class="hint">
+          💡 上方連結可直接開啟（靜態頁面）。完整功能需啟動伺服器：<code>cd mid/program && npm install && node server.js</code>，連 <code>http://localhost:3000</code>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- HTML 作品 -->
+    <h2 class="section-title">HTML 作品</h2>
+    <div class="grid grid-3">
+
+      <div class="card">
+        <div class="card-icon" style="background:rgba(241,101,41,0.12)">📋</div>
+        <span class="tag tag-html">HTML</span>
+        <h3>表單設計</h3>
+        <p>完整 HTML 表單範例：文字、Email、密碼、數字、電話、日期、顏色、檔案上傳、下拉選單、checkbox、radio 等 15+ 種輸入類型。現代 CSS 樣式。</p>
+        <div class="links">
+          <a href="../homework/form.html">開啟頁面</a>
+          <a href="../homework/form">原始檔（無附檔名）</a>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-icon" style="background:rgba(241,101,41,0.12)">👤</div>
+        <span class="tag tag-html">HTML</span>
+        <h3>個人資料頁面</h3>
+        <p>個人介紹頁面：自介、技能標籤（羽球、C/C++、SQL、Linux）、興趣愛好與聯絡按鈕。</p>
+        <div class="links">
+          <a href="../homework/personaldata.html">開啟頁面</a>
+          <a href="../homework/personaldata">原始檔（無附檔名）</a>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- JavaScript 練習 -->
+    <h2 class="section-title">JavaScript 練習（需用 Node.js 執行）</h2>
+    <p style="color:#666;font-size:0.9rem;margin-bottom:16px">
+      以下練習均為 Node.js 腳本，無法直接在瀏覽器開啟。請用命令列執行：<code style="background:rgba(255,255,255,0.06);padding:2px 6px;border-radius:4px">node 檔名.js</code>
+    </p>
+    <div class="hw-group">
+
+      <div class="hw-item">
+        <h4>📁 math1</h4>
+        <span class="tag tag-js">JS</span>
+        <div class="count">10 個練習</div>
+        <div class="files">Callback, IIFE, Arrow, Closure, Filter, setTimeout…</div>
+        <div class="run-hint">node homework/math1/01callback.js</div>
+      </div>
+
+      <div class="hw-item">
+        <h4>📁 Understanding Blog</h4>
+        <span class="tag tag-js">JS</span>
+        <div class="count">10 個練習</div>
+        <div class="files">解構、forEach、JSON、Error-first callback、權限檢查…</div>
+        <div class="run-hint">node "homework/Understanding Blog/01"</div>
+      </div>
+
+      <div class="hw-item">
+        <h4>📁 java/js</h4>
+        <span class="tag tag-js">JS</span>
+        <div class="count">10 個練習</div>
+        <div class="files">奇偶數、購物車、平均成績、九九乘法表、庫存系統…</div>
+        <div class="run-hint">node homework/java/js/01.js</div>
+      </div>
+
+      <div class="hw-item">
+        <h4>📁 js  practise</h4>
+        <span class="tag tag-js">JS</span>
+        <div class="count">10 個練習</div>
+        <div class="files">同 java/js 系列，不同實作</div>
+        <div class="run-hint">node "homework/js  practise/01"</div>
+      </div>
+
+      <div class="hw-item">
+        <h4>📁 03 / 04</h4>
+        <span class="tag tag-js">JS</span>
+        <div class="count">11 個練習</div>
+        <div class="files">helloworld、成績管理、購物車、數列、倒數…</div>
+        <div class="run-hint">node homework/04/10-score.js</div>
+      </div>
+
+    </div>
+
+    <!-- 伺服器啟動指引 -->
+    <h2 class="section-title">啟動方式</h2>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px">
+      <div class="server-box">
+        <h3>📝 AI 部落格</h3>
+        <code>
+cd AI<br>
+npm install<br>
+node server.js<br>
+<span class="cmt"># 或 node selo.js（進階版含約會配對）</span>
+        </code>
+      </div>
+      <div class="server-box">
+        <h3>🖌️ 墨 · Ink 部落格</h3>
+        <code>
+cd mid/program<br>
+npm install<br>
+node server.js
+        </code>
+      </div>
+    </div>
+
+    <footer>
+      WP 專案總覽 &middot; 國立金門大學 資訊工程學系
+    </footer>
+  </div>
+
+  <div class="tag-tooltip" id="tagTooltip"></div>
+
+  <script>
+    ;(function(){
+      const tags = [
+        { text: 'Node.js',   href: '#', color: '#63b357' },
+        { text: 'Express',   href: '#', color: '#68a063' },
+        { text: 'SQLite3',   href: '#', color: '#044a64' },
+        { text: 'EJS',       href: '#', color: '#a91e50' },
+        { text: 'HTML5',     href: '#', color: '#e34f26' },
+        { text: 'CSS3',      href: '#', color: '#1572b6' },
+        { text: 'JavaScript',href: '#', color: '#f7df1e' },
+        { text: 'REST API',  href: '#', color: '#6db33f' },
+        { text: 'bcrypt',    href: '#', color: '#5352ed' },
+        { text: 'Multer',    href: '#', color: '#ff6b6b' },
+        { text: 'Markdown',  href: '#', color: '#48dbfb' },
+        { text: 'RSS',       href: '#', color: '#ffa502' },
+        { text: 'Canvas',    href: '#', color: '#2ed573' },
+        { text: 'SEO',       href: '#', color: '#1e90ff' },
+        { text: 'Full-Stack',href: '#', color: '#a78bfa' },
+        { text: 'SQL',       href: '#', color: '#eccc68' },
+        { text: 'Linux',     href: '#', color: '#f1c40f' },
+        { text: 'Git',       href: '#', color: '#e67e22' },
+        { text: 'JSON',      href: '#', color: '#292929' },
+        { text: 'AJAX',      href: '#', color: '#2c3e50' },
+        { text: 'SPA',       href: '#', color: '#9b59b6' },
+        { text: 'RWD',       href: '#', color: '#00b894' },
+        { text: 'Auth',      href: '#', color: '#e17055' },
+        { text: 'SQL.js',    href: '#', color: '#0984e3' }
+      ];
+
+      const canvas = document.getElementById('tagCanvas');
+      const tooltip = document.getElementById('tagTooltip');
+      const wrap = document.getElementById('tagCloud');
+      const ctx = canvas.getContext('2d');
+      let W, H, cx, cy;
+      let radius = 180;
+      let theta = 0, phi = 0;
+      let isDragging = false;
+      let lastX, lastY;
+      let autoRotate = true;
+      let autoTimer = null;
+      let hoveredTag = null;
+
+      const tagItems = [];
+      const goldenAngle = Math.PI * (3 - Math.sqrt(5));
+
+      function resize() {
+        const rect = wrap.getBoundingClientRect();
+        W = canvas.width = rect.width * window.devicePixelRatio;
+        H = canvas.height = rect.height * window.devicePixelRatio;
+        cx = W / 2;
+        cy = H / 2;
+        radius = Math.min(W, H) * 0.35;
+        ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+        W /= window.devicePixelRatio;
+        H /= window.devicePixelRatio;
+        cx = W / 2;
+        cy = H / 2;
+      }
+
+      function initTags() {
+        tagItems.length = 0;
+        const n = tags.length;
+        for (let i = 0; i < n; i++) {
+          const y = 1 - (i / (n - 1)) * 2;
+          const r = Math.sqrt(1 - y * y);
+          const a = goldenAngle * i;
+          tagItems.push({
+            x: r * Math.cos(a),
+            y: y,
+            z: r * Math.sin(a),
+            ...tags[i]
+          });
+        }
+      }
+
+      function rotateX(vec, angle) {
+        const c = Math.cos(angle), s = Math.sin(angle);
+        const y = vec.y * c - vec.z * s;
+        const z = vec.y * s + vec.z * c;
+        return { x: vec.x, y, z };
+      }
+
+      function rotateY(vec, angle) {
+        const c = Math.cos(angle), s = Math.sin(angle);
+        const x = vec.x * c + vec.z * s;
+        const z = -vec.x * s + vec.z * c;
+        return { x, y: vec.y, z };
+      }
+
+      function draw() {
+        ctx.clearRect(0, 0, W, H);
+
+        const projected = tagItems.map(t => {
+          let p = { x: t.x, y: t.y, z: t.z };
+          p = rotateX(p, phi);
+          p = rotateY(p, theta);
+          const scale = 800 / (800 + p.z * radius);
+          const sx = cx + p.x * radius * scale;
+          const sy = cy - p.y * radius * scale;
+          return { ...t, px: sx, py: sy, z: p.z, scale };
+        });
+
+        projected.sort((a, b) => a.z - b.z);
+
+        for (const t of projected) {
+          const alpha = 0.35 + 0.65 * ((t.z + radius) / (2 * radius));
+          const size = 11 + 5 * t.scale;
+          const isHover = hoveredTag === t;
+
+          ctx.save();
+          ctx.globalAlpha = Math.max(0.2, alpha);
+          ctx.font = `600 ${size}px -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif`;
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+
+          if (isHover) {
+            ctx.shadowColor = t.color;
+            ctx.shadowBlur = 20;
+          }
+
+          ctx.fillStyle = t.color;
+          ctx.fillText(t.text, t.px, t.py);
+          ctx.restore();
+        }
+
+        if (autoRotate && !isDragging) {
+          theta += 0.003;
+          phi += 0.0015;
+        }
+        requestAnimationFrame(draw);
+      }
+
+      function getMousePos(e) {
+        const rect = canvas.getBoundingClientRect();
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        return { x: clientX - rect.left, y: clientY - rect.top };
+      }
+
+      function onStart(e) {
+        isDragging = true;
+        autoRotate = false;
+        const pos = getMousePos(e);
+        lastX = pos.x;
+        lastY = pos.y;
+        e.preventDefault();
+      }
+
+      function onMove(e) {
+        const pos = getMousePos(e);
+        if (isDragging) {
+          const dx = pos.x - lastX;
+          const dy = pos.y - lastY;
+          theta += dx * 0.008;
+          phi += dy * 0.008;
+          phi = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, phi));
+          lastX = pos.x;
+          lastY = pos.y;
+          e.preventDefault();
+        }
+
+        const projected = tagItems.map(t => {
+          let p = { x: t.x, y: t.y, z: t.z };
+          p = rotateX(p, phi);
+          p = rotateY(p, theta);
+          const scale = 800 / (800 + p.z * radius);
+          return { ...t, px: cx + p.x * radius * scale, py: cy - p.y * radius * scale, z: p.z };
+        });
+
+        hoveredTag = null;
+        for (const t of projected) {
+          const dist = Math.hypot(t.px - pos.x, t.py - pos.y);
+          if (dist < 20 && t.z > -radius * 0.3) {
+            hoveredTag = t;
+            break;
+          }
+        }
+
+        if (hoveredTag) {
+          canvas.style.cursor = 'pointer';
+          tooltip.textContent = hoveredTag.text;
+          const rect = canvas.getBoundingClientRect();
+          tooltip.style.left = (rect.left + pos.x + 12) + 'px';
+          tooltip.style.top = (rect.top + pos.y - 10) + 'px';
+          tooltip.classList.add('show');
+        } else {
+          canvas.style.cursor = isDragging ? 'grabbing' : 'grab';
+          tooltip.classList.remove('show');
+        }
+      }
+
+      function onEnd() {
+        isDragging = false;
+        clearTimeout(autoTimer);
+        autoTimer = setTimeout(() => { autoRotate = true; }, 2000);
+      }
+
+      function onTap(e) {
+        const pos = getMousePos(e);
+        const projected = tagItems.map(t => {
+          let p = { x: t.x, y: t.y, z: t.z };
+          p = rotateX(p, phi);
+          p = rotateY(p, theta);
+          const scale = 800 / (800 + p.z * radius);
+          return { ...t, px: cx + p.x * radius * scale, py: cy - p.y * radius * scale, z: p.z };
+        });
+
+        for (const t of projected) {
+          const dist = Math.hypot(t.px - pos.x, t.py - pos.y);
+          if (dist < 20 && t.z > -radius * 0.3) {
+            const section = document.querySelector('.section-title');
+            if (section) section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            break;
+          }
+        }
+      }
+
+      canvas.addEventListener('mousedown', onStart);
+      canvas.addEventListener('mousemove', onMove);
+      canvas.addEventListener('mouseup', onEnd);
+      canvas.addEventListener('mouseleave', onEnd);
+      canvas.addEventListener('click', onTap);
+
+      canvas.addEventListener('touchstart', onStart, { passive: false });
+      canvas.addEventListener('touchmove', onMove, { passive: false });
+      canvas.addEventListener('touchend', onEnd, { passive: false });
+
+      window.addEventListener('resize', () => { resize(); });
+
+      initTags();
+      resize();
+      draw();
+    })();
+  </script>
+</body>
+</html>

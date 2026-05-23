@@ -1,0 +1,222 @@
+<!DOCTYPE html> <html lang="zh-Hant"> <head>
+    <meta charset="UTF-8"> <meta name="viewport" content="width=device-width, initial-scale=1.0"> <title>現代化 Input 展示問卷</title> <style>
+        /* CSS 樣式開始 */
+        :root { /* 定義全域變數，方便統一管理顏色 */
+            --primary-color: #4a90e2; /* 主色調：藍色 */
+            --bg-color: #f4f7f6; /* 背景色：淺灰色 */
+            --text-color: #333; /* 文字顏色：深灰色 */
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; /* 設定字體 */
+            background-color: var(--bg-color); /* 使用變數設定背景顏色 */
+            color: var(--text-color); /* 使用變數設定文字顏色 */
+            display: flex; /* 使用 Flexbox 佈局 */
+            justify-content: center; /* 水平居中內容 */
+            padding: 40px 20px; /* 上下內邊距 40px，左右 20px */
+        }
+
+        .container {
+            background: white; /* 容器背景為白色 */
+            padding: 30px; /* 內部留白 30px */
+            border-radius: 12px; /* 圓角效果 */
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1); /* 增加陰影，讓容器有立體感 */
+            max-width: 600px; /* 限制最大寬度為 600px */
+            width: 100%; /* 在小螢幕時寬度佔滿 100% */
+        }
+
+        h2 {
+            text-align: center; /* 標題文字置中 */
+            color: var(--primary-color); /* 標題顏色使用主色調 */
+            margin-bottom: 30px; /* 標題下方留白 */
+        }
+
+        .form-group {
+            margin-bottom: 20px; /* 每個輸入區塊之間的距離 */
+        }
+
+        label {
+            display: block; /* 讓標籤獨佔一行 */
+            margin-bottom: 8px; /* 標籤與輸入框之間的距離 */
+            font-weight: 600; /* 字體加粗 */
+        }
+
+        /* 針對多種輸入類型進行統一美化 */
+        input[type="text"],
+        input[type="email"],
+        input[type="password"],
+        input[type="tel"],
+        input[type="url"],
+        input[type="number"],
+        input[type="date"],
+        input[type="time"],
+        select,
+        textarea {
+            width: 100%; /* 寬度填滿容器 */
+            padding: 10px; /* 內部留白 */
+            border: 1px solid #ddd; /* 淺灰色邊框 */
+            border-radius: 6px; /* 稍微圓角 */
+            box-sizing: border-box; /* 確保 padding 不會撐開總寬度 */
+            font-size: 16px; /* 字體大小 */
+        }
+
+        input:focus { /* 當滑鼠點擊輸入框後的狀態 */
+            outline: none; /* 移除瀏覽器預設的藍色外框 */
+            border-color: var(--primary-color); /* 邊框變為主色調藍色 */
+            box-shadow: 0 0 5px rgba(74, 144, 226, 0.3); /* 增加淡淡的藍色發光效果 */
+        }
+
+        .row {
+            display: grid; /* 使用 Grid 網格佈局 */
+            grid-template-columns: 1fr 1fr; /* 分成左右兩欄，各佔一半寬度 */
+            gap: 20px; /* 欄位之間的間距 */
+        }
+
+        input[type="color"] {
+            height: 40px; /* 設定顏色選擇器的高度 */
+            width: 100%; /* 寬度填滿 */
+            cursor: pointer; /* 鼠標移上去顯示手指形狀 */
+        }
+
+        input[type="range"] {
+            width: 100%; /* 滑動條寬度填滿 */
+            cursor: pointer; /* 鼠標移上去顯示手指形狀 */
+        }
+
+        .checkbox-group, .radio-group {
+            display: flex; /* 讓選項橫向排列 */
+            gap: 15px; /* 選項之間的間距 */
+            align-items: center; /* 垂直居中對齊 */
+        }
+
+        .checkbox-group input, .radio-group input {
+            width: auto; /* 重設寬度 */
+        }
+
+        .submit-btn {
+            background-color: var(--primary-color); /* 按鈕背景色 */
+            color: white; /* 按鈕文字顏色 */
+            border: none; /* 移除邊框 */
+            padding: 12px 25px; /* 按鈕大小 */
+            border-radius: 6px; /* 圓角 */
+            cursor: pointer; /* 鼠標變手指 */
+            font-size: 18px; /* 文字變大 */
+            width: 100%; /* 寬度填滿 */
+            transition: background 0.3s; /* 增加變色動畫效果 */
+        }
+
+        .submit-btn:hover {
+            background-color: #357abd; /* 鼠標懸停時顏色加深 */
+        }
+
+        footer {
+            text-align: center; /* 置中 */
+            margin-top: 20px; /* 與上方留白 */
+            font-size: 12px; /* 字體縮小 */
+            color: #888; /* 淺灰色 */
+        }
+    </style>
+</head>
+<body>
+
+<div class="container"> <h2>🚀 吳嘉恩表單</h2>
+    
+    <form action="#"> <div class="form-group">
+            <label>全名 (text)</label>
+            <input type="text" placeholder="請輸入姓名" required> </div>
+
+        <div class="row"> <div class="form-group">
+                <label>電子郵件 (email)</label>
+                <input type="email" placeholder="example@mail.com">
+            </div>
+            <div class="form-group">
+                <label>密碼 (password)</label>
+                <input type="password" placeholder="輸入安全密碼">
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="form-group">
+                <label>年齡 (number)</label>
+                <input type="number" min="1" max="120" value="25">
+            </div>
+            <div class="form-group">
+                <label>聯絡電話 (tel)</label>
+                <input type="tel" placeholder="0912-345-678">
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="form-group">
+                <label>預約日期 (date)</label>
+                <input type="date">
+            </div>
+            <div class="form-group">
+                <label>具體時間 (time)</label>
+                <input type="time">
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>滿意度評分 (range: 1-100)</label>
+            <input type="range" min="1" max="100" value="70">
+        </div>
+
+        <div class="form-group">
+            <label>個人專屬顏色 (color)</label>
+            <input type="color" value="#4a90e2">
+        </div>
+
+        <div class="form-group">
+            <label>感興趣的主題 (select)</label>
+            <select>
+                <option value="web">網頁開發</option>
+                <option value="ai">人工智能</option>
+                <option value="design">介面設計</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>上傳大頭照 (file)</label>
+            <input type="file" accept="image/*">
+        </div>
+
+        <div class="form-group">
+            <label>接收通知方式 (checkbox)</label>
+            <div class="checkbox-group">
+                <label><input type="checkbox" checked> Email</label> <label><input type="checkbox"> SMS</label>
+                <label><input type="checkbox"> App 推播</label>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>您的身份 (radio)</label>
+            <div class="radio-group">
+                <label><input type="radio" name="role" value="student"> 學生</label>
+                <label><input type="radio" name="role" value="worker"> 社會人士</label>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>個人部落格 (url)</label>
+            <input type="url" placeholder="https://example.com">
+        </div>
+
+        <div class="form-group">
+            <label>給我們的建議 (textarea)</label>
+            <textarea rows="4" placeholder="說點什麼吧..."></textarea>
+        </div>
+
+        <div class="row">
+            <input type="reset" value="重設表單" style="background:#eee; border:none; border-radius:6px; cursor:pointer;">
+            <button type="submit" class="submit-btn">送出問卷</button>
+        </div>
+    </form>
+
+    <footer>
+        © 2026 互動表單展示 - 由 Gemini 提供
+    </footer>
+</div>
+
+</body>
+</html>
