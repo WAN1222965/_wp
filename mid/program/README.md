@@ -98,6 +98,7 @@ SQLite3 (blog.db)
     ├─ scores           — 遊戲分數
     ├─ news_likes       — 新聞按讚
     ├─ news_comments    — 新聞留言
+    ├─ news_commentary  — 新聞評論分析
     └─ contact_messages — 聯絡表單訊息
 ```
 
@@ -119,6 +120,7 @@ SQLite3 (blog.db)
 | 🎯 捕墨 (打地鼠) | 3×3 九宮格反應遊戲 | 墨花濺射動畫、倒數計時 |
 | 🏃 墨陣 (迷宮) | 10×10 迷宮 | 撞牆水墨特效、起終點標示 |
 | 📰 時事新聞 | RSS 聚合 + 國際新聞 | 按讚/留言系統 |
+| 📈 股市行情 | 加密貨幣 + 台股 + 美股報價 | CoinGecko + Yahoo Finance API |
 | 🏆 排行榜 | 遊戲分數排名 | SQL 排序取前 5 名 |
 | ℹ️ 關於頁面 | 網站介紹、價值主張 | EJS 伺服端渲染 |
 | ✉️ 聯絡表單 | 姓名/Email/主旨/訊息 | SQLite 持久化、表單驗證 |
@@ -145,6 +147,9 @@ mid/program/
 │   ├── about.ejs              # 關於頁面
 │   ├── contact.ejs            # 聯絡表單
 │   ├── privacy.ejs            # 隱私權政策
+│   └── partials/              # 共用模板
+│       ├── navbar.ejs         # 導覽列
+│       └── footer.ejs         # 頁尾
 │
 ├── public/                    # 靜態資源 (客戶端)
 │   ├── uploads/               # 上傳圖片存放處
@@ -157,6 +162,7 @@ mid/program/
 │   ├── login.html             # 登入/註冊頁
 │   ├── news.html              # 時事新聞聚合頁 (雙分頁、按讚、留言)
 │   ├── leaderboard.html       # 排行榜
+│   ├── market.html            # 股市行情 (加密貨幣 + 台股 + 美股)
 │   ├── snake.html / snake.js  # 貪吃蛇遊戲
 │   ├── whack.html / whack.js  # 打地鼠遊戲 (捕墨)
 │   └── maze.html / maze.js    # 迷宮遊戲 (墨陣)
@@ -240,6 +246,21 @@ CREATE TABLE news_comments (
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
+-- 新聞評論分析
+CREATE TABLE news_commentary (
+  id                INTEGER PRIMARY KEY AUTOINCREMENT,
+  category          TEXT NOT NULL,
+  original_title    TEXT NOT NULL,
+  original_link     TEXT NOT NULL,
+  source_name       TEXT NOT NULL,
+  rewritten_headline TEXT NOT NULL,
+  event_summary     TEXT NOT NULL,
+  analysis_content  TEXT NOT NULL,
+  embed_url         TEXT DEFAULT '',
+  created_at        DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updated_at        DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
 -- 聯絡表單
 CREATE TABLE contact_messages (
   id         INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -317,11 +338,28 @@ CREATE TABLE contact_messages (
 | 方法 | 路徑 | 功能 |
 |------|------|------|
 | GET | `/api/news/taiwan` | RSS 聚合 (UDN + ETtoday + 自由) |
-| GET | `/api/news/world` | NewsAPI 國際新聞 |
+| GET | `/api/news/world` | RSS 國際新聞 (BBC + CNN) |
 | GET | `/api/news/likes` | 所有新聞按讚數 |
 | POST | `/api/news/like` | 按讚/追加之 |
 | GET | `/api/news/comments` | 指定新聞留言 |
 | POST | `/api/news/comment` | 新增新聞留言 |
+
+### 新聞評論分析
+
+| 方法 | 路徑 | 功能 |
+|------|------|------|
+| GET | `/api/news/commentary/:category` | 依分類取得評論 |
+| POST | `/api/news/commentary` | 新增評論 |
+| PUT | `/api/news/commentary/:id` | 更新評論 |
+| DELETE | `/api/news/commentary/:id` | 刪除評論 |
+
+### 股市行情
+
+| 方法 | 路徑 | 功能 |
+|------|------|------|
+| GET | `/api/market/crypto` | 加密貨幣報價 (BTC/ETH/SOL 等 10 種) |
+| GET | `/api/market/tw-stock` | 台股報價 (加權指數、台積電等 15 檔) |
+| GET | `/api/market/us-stocks` | 美股報價 (S&P 500、AAPL 等 15 檔) |
 
 ### 遊戲
 
@@ -686,7 +724,7 @@ function loop() {
 - **台灣新聞**：使用 `rss-parser` 聚合三大新聞源
   - UDN 聯合報、ETtoday、自由時報
   - 各取前 10 則，依來源標色
-- **國際新聞**：透過 NewsAPI 取得（需自備 API Key）
+- **國際新聞**：BBC + CNN RSS 聚合
 
 **互動功能：**
 - 按讚：`POST /api/news/like`（資料庫持久化）
@@ -785,7 +823,7 @@ server {
 ## 技術債與未來展望
 
 - **密碼安全**：目前密碼以明文儲存，建議引入 `bcrypt` 進行雜湊處理
-- **國際新聞 API Key**：需要註冊 [NewsAPI](https://newsapi.org/) 並設定金鑰
+- **國際新聞來源**：目前使用 BBC + CNN RSS，可考慮擴充更多來源
 - **Session 管理**：目前採用 `localStorage` 簡易方案，建議導入 JWT 或 Session 機制
 - **資料庫備份**：生產環境建議定期備份 `blog.db`
 - **響應式設計**：部分遊戲頁面在手機上體驗有限，可考慮觸控事件支援
