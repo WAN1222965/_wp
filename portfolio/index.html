@@ -3,12 +3,19 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="吳嘉恩（s111410509）的 WP 課程專案總覽 — Node.js、Express、全端部落格、HTML/CSS/JS 作品集">
+  <meta name="theme-color" content="#0f0f0f">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚡</text></svg>">
   <title>WP 專案總覽</title>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
-      background: #0f0f0f;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      text-rendering: optimizeLegibility;
+      background: #0a0a0f;
       color: #e0e0e0;
       line-height: 1.6;
       min-height: 100vh;
@@ -96,8 +103,9 @@
     }
     .card:hover {
       background: rgba(255,255,255,0.07);
-      border-color: rgba(255,255,255,0.12);
+      border-color: rgba(167,139,250,0.15);
       transform: translateY(-2px);
+      box-shadow: 0 8px 32px rgba(167,139,250,0.06);
     }
     .card-icon {
       width: 40px;
@@ -270,6 +278,56 @@
       -webkit-backdrop-filter: blur(6px);
     }
     .tag-tooltip.show { opacity: 1; }
+    ::-webkit-scrollbar { width: 8px; }
+    ::-webkit-scrollbar-track { background: #0f0f0f; }
+    ::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #555; }
+    .fade-in {
+      opacity: 0;
+      transition: opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .fade-in.visible { opacity: 1; }
+    .back-to-top {
+      position: fixed;
+      bottom: 32px;
+      right: 32px;
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: rgba(167,139,250,0.12);
+      border: 1px solid rgba(167,139,250,0.15);
+      color: #a78bfa;
+      font-size: 1.2rem;
+      cursor: pointer;
+      opacity: 0;
+      transform: translateY(16px) scale(0.9);
+      pointer-events: none;
+      transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+      z-index: 50;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+    }
+    .back-to-top.show {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+      pointer-events: auto;
+    }
+    .back-to-top:hover {
+      background: rgba(167,139,250,0.25);
+      border-color: rgba(167,139,250,0.35);
+    }
+    a:focus-visible, button:focus-visible {
+      outline: 2px solid #a78bfa;
+      outline-offset: 2px;
+    }
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      .fade-in { opacity: 1; transition: none; }
+      .bg-particles span { animation: none; }
+    }
     footer {
       text-align: center;
       padding: 40px 0;
@@ -280,12 +338,18 @@
 </head>
 <body>
   <div class="bg-particles">
-    <span style="left:10%;animation-duration:18s;animation-delay:0s"></span>
-    <span style="left:25%;animation-duration:22s;animation-delay:2s"></span>
-    <span style="left:40%;animation-duration:15s;animation-delay:4s"></span>
-    <span style="left:55%;animation-duration:20s;animation-delay:1s"></span>
-    <span style="left:70%;animation-duration:17s;animation-delay:3s"></span>
-    <span style="left:85%;animation-duration:24s;animation-delay:5s"></span>
+    <span style="left:8%;animation-duration:16s;animation-delay:0s;width:2px;height:2px;background:rgba(167,139,250,0.15)"></span>
+    <span style="left:18%;animation-duration:21s;animation-delay:1.5s;width:3px;height:3px;background:rgba(96,165,250,0.12)"></span>
+    <span style="left:28%;animation-duration:14s;animation-delay:3s;width:1px;height:1px;background:rgba(255,255,255,0.06)"></span>
+    <span style="left:42%;animation-duration:19s;animation-delay:0.8s;width:2px;height:2px;background:rgba(52,211,153,0.12)"></span>
+    <span style="left:52%;animation-duration:23s;animation-delay:4.2s;width:3px;height:3px;background:rgba(255,255,255,0.05)"></span>
+    <span style="left:62%;animation-duration:17s;animation-delay:1.2s;width:1px;height:1px;background:rgba(255,255,255,0.06)"></span>
+    <span style="left:72%;animation-duration:25s;animation-delay:5.5s;width:2px;height:2px;background:rgba(167,139,250,0.15)"></span>
+    <span style="left:80%;animation-duration:15s;animation-delay:2.5s;width:3px;height:3px;background:rgba(96,165,250,0.1)"></span>
+    <span style="left:90%;animation-duration:20s;animation-delay:0.3s;width:2px;height:2px;background:rgba(255,255,255,0.05)"></span>
+    <span style="left:50%;animation-duration:18s;animation-delay:3.8s;width:1px;height:1px;background:rgba(255,255,255,0.06)"></span>
+    <span style="left:12%;animation-duration:22s;animation-delay:6s;width:2px;height:2px;background:rgba(52,211,153,0.15)"></span>
+    <span style="left:95%;animation-duration:16s;animation-delay:1.8s;width:2px;height:2px;background:rgba(167,139,250,0.1)"></span>
   </div>
 
   <div class="container">
@@ -448,7 +512,7 @@ node server.js
     </footer>
   </div>
 
-  <div class="tag-tooltip" id="tagTooltip"></div>
+  <button class="back-to-top" id="backToTop" aria-label="回到頂端">↑</button>
 
   <script>
     ;(function(){
@@ -497,16 +561,15 @@ node server.js
 
       function resize() {
         const rect = wrap.getBoundingClientRect();
-        W = canvas.width = rect.width * window.devicePixelRatio;
-        H = canvas.height = rect.height * window.devicePixelRatio;
+        const dpr = window.devicePixelRatio || 1;
+        canvas.width = rect.width * dpr;
+        canvas.height = rect.height * dpr;
+        W = rect.width;
+        H = rect.height;
         cx = W / 2;
         cy = H / 2;
         radius = Math.min(W, H) * 0.35;
-        ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
-        W /= window.devicePixelRatio;
-        H /= window.devicePixelRatio;
-        cx = W / 2;
-        cy = H / 2;
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       }
 
       function initTags() {
@@ -682,6 +745,27 @@ node server.js
       initTags();
       resize();
       draw();
+    })();
+  </script>
+  <script>
+    ;(function(){
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); observer.unobserve(e.target); } });
+      }, { threshold: 0.1 });
+      const animEls = document.querySelectorAll('.card, .hw-item, .server-box');
+      animEls.forEach(el => { el.classList.add('fade-in'); observer.observe(el); });
+      requestAnimationFrame(() => {
+        animEls.forEach(el => {
+          if (el.getBoundingClientRect().top < window.innerHeight) el.classList.add('visible');
+        });
+      });
+      const topBtn = document.getElementById('backToTop');
+      if (topBtn) {
+        window.addEventListener('scroll', () => {
+          topBtn.classList.toggle('show', window.scrollY > 400);
+        }, { passive: true });
+        topBtn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+      }
     })();
   </script>
 </body>
