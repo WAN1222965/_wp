@@ -31,11 +31,12 @@
   - [6. RSS / Sitemap / SEO](#6-rss--sitemap--seo)
   - [7. 圖片上傳](#7-圖片上傳)
   - [8. 使用者認證](#8-使用者認證)
-  - [9. 隨筆小站](#9-隨筆小站)
-  - [10. 遊戲模組](#10-遊戲模組)
-  - [11. 時事新聞聚合](#11-時事新聞聚合)
-  - [12. 排行榜](#12-排行榜)
-  - [13. 靜態頁面（關於 / 聯絡 / 隱私權）](#13-靜態頁面關於--聯絡--隱私權)
+  - [9. 安全防護機制](#9-安全防護機制)
+  - [10. 隨筆小站](#10-隨筆小站)
+  - [11. 遊戲模組](#11-遊戲模組)
+  - [12. 時事新聞聚合](#12-時事新聞聚合)
+  - [13. 排行榜](#13-排行榜)
+  - [14. 靜態頁面（關於 / 聯絡 / 隱私權）](#14-靜態頁面關於--聯絡--隱私權)
 - [部署指南](#部署指南)
 - [技術債與未來展望](#技術債與未來展望)
 
@@ -66,10 +67,16 @@ npm start
 ```
 技術棧：Node.js + Express + SQLite3 + EJS + Vanilla JavaScript
 執行環境：Node.js v24+
-資料庫：SQLite3 (blog.db)
+資料庫：SQLite3 (blog.db + sessions.db)
 基礎路徑：/s111410509/
-連接埠：3000
+連接埠：3000（自動 fallback +1 若被佔用）
 主題風格：經典部落格（黑/白/灰，仿 WordPress 雙欄佈局）
+
+安全性：
+  ├─ bcrypt（密碼雜湊，salt rounds = 12）
+  ├─ express-session + SQLite Store（httpOnly Cookie）
+  ├─ helmet（安全標頭）
+  └─ express-rate-limit（API 100次/15分，認證 20次/15分）
 ```
 
 ```
@@ -81,17 +88,20 @@ npm start
     ▼
 Express 伺服器 (server.js)
     │
+    ├─ 安全性中介軟體 — helmet, rate-limit, morgan
+    ├─ Session 管理 — express-session + connect-sqlite3
     ├─ 路由掛載點：/s111410509/
     │   ├─ 部落格 CRUD (EJS 渲染)
     │   ├─ RESTful API (/api/*)
     │   ├─ 靜態資源 (/uploads/、/*.html、/*.js、/*.css)
     │   ├─ RSS (/rss.xml)
-    │   └─ Sitemap (/sitemap.xml)
+    │   ├─ Sitemap (/sitemap.xml)
+    │   └─ 自訂錯誤頁 (views/error.ejs)
     │
     ▼
 SQLite3 (blog.db)
-    ├─ users            — 使用者
-    ├─ posts            — 文章
+    ├─ users            — 使用者（bcrypt 雜湊密碼）
+    ├─ posts            — 文章（含 views 瀏覽數）
     ├─ tags             — 標籤
     ├─ post_tags        — 多對多關聯
     ├─ comments         — 留言
@@ -99,7 +109,10 @@ SQLite3 (blog.db)
     ├─ news_likes       — 新聞按讚
     ├─ news_comments    — 新聞留言
     ├─ news_commentary  — 新聞評論分析
-    └─ contact_messages — 聯絡表單訊息
+    ├─ contact_messages — 聯絡表單訊息
+    ├─ subscribers      — 電子報訂閱
+    ├─ post_likes       — 文章按讚（多元去重）
+    └─ post_reports     — 文章檢舉（多元去重）
 ```
 
 ---
@@ -108,23 +121,26 @@ SQLite3 (blog.db)
 
 | 功能模組 | 說明 | 技術亮點 |
 |----------|------|----------|
-| 📝 部落格 CRUD | 文章新增/編輯/刪除/列表 | 分頁、標籤篩選、關聯推薦 |
+| 📝 部落格 CRUD | 文章新增/編輯/刪除/列表 | 分頁、標籤篩選、關聯推薦、瀏覽數統計 |
 | ✏️ Markdown 編輯器 | 所見即所得預覽 + 工具列 | marked 渲染、分頁切換、草稿自動儲存 |
 | 🔍 客戶端搜尋引擎 | 即時搜尋文章 | 雙層架構 (SQL LIKE + 客戶端索引評分) |
 | 🎨 水墨動畫背景 | Canvas 粒子系統 | 滑鼠互動、深色模式自動切換 |
 | 🖼️ 經典部落格主題 | 仿 WordPress 雙欄佈局 | 黑白灰色調、首頁橫幅圖片、側邊欄 |
 | 📡 RSS / Sitemap | 標準 RSS 2.0 + XML Sitemap | SEO 優化、協議自動偵測 |
 | 🖼 圖片上傳 | 拖放/選取上傳 | multer + UUID 重新命名 + 限制 5MB |
-| 👤 使用者認證 | 註冊/登入 | localStorage Token |
-| 🐍 貪吃蛇 | 20×20 Canvas 遊戲 | 蛇身漸層、分數提交 |
-| 🎯 捕墨 (打地鼠) | 3×3 九宮格反應遊戲 | 墨花濺射動畫、倒數計時 |
-| 🏃 墨陣 (迷宮) | 10×10 迷宮 | 撞牆水墨特效、起終點標示 |
-| 📰 時事新聞 | RSS 聚合 + 國際新聞 | 按讚/留言系統 |
+| 👤 使用者認證 | 註冊/登入/登出 | bcrypt 雜湊 + express-session |
+| 🔒 安全防護 | 全方位安全機制 | helmet + rate-limit + httpOnly Cookie |
+| 🐍 貪吃蛇 | 20×20 Canvas 遊戲 | requestAnimationFrame、蛇身漸層、分數提交 |
+| 🎯 捕墨 (打地鼠) | 3×3 九宮格反應遊戲 | 連擊系統、墨花濺射動畫、倒數計時 |
+| 🏃 墨陣 (迷宮) | DFS 迷宮生成（6×6 ~ 18×18） | 遞迴回溯法、撞牆水墨特效、關卡遞增 |
+| 📰 時事新聞 | RSS 聚合 + 國際新聞 | 按讚/留言系統、新聞評論分析 CRUD |
 | 📈 股市行情 | 加密貨幣 + 台股 + 美股報價 | CoinGecko + Yahoo Finance API |
 | 🏆 排行榜 | 遊戲分數排名 | SQL 排序取前 5 名 |
 | ℹ️ 關於頁面 | 網站介紹、價值主張 | EJS 伺服端渲染 |
 | ✉️ 聯絡表單 | 姓名/Email/主旨/訊息 | SQLite 持久化、表單驗證 |
 | 🔒 隱私權政策 | 靜態資訊頁面 | EJS 渲染 |
+| 📬 電子報訂閱 | Email 訂閱 | SQLite 持久化、去重保護 |
+| 🛑 自訂錯誤頁 | 404/500 錯誤頁面 | EJS 渲染、深色模式支援 |
 
 ---
 
@@ -132,11 +148,11 @@ SQLite3 (blog.db)
 
 ```
 mid/program/
-├── server.js                  # 主伺服器 (Express 路由、API、資料庫)
-├── blog.db                    # SQLite3 資料庫
+├── server.js                  # 主伺服器 (Express 路由、API、資料庫、安全中介)
+├── blog.db                    # SQLite3 資料庫（文章、使用者、遊戲…）
+├── sessions.db                # Session 存放（connect-sqlite3）
 ├── package.json               # Node.js 依賴管理
 ├── package-lock.json
-├── server.log                 # 伺服器日誌
 ├── README.md                  # 本文件
 │
 ├── views/                     # EJS 樣板 (伺服端渲染)
@@ -147,14 +163,15 @@ mid/program/
 │   ├── about.ejs              # 關於頁面
 │   ├── contact.ejs            # 聯絡表單
 │   ├── privacy.ejs            # 隱私權政策
+│   ├── error.ejs              # 自訂錯誤頁（404 / 500）
 │   └── partials/              # 共用模板
-│       ├── navbar.ejs         # 導覽列
-│       └── footer.ejs         # 頁尾
+│       ├── navbar.ejs         # 導覽列（含 Session 狀態）
+│       └── footer.ejs         # 頁尾（含 GA4 支援）
 │
 ├── public/                    # 靜態資源 (客戶端)
 │   ├── uploads/               # 上傳圖片存放處
 │   ├── style.css              # 主樣式表 (經典部落格風格)
-│   ├── game_styles.css        # 迷宮遊戲專用樣式
+│   ├── game_styles.css        # 遊戲共用 CSS（霓虹深色主題）
 │   ├── blog.js                # 部落格客戶端互動邏輯 (TOC、搜尋、留言、程式碼沙盒)
 │   ├── script.js              # 隨筆小站客戶端邏輯
 │   ├── ink_background.js      # 水墨動畫 Canvas 粒子背景
@@ -163,6 +180,7 @@ mid/program/
 │   ├── news.html              # 時事新聞聚合頁 (雙分頁、按讚、留言)
 │   ├── leaderboard.html       # 排行榜
 │   ├── market.html            # 股市行情 (加密貨幣 + 台股 + 美股)
+│   ├── classic-blog.html      # 獨立 WordPress 主題展示頁
 │   ├── snake.html / snake.js  # 貪吃蛇遊戲
 │   ├── whack.html / whack.js  # 打地鼠遊戲 (捕墨)
 │   └── maze.html / maze.js    # 迷宮遊戲 (墨陣)
@@ -270,6 +288,31 @@ CREATE TABLE contact_messages (
   message    TEXT NOT NULL,
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
+
+-- 電子報訂閱
+CREATE TABLE subscribers (
+  id         INTEGER PRIMARY KEY AUTOINCREMENT,
+  email      TEXT UNIQUE NOT NULL,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 文章按讚（多元組合去重）
+CREATE TABLE post_likes (
+  post_id    INTEGER NOT NULL,
+  user_id    INTEGER NOT NULL DEFAULT 0,
+  session_id TEXT DEFAULT '',
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (post_id, user_id, session_id)
+);
+
+-- 文章檢舉（多元組合去重）
+CREATE TABLE post_reports (
+  post_id    INTEGER NOT NULL,
+  user_id    INTEGER NOT NULL DEFAULT 0,
+  session_id TEXT DEFAULT '',
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (post_id, user_id, session_id)
+);
 ```
 
 ---
@@ -313,8 +356,16 @@ CREATE TABLE contact_messages (
 
 | 方法 | 路徑 | 功能 | 參數 |
 |------|------|------|------|
-| POST | `/api/auth/register` | 註冊 | `username, nickname, password` |
-| POST | `/api/auth/login` | 登入 | `username, password` |
+| POST | `/api/auth/register` | 註冊（bcrypt 雜湊） | `username, nickname, password` |
+| POST | `/api/auth/login` | 登入（建立 Session） | `username, password` |
+| POST | `/api/auth/logout` | 登出（銷毀 Session） | — |
+| GET | `/api/auth/me` | 取得當前登入使用者 | — |
+
+### 瀏覽數
+
+| 方法 | 路徑 | 功能 |
+|------|------|------|
+| GET | `/api/posts/:id/views` | 取得文章瀏覽數 |
 
 ### 隨筆 (Notes)
 
@@ -383,7 +434,7 @@ CREATE TABLE contact_messages (
 |------|------|------|
 | GET | `/rss.xml` | RSS 2.0 Feed (最新 20 篇，自動偵測 HTTP/HTTPS) |
 | GET | `/sitemap.xml` | XML Sitemap (含靜態頁面 + 文章) |
-| POST | `/api/subscribe` | 電子報訂閱 (記憶體暫存) |
+| POST | `/api/subscribe` | 電子報訂閱 (SQLite 持久化，去重保護) |
 
 ---
 
@@ -636,23 +687,77 @@ const upload = multer({
 
 ### 8. 使用者認證
 
-輕量級認證系統，無密碼雜湊（課程作業範疇）：
+採用 **bcrypt** + **express-session** 的安全認證系統：
 
 | 方法 | 路徑 | 說明 |
 |------|------|------|
 | POST | `/api/auth/register` | 註冊：`{ username, nickname, password }` |
 | POST | `/api/auth/login` | 登入：`{ username, password }` |
+| POST | `/api/auth/logout` | 登出 |
+| GET | `/api/auth/me` | 取得當前 Session 使用者 |
 
 流程：
 1. 客戶端提交帳號密碼
-2. 伺服器查詢 `users` 表比對
-3. 成功後回傳使用者物件 `{ id, username, nickname }`
-4. 客戶端存入 `localStorage`
-5. 後續請求從 `localStorage` 讀取使用者資訊帶入
+2. 註冊時伺服器以 `bcrypt.hash(password, 12)` 雜湊儲存
+3. 登入時伺服器以 `bcrypt.compare()` 驗證
+4. 驗證成功後建立 `express-session`（httpOnly Cookie + SQLite 儲存）
+5. 客戶端可透過 `GET /api/auth/me` 驗證 Session 有效性
+6. 登出時呼叫 `POST /api/auth/logout` 銷毀 Session
 
 ---
 
-### 9. 隨筆小站
+### 9. 安全防護機制
+
+#### bcrypt 密碼雜湊
+
+```javascript
+const hash = await bcrypt.hash(password, 12);   // 註冊
+const match = await bcrypt.compare(password, user.password);  // 登入
+```
+
+salt rounds = 12，密碼絕不以明文儲存。
+
+#### express-session
+
+```javascript
+app.use(session({
+  store: new SQLiteStore({ db: 'sessions.db' }),
+  secret: SESSION_SECRET,
+  cookie: { httpOnly: true, sameSite: 'lax', maxAge: 7 * 24 * 60 * 60 * 1000 }
+}));
+```
+
+- Session 儲存於 `sessions.db`（connect-sqlite3）
+- Cookie 標記 `httpOnly`、`sameSite=lax`
+- 支援多執行個體共享
+
+#### helmet
+
+```javascript
+app.use(helmet({ contentSecurityPolicy: false, crossOriginEmbedderPolicy: false }));
+```
+
+自動設定安全相關 HTTP 標頭（X-Frame-Options、X-Content-Type-Options、Strict-Transport-Security 等）。
+
+#### express-rate-limit
+
+```javascript
+const apiLimiter = rateLimit({ windowMs: 15*60*1000, max: 100 });  // API 通用
+const authLimiter = rateLimit({ windowMs: 15*60*1000, max: 20 });  // 認證專用
+```
+
+| 限制器 | 範圍 | 上限 | 時窗 |
+|--------|------|------|------|
+| API | `/api/*` | 100 次 | 15 分鐘 |
+| 認證 | `/api/auth/*` | 20 次 | 15 分鐘 |
+
+#### morgan 日誌
+
+自動記錄所有 HTTP 請求（ISO 時間、方法、URL、狀態碼、回應時間）。
+
+---
+
+### 10. 隨筆小站
 
 位於 `public/index.html` + `public/script.js`，提供極簡短貼文功能：
 
@@ -666,7 +771,7 @@ const upload = multer({
 
 ---
 
-### 10. 遊戲模組
+### 11. 遊戲模組
 
 三款遊戲均採用統一的 **深色霓虹視覺風格**（`#0f172a` 深藍底色），並共用專案的主題切換、水墨背景與排行榜系統。
 
@@ -710,13 +815,13 @@ function loop() {
 - **視覺**：深色 Canvas 背景 `#1e293b`、牆壁 `#475569`、玩家光點 `#38bdf8`（外發光）、終點 `#f43f5e`（發光圓球）
 - **操作**：方向鍵 / WASD + 觸控滑動
 - **碰撞**：撞牆 → `createInk()` 水墨噴濺特效 → 退回起點，步數重置
-- **關卡遞增**：過關後點擊「下一關」，迷宮尺寸從 6×6 遞增至最大 18×18
+- **關卡遞增**：過關後點擊「下一關」，迷宮尺寸從 **6×6** 遞增至最大 **18×18**
 - **計分**：`max(200 − 失誤×10 − 步數 + 關卡×20, 1)`
 - **分數提交**：名稱「墨陣行者」
 
 ---
 
-### 11. 時事新聞聚合
+### 12. 時事新聞聚合
 
 位於 `news.html` + `server.js` 伺服端 RSS 聚合：
 
@@ -733,7 +838,7 @@ function loop() {
 
 ---
 
-### 12. 排行榜
+### 13. 排行榜
 
 位於 `leaderboard.html`，簡單的遊戲分數排名：
 
@@ -744,7 +849,7 @@ db.all('SELECT name, score, date FROM scores ORDER BY score DESC LIMIT 5', ...);
 
 ---
 
-### 13. 靜態頁面（關於 / 聯絡 / 隱私權）
+### 14. 靜態頁面（關於 / 聯絡 / 隱私權）
 
 三個 EJS 伺服端渲染頁面，使用 Express Router 統一掛載：
 
@@ -822,13 +927,13 @@ server {
 
 ## 技術債與未來展望
 
-- **密碼安全**：目前密碼以明文儲存，建議引入 `bcrypt` 進行雜湊處理
+- ~~密碼安全：目前密碼以明文儲存~~ ✅ **已解決** — 採用 `bcrypt` (salt=12) 雜湊儲存
+- ~~留言驗證：缺乏 XSS 防護與 Rate Limiting~~ ✅ **已解決** — 導入 `helmet` + `express-rate-limit`
+- ~~Session 管理：目前採用 `localStorage` 簡易方案~~ ✅ **已解決** — 導入 `express-session` + SQLite Store + httpOnly Cookie
 - **國際新聞來源**：目前使用 BBC + CNN RSS，可考慮擴充更多來源
-- **Session 管理**：目前採用 `localStorage` 簡易方案，建議導入 JWT 或 Session 機制
 - **資料庫備份**：生產環境建議定期備份 `blog.db`
-- **響應式設計**：部分遊戲頁面在手機上體驗有限，可考慮觸控事件支援
+- **響應式設計**：部分遊戲頁面在手機上體驗有限，可考慮進一步觸控最佳化
 - **載入效能**：首頁可加入圖片懶載入 (`loading="lazy"`) 與無限捲動
-- **留言驗證**：缺乏 XSS 防護與 Rate Limiting
 - **單元測試**：目前無測試覆蓋，建議加入 `jest` 或 `mocha`
 
 ---
@@ -849,6 +954,14 @@ server {
 | 2026-05 | 搜尋索引 URL 前綴改為動態 `BASE` 變數 |
 | 2026-05 | 文章新增支援動態 `user_id`（讀取 `x-user-id` 標頭） |
 | 2026-05 | 修復圖片上傳按鈕選擇器（`button:last-child` → `[onclick*="imageUpload"]`） |
+| 2026-05 | 導入 `bcrypt` 密碼雜湊（salt=12），取代明文儲存 |
+| 2026-05 | 導入 `express-session` + `connect-sqlite3` Session 管理 |
+| 2026-05 | 導入 `helmet` 安全標頭中介軟體 |
+| 2026-05 | 導入 `express-rate-limit` 請求限制（API 100 次、認證 20 次 / 15分） |
+| 2026-05 | 新增 `subscribers`、`post_likes`、`post_reports` 資料表 |
+| 2026-05 | 新增 `POST /api/auth/logout` 與 `GET /api/auth/me` API |
+| 2026-05 | 新增 `GET /api/posts/:id/views` 瀏覽數 API |
+| 2026-05 | 新增 `views/error.ejs` 自訂錯誤頁（404/500） |
 
 ---
 

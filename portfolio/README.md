@@ -5,22 +5,24 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Node.js-339933?logo=node.js&logoColor=white" alt="Node.js">
-  <img src="https://img.shields.io/badge/Express-000000?logo=express&logoColor=white" alt="Express">
-  <img src="https://img.shields.io/badge/SQLite3-044a64?logo=sqlite&logoColor=white" alt="SQLite3">
   <img src="https://img.shields.io/badge/HTML5-E34F26?logo=html5&logoColor=white" alt="HTML5">
   <img src="https://img.shields.io/badge/CSS3-1572B6?logo=css3&logoColor=white" alt="CSS3">
   <img src="https://img.shields.io/badge/JavaScript-F7DF1E?logo=javascript&logoColor=black" alt="JavaScript">
+  <img src="https://img.shields.io/badge/Canvas-2D-green" alt="Canvas">
+  <img src="https://img.shields.io/badge/Node.js-339933?logo=node.js&logoColor=white" alt="Node.js">
+  <img src="https://img.shields.io/badge/Express-000000?logo=express&logoColor=white" alt="Express">
+  <img src="https://img.shields.io/badge/SQLite3-044a64?logo=sqlite&logoColor=white" alt="SQLite3">
   <img src="https://img.shields.io/badge/EJS-A91E50?logo=ejs&logoColor=white" alt="EJS">
 </p>
 
-一頁式靜態網站，集中展示 `wp/_wp` 內所有專案。採用暗色主題、3D 技術標籤雲、粒子背景。
+一頁式靜態入口網站，集中展示 `wp/_wp` 內所有專案。採用暗色主題、Canvas 3D 技術標籤雲、CSS 粒子背景。
 
 ---
 
 ## 目錄
 
 - [專案架構](#專案架構)
+- [入口頁面特色](#入口頁面特色)
 - [內容總覽](#內容總覽)
   - [AI 部落格系統](#1-ai-部落格系統)
   - [墨 · Ink 部落格（期中專案）](#2-墨--ink-部落格期中專案)
@@ -37,19 +39,20 @@
 
 ```
 _wp/                          ← 總倉庫根目錄
-├── portfolio/                ← 本專案（入口頁面）
+├── portfolio/                ← 本專案（靜態入口頁面）
 │   ├── index.html            ← 主頁（暗色主題、3D 標籤雲、粒子背景）
 │   └── README.md             ← 本文件
 ├── AI/                       ← AI 部落格系統（全端）
 │   ├── server.js             ← 主伺服器（Express + SQLite3）
 │   ├── selo.js               ← 進階版（含約會配對系統）
 │   ├── public/index.html     ← 前端頁面
-│   └── blog.db               ← SQLite 資料庫
+│   ├── blog.db               ← SQLite 資料庫
+│   └── package.json          ← 相依套件
 ├── mid/program/              ← 期中專案 · 墨 Ink 部落格
 │   ├── server.js             ← 主伺服器
+│   ├── classic-blog.html     ← 經典部落格靜態頁面
 │   ├── views/                ← EJS 樣板（首頁、文章、關於、聯絡等）
 │   ├── public/               ← 靜態資源
-│   │   ├── index.html        ← 隨筆小站
 │   │   ├── snake.html        ← 貪食蛇
 │   │   ├── whack.html        ← 打地鼠
 │   │   ├── maze.html         ← 迷宮
@@ -59,7 +62,8 @@ _wp/                          ← 總倉庫根目錄
 │   │   ├── login.html        ← 登入頁
 │   │   ├── ink_background.js ← 水墨動畫粒子背景
 │   │   └── uploads/          ← 上傳圖片
-│   └── blog.db               ← SQLite 資料庫
+│   ├── blog.db               ← SQLite 資料庫
+│   └── package.json          ← 相依套件
 ├── homework/                 ← 作業練習
 │   ├── form.html             ← HTML 表單設計
 │   ├── personaldata.html     ← 個人資料頁面
@@ -71,6 +75,25 @@ _wp/                          ← 總倉庫根目錄
 │   └── 04/                   ← 進階練習（11 題）
 └── blog.db                   ← AI 部落格資料庫
 ```
+
+---
+
+## 入口頁面特色
+
+`portfolio/index.html` 為純前端靜態頁面（無需伺服器），具備以下功能：
+
+| 功能 | 說明 |
+|------|------|
+| 🌙 暗色主題 | 深色背景搭配漸層標題、毛玻璃卡片效果 |
+| 🌌 粒子背景 | CSS 動畫浮游粒子（12 顆，紫/藍/綠色系） |
+| 🏷️ 3D 技術標籤雲 | Canvas 2D 投影 3D 球體，含 24 個技術標籤 |
+| 🖱️ 標籤互動 | 拖曳旋轉、懸浮高亮 + tooltip、點擊定位 |
+| 🔄 自動旋轉 | 閒置 2 秒後恢復自動旋轉 |
+| 📱 觸控支援 | 觸控拖曳與點擊 |
+| 🎬 捲動動畫 | IntersectionObserver 淡入效果 |
+| ⬆️ 回到頂端 | 按鈕於捲動 400px 後顯示 |
+| 📐 RWD | 響應式網格（自動折行，行動版單欄） |
+| ♿ 無障礙 | prefers-reduced-motion 支援、focus-visible 樣式 |
 
 ---
 
@@ -141,7 +164,7 @@ node selo.js
 | 🖼️ 經典部落格主題 | 仿 WordPress 雙欄佈局，黑白灰色調 |
 | 📡 RSS / Sitemap | 標準 RSS 2.0 + XML Sitemap，支援 SEO |
 | 🖼 圖片上傳 | 拖放/選取上傳，UUID 重新命名，5MB 限制 |
-| 👤 使用者認證 | 註冊/登入（localStorage Token） |
+| 👤 使用者認證 | 註冊/登入（bcrypt + express-session） |
 | 🐍 貪食蛇 | 20×20 Canvas，霓虹視覺風格，分數提交 |
 | 🎯 打地鼠（捕墨） | 3×3 九宮格反應遊戲，連擊系統，墨花濺射動畫 |
 | 🏃 迷宮（墨陣） | DFS 遞迴回溯演算法，關卡遞增（6×6→18×18） |
@@ -175,11 +198,11 @@ node selo.js
 cd mid/program
 npm install
 node server.js
-# 開啟 http://localhost:3000/s111410509/
+# 開啟 http://localhost:3000
 ```
 
 **可直接開啟的靜態頁面：**
-- [靜態部落格](../mid/program/public/classic-blog.html)
+- [經典部落格](../mid/program/classic-blog.html)
 - [貪食蛇](../mid/program/public/snake.html)
 - [打地鼠](../mid/program/public/whack.html)
 - [迷宮](../mid/program/public/maze.html)
@@ -229,11 +252,7 @@ node 檔名.js
 
 ### 瀏覽入口頁面
 
-直接使用瀏覽器開啟：
-
-```bash
-portfolio/index.html
-```
+直接使用瀏覽器開啟 `portfolio/index.html`。
 
 ### 啟動 AI 部落格
 
@@ -250,7 +269,7 @@ node server.js
 cd mid/program
 npm install
 node server.js
-# 連線 http://localhost:3000/s111410509/
+# 連線 http://localhost:3000
 ```
 
 ---
@@ -259,24 +278,23 @@ node server.js
 
 ```
 _wp/
-├── portfolio/              # 本專案（入口總覽頁面）
-│   ├── index.html          # 暗色主題入口頁
+├── portfolio/              # 本專案（靜態入口總覽頁面）
+│   ├── index.html          # 暗色主題入口頁（純前端，無需伺服器）
 │   └── README.md
 ├── AI/                     # AI 部落格系統
 │   ├── server.js           # 主伺服器
 │   ├── selo.js             # 進階版（含約會配對）
 │   ├── public/index.html   # 前端
 │   ├── blog.db             # 資料庫
-│   ├── package.json
-│   └── README.md
+│   └── package.json
 ├── mid/
 │   └── program/            # 墨 · Ink 部落格（期中專案）
 │       ├── server.js
+│       ├── classic-blog.html
 │       ├── views/          # EJS 樣板
 │       ├── public/         # 靜態頁面與遊戲
 │       ├── blog.db
-│       ├── package.json
-│       └── README.md
+│       └── package.json
 ├── homework/               # 作業練習
 │   ├── form.html           # HTML 表單
 │   ├── personaldata.html   # 個人資料
@@ -293,7 +311,7 @@ _wp/
 
 ## 技術標籤雲
 
-入口頁面首頁的 3D 球體標籤雲，支援以下互動：
+入口頁面首頁的 3D 球體標籤雲，使用 Canvas 2D 模擬 3D 投影，支援以下互動：
 
 - 🖱 **拖曳旋轉** — 滑鼠拖曳自由旋轉球體
 - 🔍 **懸浮高亮** — 滑鼠懸停時標籤發光，顯示 tooltip
@@ -301,7 +319,7 @@ _wp/
 - 🔄 **自動旋轉** — 閒置 2 秒後恢復自動旋轉
 - 📱 **觸控相容** — 支援觸控裝置手勢操作
 
-涵蓋技術：Node.js、Express、SQLite3、EJS、HTML5、CSS3、JavaScript、REST API、bcrypt、Multer、Markdown、RSS、Canvas、SEO、Full-Stack、SQL、Linux、Git、JSON、AJAX、SPA、RWD、Auth
+涵蓋技術：Node.js、Express、SQLite3、SQL.js、EJS、HTML5、CSS3、JavaScript、REST API、bcrypt、Multer、Markdown、RSS、Canvas、SEO、Full-Stack、SQL、Linux、Git、JSON、AJAX、SPA、RWD、Auth
 
 ---
 
