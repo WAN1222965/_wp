@@ -79,24 +79,37 @@
       position: relative;
     }
     .dropdown-menu {
-      display: none;
       position: absolute;
       top: 100%;
       left: 0;
       background: #000;
       flex-direction: column;
-      min-width: 120px;
-      z-index: 100;
-      padding: 0;
+      min-width: 140px;
+      z-index: 9999;
+      padding: 4px 0;
       margin: 0;
       list-style: none;
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+      transform: translateY(-4px);
+      transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s;
     }
+    .dropdown:hover .dropdown-menu,
     .dropdown.active .dropdown-menu {
-      display: flex;
+      opacity: 1;
+      visibility: visible;
+      pointer-events: auto;
+      transform: translateY(0);
     }
     .dropdown-menu li a {
       white-space: nowrap;
       padding: 10px 20px;
+      display: block;
+      transition: background 0.15s ease;
+    }
+    .dropdown-menu li a:hover {
+      background: rgba(255,255,255,0.1);
     }
     .dropdown > a .arrow {
       display: inline-block;
@@ -104,6 +117,7 @@
       font-size: 0.7rem;
       margin-left: 4px;
     }
+    .dropdown:hover > a .arrow,
     .dropdown.active > a .arrow {
       transform: rotate(180deg);
     }
@@ -330,7 +344,9 @@
       .header-banner { height: 120px; }
       .site-nav ul { padding: 0 10px; flex-wrap: wrap; }
       .site-nav li a { padding: 8px 12px; font-size: 13px; }
-    .dropdown-menu { position: static; display: none; flex-direction: row; flex-wrap: wrap; background: transparent; min-width: auto; }
+    .dropdown-menu { position: static; flex-direction: row; flex-wrap: wrap; background: transparent; min-width: auto; opacity: 1; visibility: visible; pointer-events: auto; transform: none; }
+    .dropdown .dropdown-menu { display: none; opacity: 1; visibility: visible; pointer-events: auto; transform: none; }
+    .dropdown:hover .dropdown-menu,
     .dropdown.active .dropdown-menu { display: flex; }
     .dropdown-menu li a { padding: 8px 12px; font-size: 13px; }
       .site-footer { flex-direction: column; gap: 8px; text-align: center; }
@@ -343,7 +359,7 @@
     <header class="site-header">
       <h1 class="site-title">紀錄瞬間的思緒</h1>
       <p class="site-description">以專業視角解析技術與時事，在資訊爆炸的時代提供沉澱後的觀點。</p>
-      <img src="https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=940&h=198&fit=crop&q=80" alt="水墨意境橫幅" class="header-banner">
+      <img src="https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=940&h=198&fit=crop&q=80" alt="水墨意境橫幅" class="header-banner" loading="lazy">
     </header>
 
     <%- include('partials/navbar') %>
@@ -363,7 +379,7 @@
         <% posts.forEach(post => { %>
         <article class="post">
           <h2 class="post-title"><a href="<%= baseUrl %>/post/<%= post.id %>"><%= post.title %></a></h2>
-          <div class="post-meta">Posted on <%= new Date(post.created_at).toLocaleDateString('zh-TW') %></div>
+          <div class="post-meta">Posted on <%= new Date(post.created_at).toLocaleDateString('zh-TW') %> <% if (post.views) { %><span style="margin-left:12px;">👁 <%= post.views %></span><% } %></div>
           <% if (post.tags && post.tags.length > 0) { %>
           <div class="post-tags">
             <% post.tags.forEach(tag => { %>

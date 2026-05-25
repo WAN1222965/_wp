@@ -64,10 +64,23 @@
     .site-nav li a { color: #fff; text-decoration: none; display: block; padding: 8px 14px; font-size: 14px; }
     .site-nav li a:hover { text-decoration: underline; }
     .dropdown { position: relative; }
-    .dropdown-menu { display: none; position: absolute; top: 100%; left: 0; background: #000; flex-direction: column; min-width: 120px; z-index: 100; padding: 0; margin: 0; list-style: none; }
-    .dropdown.active .dropdown-menu { display: flex; }
-    .dropdown-menu li a { white-space: nowrap; padding: 8px 14px; }
+    .dropdown-menu {
+      position: absolute; top: 100%; left: 0; background: #000;
+      flex-direction: column; min-width: 140px; z-index: 9999;
+      padding: 4px 0; margin: 0; list-style: none;
+      opacity: 0; visibility: hidden; pointer-events: none;
+      transform: translateY(-4px);
+      transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s;
+    }
+    .dropdown:hover .dropdown-menu,
+    .dropdown.active .dropdown-menu {
+      opacity: 1; visibility: visible; pointer-events: auto; transform: translateY(0);
+    }
+    .dropdown-menu li a { white-space: nowrap; padding: 8px 14px; display: block; }
+    .dropdown-menu li a:hover { background: rgba(255,255,255,0.1); }
     .dropdown > a .arrow { display: inline-block; transition: transform 0.25s ease; font-size: 0.7rem; margin-left: 4px; }
+    .dropdown:hover > a .arrow,
+    .dropdown.active > a .arrow { transform: rotate(180deg); }
     /* Footer */
     .site-footer { border-top: 4px solid #000; padding: 20px; display: flex; justify-content: space-between; align-items: center; font-size: 12px; color: #666; margin-top: 40px; }
     .site-footer strong { font-size: 16px; color: #000; }
@@ -95,8 +108,8 @@
       <label>標籤 (逗號分隔)</label>
       <input type="text" name="tags" value="<%= post.tags ? post.tags.join(', ') : '' %>">
 
-      <label>AI 摘要 (選填)</label>
-      <textarea name="summary" style="min-height:60px;"><%= post.summary || '' %></textarea>
+      <label>AI 摘要 (選填，100 字內)</label>
+      <textarea name="summary" style="min-height:60px;" placeholder="簡短描述文章重點..."><%= post.summary || '' %></textarea>
 
       <label>Meta 描述 (選填，SEO 用)</label>
       <input type="text" name="meta_description" value="<%= post.meta_description || '' %>" placeholder="搜尋結果中顯示的摘要，約 150 字" style="font-size:0.9rem;">

@@ -4,7 +4,7 @@
     <li><a href="<%= baseUrl %>/about"><span>ℹ️</span> 關於</a></li>
     <li><a href="<%= baseUrl %>/notes"><span>✏️</span> 隨筆</a></li>
     <li class="dropdown">
-      <a href="#" onclick="toggleDropdown(event)"><span>🎮</span> 互動專案 <span class="arrow">▾</span></a>
+      <a href="#" id="dropdownToggle"><span>🎮</span> 互動專案 <span class="arrow">▾</span></a>
       <ul class="dropdown-menu">
         <li><a href="<%= baseUrl %>/snake.html"><span>🐍</span> 貪吃蛇</a></li>
         <li><a href="<%= baseUrl %>/whack.html"><span>🎯</span> 捕墨</a></li>
@@ -24,28 +24,89 @@
 }
 </style>
 <script>
-function toggleDropdown(e) {
-  e.preventDefault();
-  e.stopPropagation();
-  e.currentTarget.parentElement.classList.toggle('active');
-}
-document.addEventListener('click', function(e) {
-  document.querySelectorAll('.dropdown.active').forEach(function(d) {
-    if (!d.contains(e.target)) d.classList.remove('active');
+(function () {
+  var dropdown = document.querySelector('.dropdown');
+  if (!dropdown) return;
+
+  var closeTimer = null;
+  var HOVER_DELAY = 200;
+
+  function openDropdown() {
+    if (closeTimer) { clearTimeout(closeTimer); closeTimer = null; }
+    dropdown.classList.add('active');
+  }
+
+  function closeDropdown() {
+    if (closeTimer) return;
+    closeTimer = setTimeout(function () {
+      dropdown.classList.remove('active');
+      closeTimer = null;
+    }, HOVER_DELAY);
+  }
+
+  function cancelClose() {
+    if (closeTimer) { clearTimeout(closeTimer); closeTimer = null; }
+  }
+
+  // Hover: 滑入展開
+  dropdown.addEventListener('mouseenter', openDropdown);
+  dropdown.addEventListener('mouseleave', closeDropdown);
+
+  // 選單內部懸停時取消關閉
+  var menu = dropdown.querySelector('.dropdown-menu');
+  if (menu) {
+    menu.addEventListener('mouseenter', cancelClose);
+    menu.addEventListener('mouseleave', function (e) {
+      // 只在真的離開選單時才啟動關閉計時
+      if (!dropdown.contains(e.relatedTarget)) closeDropdown();
+    });
+  }
+
+  // Click: touch 裝置 fallback，點擊切換
+  var toggle = dropdown.querySelector('a[href="#"]');
+  if (toggle) {
+    toggle.addEventListener('click', function (e) {
+      e.preventDefault();
+      if (dropdown.classList.contains('active')) {
+        dropdown.classList.remove('active');
+      } else {
+        openDropdown();
+      }
+    });
+  }
+
+  // 點擊外部關閉
+  document.addEventListener('click', function (e) {
+    if (dropdown.classList.contains('active') && !dropdown.contains(e.target)) {
+      if (closeTimer) { clearTimeout(closeTimer); closeTimer = null; }
+      dropdown.classList.remove('active');
+    }
   });
-});
-(function() {
-  var user;
-  try { user = JSON.parse(localStorage.getItem('user')); } catch(e) {}
-  if (user) {
-    var links = document.querySelectorAll('.site-nav a');
-    for (var i = 0; i < links.length; i++) {
-      if (links[i].textContent.includes('登入')) {
-        links[i].innerHTML = '<span>👤</span> ' + (user.nickname || user.username);
-        links[i].href = '<%= baseUrl %>/notes';
-        break;
+
+  // IIFE auth check
+  (function () {
+    function updateNav(user) {
+      var links = document.querySelectorAll('.site-nav a');
+      for (var i = 0; i < links.length; i++) {
+        if (links[i].textContent.indexOf('登入') !== -1) {
+          if (user) {
+            links[i].innerHTML = '<span>👤</span> ' + (user.nickname || user.username);
+            links[i].href = '<%= baseUrl %>/notes';
+          }
+          break;
+        }
       }
     }
-  }
+    var user;
+    try { user = JSON.parse(localStorage.getItem('user')); } catch (e) {}
+    if (user) { updateNav(user); }
+    fetch('<%= baseUrl %>/api/auth/me').then(function (r) { return r.json(); }).then(function (d) {
+      if (d.authenticated) {
+        localStorage.setItem('user', JSON.stringify(d.user));
+        updateNav(d.user);
+      }
+    }).catch(function () {});
+  })();
+
 })();
 </script>

@@ -349,6 +349,80 @@
     } catch { msg.textContent = '訂閱失敗，請稍後再試'; }
   };
 
+  // ===== TOAST SYSTEM =====
+  function ensureToastContainer() {
+    let container = document.getElementById('toastContainer');
+    if (!container) {
+      container = document.createElement('div');
+      container.id = 'toastContainer';
+      container.className = 'toast-container';
+      document.body.appendChild(container);
+    }
+    return container;
+  }
+
+  window.showToast = function (message, type) {
+    type = type || 'success';
+    const container = ensureToastContainer();
+    const toast = document.createElement('div');
+    toast.className = 'toast ' + type;
+    toast.textContent = message;
+    container.appendChild(toast);
+    requestAnimationFrame(() => toast.classList.add('show'));
+    setTimeout(() => {
+      toast.classList.remove('show');
+      setTimeout(() => toast.remove(), 300);
+    }, 3000);
+  };
+
+  // ===== BACK TO TOP =====
+  function initBackToTop() {
+    const btn = document.createElement('button');
+    btn.className = 'back-to-top';
+    btn.innerHTML = '↑';
+    btn.id = 'backToTop';
+    btn.onclick = () => window.scrollTo({ top: 0, behavior: 'smooth' });
+    document.body.appendChild(btn);
+    window.addEventListener('scroll', () => {
+      btn.style.display = window.scrollY > 400 ? 'block' : 'none';
+    });
+  }
+
+  // ===== SESSION AUTH CHECK =====
+  async function checkAuth() {
+    try {
+      const res = await fetch(BASE + '/api/auth/me');
+      const data = await res.json();
+      if (data.authenticated) {
+        localStorage.setItem('user', JSON.stringify(data.user));
+      }
+    } catch {}
+  }
+
+  // ===== FORM VALIDATION =====
+  function validateForm(form) {
+    let valid = true;
+    form.querySelectorAll('[required]').forEach(field => {
+      const group = field.closest('.form-group');
+      if (!field.value.trim()) {
+        valid = false;
+        if (group) group.classList.add('has-error');
+      } else {
+        if (group) group.classList.remove('has-error');
+      }
+    });
+    return valid;
+  }
+
+  document.addEventListener('submit', (e) => {
+    if (e.target.matches('.needs-validation')) {
+      if (!validateForm(e.target)) {
+        e.preventDefault();
+        showToast('請填寫所有必填欄位', 'error');
+      }
+    }
+  }, true);
+
   // ===== INIT =====
   document.addEventListener('DOMContentLoaded', () => {
     buildTOC();
@@ -356,5 +430,7 @@
     initAnnotations();
     loadTagCloud();
     if (postId) loadComments();
+    initBackToTop();
+    checkAuth();
   });
 })();

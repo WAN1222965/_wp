@@ -336,6 +336,7 @@
           <% } %>
           <span class="reading-time" id="readingTime">⏱ <span id="readTimeMinutes">?</span> 分鐘</span>
           <span>👤 墨</span>
+          <span>👁 <span id="viewCount">?</span></span>
           <% if (post.tags && post.tags.length > 0) { %>
           <div class="tags">
             <% post.tags.forEach(tag => { %>
@@ -442,6 +443,14 @@
     window.addEventListener('scroll', () => {
       document.getElementById('backToTop').style.display = window.scrollY > 400 ? 'block' : 'none';
     });
+
+    // View count
+    (function() {
+      fetch(BASE_URL + '/api/posts/<%= post.id %>/views')
+        .then(r => r.json())
+        .then(d => { document.getElementById('viewCount').textContent = d.views; })
+        .catch(() => { document.getElementById('viewCount').textContent = '0'; });
+    })();
 
     // Reading time & article collapse
     (function() {

@@ -101,25 +101,54 @@
 
     let currentUser = null;
     try { currentUser = JSON.parse(localStorage.getItem('user')); } catch {}
-    
-    function doLogout() {
-        localStorage.removeItem('user');
-        window.location.reload();
+
+    function showToast(msg, type) {
+      type = type || 'error';
+      var t = document.createElement('div');
+      t.textContent = msg;
+      Object.assign(t.style, { position:'fixed', bottom:'24px', right:'24px', background: type === 'error' ? '#e53e3e' : 'var(--text)', color:'#fff', padding:'12px 20px', borderRadius:'8px', fontSize:'0.9rem', zIndex:'9999', boxShadow:'0 4px 20px rgba(0,0,0,0.2)', opacity:'0', transform:'translateY(10px)', transition:'0.3s', fontFamily:'inherit', maxWidth:'360px' });
+      document.body.appendChild(t);
+      requestAnimationFrame(function() { t.style.opacity = '1'; t.style.transform = 'translateY(0)'; });
+      setTimeout(function() { t.style.opacity = '0'; t.style.transform = 'translateY(10px)'; setTimeout(function() { t.remove(); }, 300); }, 3000);
     }
 
-    const authContainer = document.getElementById('authContainer');
-    
-    if (currentUser) {
-        authContainer.innerHTML = `
-            <div class="auth-container" style="text-align:center;">
-                <h1>墨</h1>
-                <p class="subtitle">你已登入為 <strong>${currentUser.nickname || currentUser.username}</strong></p>
-                <div class="btn-group" style="justify-content:center;">
-                    <button onclick="window.location.href=BASE+'/notes'">前往隨筆</button>
-                    <button onclick="doLogout()" style="background:transparent;border:1px solid var(--border);">登出</button>
-                </div>
-            </div>
-        `;
+    function doLogout() {
+      fetch(BASE + '/api/auth/logout', { method: 'POST' }).catch(function() {}).finally(function() {
+        localStorage.removeItem('user');
+        window.location.reload();
+      });
+    }
+
+    // Check session first
+    fetch(BASE + '/api/auth/me').then(function(r) { return r.json(); }).then(function(d) {
+      if (d.authenticated) {
+        localStorage.setItem('user', JSON.stringify(d.user));
+        currentUser = d.user;
+        showLoggedIn(d.user);
+      } else if (currentUser) {
+        showLoggedIn(currentUser);
+      }
+    }).catch(function() {
+      if (currentUser) showLoggedIn(currentUser);
+    });
+
+    function showLoggedIn(user) {
+      document.getElementById('authContainer').innerHTML = `
+        <div class="auth-container" style="text-align:center;">
+          <h1>墨</h1>
+          <p class="subtitle">你已登入為 <strong>${escapeHtml(user.nickname || user.username)}</strong></p>
+          <div class="btn-group" style="justify-content:center;">
+            <button onclick="window.location.href=BASE+'/notes'">前往隨筆</button>
+            <button onclick="doLogout()" style="background:transparent;border:1px solid var(--border);">登出</button>
+          </div>
+        </div>
+      `;
+    }
+
+    function escapeHtml(str) {
+      var d = document.createElement('div');
+      d.appendChild(document.createTextNode(str || ''));
+      return d.innerHTML;
     }
 
     function showRegister() {
@@ -135,11 +164,21 @@
     async function login() {
         const username = document.getElementById('loginUsername').value.trim();
         const password = document.getElementById('loginPassword').value.trim();
+        const errEl = document.getElementById('loginError');
+
         if (!username || !password) {
-            document.getElementById('loginError').textContent = '請輸入帳號和密碼';
-            document.getElementById('loginError').style.display = 'block';
+            errEl.textContent = '請輸入帳號和密碼';
+            errEl.style.display = 'block';
             return;
         }
+        if (password.length < 6) {
+            errEl.textContent = '密碼至少需要 6 個字元';
+            errEl.style.display = 'block';
+            return;
+        }
+        const btn = document.querySelector('#loginForm .btn-group button');
+        btn.textContent = '登入中...';
+        btn.disabled = true;
         try {
             const res = await fetch(BASE + '/api/auth/login', {
                 method: 'POST',
@@ -149,27 +188,45 @@
             if (res.ok) {
                 const user = await res.json();
                 localStorage.setItem('user', JSON.stringify(user));
-                window.location.href = BASE + '/notes';
+                showToast('登入成功！', 'success');
+                setTimeout(function() { window.location.href = BASE + '/notes'; }, 500);
             } else {
                 const err = await res.json();
-                document.getElementById('loginError').textContent = err.error;
-                document.getElementById('loginError').style.display = 'block';
+                errEl.textContent = err.error || '登入失敗';
+                errEl.style.display = 'block';
             }
         } catch {
-            document.getElementById('loginError').textContent = '網路錯誤，請稍後再試';
-            document.getElementById('loginError').style.display = 'block';
+            errEl.textContent = '網路錯誤，請稍後再試';
+            errEl.style.display = 'block';
         }
+        btn.textContent = '登入';
+        btn.disabled = false;
     }
 
     async function register() {
         const nickname = document.getElementById('regNickname').value.trim();
         const username = document.getElementById('regUsername').value.trim();
         const password = document.getElementById('regPassword').value.trim();
+        const errEl = document.getElementById('registerError');
+
         if (!username || !password) {
-            document.getElementById('registerError').textContent = '請輸入帳號和密碼';
-            document.getElementById('registerError').style.display = 'block';
+            errEl.textContent = '請輸入帳號和密碼';
+            errEl.style.display = 'block';
             return;
         }
+        if (username.length < 3) {
+            errEl.textContent = '帳號至少需要 3 個字元';
+            errEl.style.display = 'block';
+            return;
+        }
+        if (password.length < 6) {
+            errEl.textContent = '密碼至少需要 6 個字元';
+            errEl.style.display = 'block';
+            return;
+        }
+        const btn = document.querySelector('#registerForm .btn-group button');
+        btn.textContent = '註冊中...';
+        btn.disabled = true;
         try {
             const res = await fetch(BASE + '/api/auth/register', {
                 method: 'POST',
@@ -179,16 +236,19 @@
             if (res.ok) {
                 const user = await res.json();
                 localStorage.setItem('user', JSON.stringify(user));
-                window.location.href = BASE + '/notes';
+                showToast('註冊成功！', 'success');
+                setTimeout(function() { window.location.href = BASE + '/notes'; }, 500);
             } else {
                 const err = await res.json();
-                document.getElementById('registerError').textContent = err.error;
-                document.getElementById('registerError').style.display = 'block';
+                errEl.textContent = err.error || '註冊失敗';
+                errEl.style.display = 'block';
             }
         } catch {
-            document.getElementById('registerError').textContent = '網路錯誤，請稍後再試';
-            document.getElementById('registerError').style.display = 'block';
+            errEl.textContent = '網路錯誤，請稍後再試';
+            errEl.style.display = 'block';
         }
+        btn.textContent = '註冊';
+        btn.disabled = false;
     }
     </script>
 </body>

@@ -13,27 +13,35 @@ function getThemeColors() {
     return THEME_COLORS[theme] || THEME_COLORS.light;
 }
 
+let canvasWidth = 0;
+let canvasHeight = 0;
+
 function resizeCanvas() {
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
+    canvasWidth = window.innerWidth;
+    canvasHeight = window.innerHeight;
+    canvas.width = canvasWidth;
+    canvas.height = canvasHeight;
 }
 window.addEventListener('resize', resizeCanvas);
 resizeCanvas();
 
 let particles = [];
+const MAX_PARTICLES = 100;
+const AUTO_PARTICLE_LIMIT = 60;
+const TRAIL_ALPHA = 0.08;
 
 class InkParticle {
-    constructor(x, y, size, colors, velocityX, velocityY) {
+    constructor(x, y, size, colors, vx, vy) {
         this.x = x;
         this.y = y;
         this.size = size;
-        this.targetSize = size * (Math.random() * 3 + 2);
+        this.targetSize = size * (Math.random() * 2.5 + 1.5);
         this.colors = colors;
-        this.opacity = Math.random() * 0.3 + 0.1;
-        this.vx = velocityX || (Math.random() - 0.5) * 0.5;
-        this.vy = velocityY || (Math.random() - 0.5) * 0.5;
-        this.growSpeed = Math.random() * 0.5 + 0.1;
-        this.fadeSpeed = Math.random() * 0.002 + 0.001;
+        this.opacity = Math.random() * 0.25 + 0.08;
+        this.vx = vx;
+        this.vy = vy;
+        this.growSpeed = Math.random() * 0.4 + 0.05;
+        this.fadeSpeed = Math.random() * 0.002 + 0.0008;
     }
 
     update() {
@@ -42,6 +50,7 @@ class InkParticle {
 
         if (this.size < this.targetSize) {
             this.size += this.growSpeed;
+            if (this.size > this.targetSize) this.size = this.targetSize;
         }
 
         this.opacity -= this.fadeSpeed;
@@ -49,43 +58,52 @@ class InkParticle {
     }
 
     draw() {
-        ctx.save();
-        ctx.filter = `blur(${this.size / 3}px)`;
-        ctx.beginPath();
-        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-
-        const [r, g, b] = this.colors;
-        ctx.fillStyle = `rgba(${r}, ${g}, ${b}, ${this.opacity})`;
-        ctx.fill();
-        ctx.restore();
+        if (this.size > 0.5 && this.opacity > 0.001) {
+            ctx.save();
+            const blur = Math.max(1, this.size / 4);
+            ctx.filter = 'blur(' + blur + 'px)';
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+            const [r, g, b] = this.colors;
+            ctx.fillStyle = 'rgba(' + r + ',' + g + ',' + b + ',' + this.opacity + ')';
+            ctx.fill();
+            ctx.restore();
+        }
     }
 }
 
-function createInk(x, y, count = 1, isAuto = false) {
+function createInk(x, y, count, isAuto) {
+    if (particles.length >= MAX_PARTICLES) return;
+    count = count || 1;
     const colors = getThemeColors().ink;
-    for (let i = 0; i < count; i++) {
-        let size = isAuto ? Math.random() * 10 + 5 : Math.random() * 5 + 2;
-
-        let vx = isAuto ? null : (Math.random() - 0.5) * 2;
-        let vy = isAuto ? null : (Math.random() - 0.5) * 2;
-
+    const actualCount = Math.min(count, MAX_PARTICLES - particles.length);
+    for (let i = 0; i < actualCount; i++) {
+        let size = isAuto ? Math.random() * 8 + 3 : Math.random() * 4 + 1;
+        let vx = isAuto ? (Math.random() - 0.5) * 0.3 : (Math.random() - 0.5) * 1.5;
+        let vy = isAuto ? (Math.random() - 0.5) * 0.3 : (Math.random() - 0.5) * 1.5;
         particles.push(new InkParticle(x, y, size, colors, vx, vy));
     }
 }
 
 function animate() {
     const bg = getThemeColors().bg;
-    ctx.fillStyle = `rgba(${bg[0]}, ${bg[1]}, ${bg[2]}, 0.05)`;
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = 'rgba(' + bg[0] + ',' + bg[1] + ',' + bg[2] + ',' + TRAIL_ALPHA + ')';
+    ctx.fillRect(0, 0, canvasWidth, canvasHeight);
 
+    let alive = 0;
     for (let i = 0; i < particles.length; i++) {
-        particles[i].update();
-        particles[i].draw();
-
-        if (particles[i].opacity <= 0) {
-            particles.splice(i, 1);
-            i--;
+        const p = particles[i];
+        p.update();
+        p.draw();
+        if (p.opacity > 0) {
+            alive++;
+        } else {
+            particles[i] = null;
         }
+    }
+    // Compact array
+    if (alive < particles.length) {
+        particles = particles.filter(Boolean);
     }
 
     requestAnimationFrame(animate);
@@ -93,28 +111,35 @@ function animate() {
 
 window.createInk = createInk;
 window.inkBg = {
-  updateTheme: function () {
-    // Theme is read dynamically from data-theme attribute every frame
-  }
+  updateTheme: function () {}
 };
 
-window.addEventListener('mousemove', (event) => {
-    if (Math.random() > 0.8) {
+let lastMove = 0;
+window.addEventListener('mousemove', function(event) {
+    const now = Date.now();
+    if (now - lastMove < 30) return;
+    lastMove = now;
+    if (Math.random() > 0.75 && particles.length < MAX_PARTICLES) {
         createInk(event.clientX, event.clientY, 1, false);
     }
 });
 
-window.addEventListener('click', (event) => {
-    createInk(event.clientX, event.clientY, 5, false);
+window.addEventListener('click', function(event) {
+    if (particles.length < MAX_PARTICLES - 5) {
+        createInk(event.clientX, event.clientY, 5, false);
+    }
 });
 
-setInterval(() => {
-    const x = Math.random() * canvas.width;
-    const y = Math.random() * canvas.height;
-    if (particles.length < 50) {
-        createInk(x, y, 1, true);
-    }
-}, 2000);
+let autoTimer = null;
+function startAutoInk() {
+    if (autoTimer) return;
+    autoTimer = setInterval(function() {
+        if (particles.length < AUTO_PARTICLE_LIMIT) {
+            createInk(Math.random() * canvasWidth, Math.random() * canvasHeight, 1, true);
+        }
+    }, 3000);
+}
+startAutoInk();
 
 animate();
 })();

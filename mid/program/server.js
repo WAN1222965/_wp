@@ -4,11 +4,18 @@ const bodyParser = require('body-parser');
 const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
 const os = require('os');
+const fs = require('fs');
 const Parser = require('rss-parser');
 const { marked } = require('marked');
 const multer = require('multer');
 const { v4: uuidv4 } = require('uuid');
 const fetch = require('node-fetch');
+const bcrypt = require('bcrypt');
+const session = require('express-session');
+const SQLiteStore = require('connect-sqlite3')(session);
+const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
+const morgan = require('morgan');
 
 // Multer config — local file storage (swap to S3 by changing storage)
 const storage = multer.diskStorage({
@@ -41,19 +48,54 @@ function renderMarkdown(md) {
 const app = express();
 const PORT = parseInt(process.env.PORT) || 3000;
 const BASE = process.env.BASE || '/s111410509';
+const SESSION_SECRET = process.env.SESSION_SECRET || 'ink-blog-secret-change-in-production';
 const dbPath = path.join(__dirname, 'blog.db');
 const publicDir = path.join(__dirname, 'public');
 const db = new sqlite3.Database(dbPath);
 
 app.use(cors());
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.json({ limit: '10mb' }));
+app.use(bodyParser.urlencoded({ extended: true, limit: '10mb' }));
+app.use(helmet({
+  contentSecurityPolicy: false,
+  crossOriginEmbedderPolicy: false
+}));
+app.use(morgan('[:date[iso]] :method :url :status :res[content-length] - :response-time ms'));
+
+// Rate limiting
+const apiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 100,
+  message: { error: '請求次數過多，請稍後再試' }
+});
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 20,
+  message: { error: '登入/註冊嘗試次數過多，請稍後再試' }
+});
+app.use(BASE + '/api/', apiLimiter);
+app.use(BASE + '/api/auth/', authLimiter);
+
+// Session
+app.use(session({
+  store: new SQLiteStore({ db: 'sessions.db', dir: __dirname }),
+  secret: SESSION_SECRET,
+  resave: false,
+  saveUninitialized: false,
+  cookie: {
+    httpOnly: true,
+    secure: false,
+    sameSite: 'lax',
+    maxAge: 7 * 24 * 60 * 60 * 1000
+  }
+}));
+
 app.use(BASE, express.static(publicDir, { index: false }));
 
 // Ensure uploads directory exists
 const uploadsDir = path.join(__dirname, 'public', 'uploads');
-if (!require('fs').existsSync(uploadsDir)) {
-  require('fs').mkdirSync(uploadsDir, { recursive: true });
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir, { recursive: true });
 }
 
 app.set('view engine', 'ejs');
@@ -147,6 +189,7 @@ db.serialize(() => {
   db.run("ALTER TABLE posts ADD COLUMN reports INTEGER DEFAULT 0", err => err && null);
   db.run("ALTER TABLE posts ADD COLUMN updated_at DATETIME DEFAULT CURRENT_TIMESTAMP", err => err && null);
   db.run("ALTER TABLE posts ADD COLUMN meta_description TEXT DEFAULT ''", err => err && null);
+  db.run("ALTER TABLE posts ADD COLUMN views INTEGER DEFAULT 0", err => err && null);
 
   db.run(`CREATE TABLE IF NOT EXISTS contact_messages (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -155,6 +198,28 @@ db.serialize(() => {
     subject TEXT NOT NULL,
     message TEXT NOT NULL,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  )`);
+
+  db.run(`CREATE TABLE IF NOT EXISTS subscribers (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    email TEXT UNIQUE NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  )`);
+
+  db.run(`CREATE TABLE IF NOT EXISTS post_likes (
+    post_id INTEGER NOT NULL,
+    user_id INTEGER NOT NULL DEFAULT 0,
+    session_id TEXT DEFAULT '',
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (post_id, user_id, session_id)
+  )`);
+
+  db.run(`CREATE TABLE IF NOT EXISTS post_reports (
+    post_id INTEGER NOT NULL,
+    user_id INTEGER NOT NULL DEFAULT 0,
+    session_id TEXT DEFAULT '',
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (post_id, user_id, session_id)
   )`);
 });
 
@@ -242,7 +307,12 @@ router.post('/posts', (req, res) => {
 
 router.get('/post/:id', (req, res) => {
   db.get('SELECT * FROM posts WHERE id = ?', [req.params.id], (err, post) => {
-    if (err || !post) return res.status(404).send('Post not found');
+    if (err || !post) {
+      res.status(404).render('error', { title: '文章不存在', message: '找不到您要瀏覽的文章，可能已被刪除或連結有誤。', statusCode: 404 });
+      return;
+    }
+    // Increment view count
+    db.run('UPDATE posts SET views = views + 1 WHERE id = ?', [post.id]);
     post.content = renderMarkdown(post.content);
     db.all('SELECT t.name FROM post_tags pt JOIN tags t ON pt.tag_id = t.id WHERE pt.post_id = ?', [post.id], (err, tags) => {
       post.tags = tags ? tags.map(t => t.name) : [];
@@ -438,12 +508,14 @@ router.get('/sitemap.xml', (req, res) => {
 
 // ===== Newsletter Subscription =====
 
-const subscribers = [];
 router.post('/api/subscribe', (req, res) => {
   const { email } = req.body;
-  if (!email || !email.includes('@')) return res.status(400).json({ error: 'Valid email required' });
-  subscribers.push(email);
-  res.json({ message: '訂閱成功！' });
+  if (!email || !email.includes('@')) return res.status(400).json({ error: '請輸入有效的 Email' });
+  db.run('INSERT OR IGNORE INTO subscribers (email) VALUES (?)', [email], function(err) {
+    if (err) return res.status(500).json({ error: '訂閱失敗，請稍後再試' });
+    if (this.changes === 0) return res.json({ message: '此 Email 已訂閱過' });
+    res.json({ message: '訂閱成功！感謝您的訂閱' });
+  });
 });
 
 // ===== Static Pages =====
@@ -475,24 +547,55 @@ router.get('/privacy', (req, res) => {
 
 // ===== Existing Routes (kept intact) =====
 
-router.post('/api/auth/register', (req, res) => {
+router.post('/api/auth/register', async (req, res) => {
   const { username, nickname, password } = req.body;
   if (!username || !password) return res.status(400).json({ error: 'Username and password required' });
-  const displayName = nickname || username;
-  const stmt = db.prepare('INSERT INTO users (username, nickname, password) VALUES (?, ?, ?)');
-  stmt.run(username, displayName, password, function(err) {
-    if (err) return res.status(400).json({ error: 'Username already exists' });
-    res.status(201).json({ id: this.lastID, username, nickname: displayName });
-  });
-  stmt.finalize();
+  if (username.length < 3) return res.status(400).json({ error: '用戶名至少需要 3 個字元' });
+  if (password.length < 6) return res.status(400).json({ error: '密碼至少需要 6 個字元' });
+  try {
+    const hash = await bcrypt.hash(password, 12);
+    const displayName = nickname || username;
+    db.run('INSERT INTO users (username, nickname, password) VALUES (?, ?, ?)', [username, displayName, hash], function(err) {
+      if (err) return res.status(400).json({ error: '用戶名已存在' });
+      req.session.userId = this.lastID;
+      req.session.username = username;
+      res.status(201).json({ id: this.lastID, username, nickname: displayName });
+    });
+  } catch (err) {
+    res.status(500).json({ error: '註冊失敗，請稍後再試' });
+  }
 });
 
 router.post('/api/auth/login', (req, res) => {
   const { username, password } = req.body;
   if (!username || !password) return res.status(400).json({ error: 'Username and password required' });
-  db.get('SELECT * FROM users WHERE username = ? AND password = ?', [username, password], (err, user) => {
-    if (err || !user) return res.status(401).json({ error: 'Invalid credentials' });
-    res.json({ id: user.id, username: user.username, nickname: user.nickname });
+  db.get('SELECT * FROM users WHERE username = ?', [username], async (err, user) => {
+    if (err || !user) return res.status(401).json({ error: '用戶名或密碼錯誤' });
+    try {
+      const match = await bcrypt.compare(password, user.password);
+      if (!match) return res.status(401).json({ error: '用戶名或密碼錯誤' });
+      req.session.userId = user.id;
+      req.session.username = user.username;
+      res.json({ id: user.id, username: user.username, nickname: user.nickname });
+    } catch {
+      res.status(500).json({ error: '登入失敗，請稍後再試' });
+    }
+  });
+});
+
+router.post('/api/auth/logout', (req, res) => {
+  req.session.destroy(err => {
+    if (err) return res.status(500).json({ error: '登出失敗' });
+    res.clearCookie('connect.sid');
+    res.json({ message: '已登出' });
+  });
+});
+
+router.get('/api/auth/me', (req, res) => {
+  if (!req.session.userId) return res.json({ authenticated: false });
+  db.get('SELECT id, username, nickname FROM users WHERE id = ?', [req.session.userId], (err, user) => {
+    if (err || !user) return res.json({ authenticated: false });
+    res.json({ authenticated: true, user });
   });
 });
 
@@ -537,17 +640,43 @@ router.post('/api/notes', (req, res) => {
   stmt.finalize();
 });
 
+function getUserId(req) {
+  return req.session.userId || 0;
+}
+
+function getSessionId(req) {
+  return req.sessionID || '';
+}
+
 router.post('/api/notes/:id/like', (req, res) => {
-  db.run('UPDATE posts SET likes = likes + 1 WHERE id = ?', [req.params.id], (err) => {
+  const postId = req.params.id;
+  const userId = getUserId(req);
+  const sessionId = getSessionId(req);
+  db.get('SELECT * FROM post_likes WHERE post_id = ? AND user_id = ? AND session_id = ?', [postId, userId, sessionId], (err, existing) => {
     if (err) return res.status(500).json({ error: err.message });
-    res.json({ message: "已按讚" });
+    if (existing) return res.json({ message: '您已經按過讚', already: true });
+    db.run('INSERT INTO post_likes (post_id, user_id, session_id) VALUES (?, ?, ?)', [postId, userId, sessionId], function(err) {
+      if (err) return res.status(500).json({ error: err.message });
+      db.run('UPDATE posts SET likes = likes + 1 WHERE id = ?', [postId]);
+      db.get('SELECT likes FROM posts WHERE id = ?', [postId], (err, post) => {
+        res.json({ message: '已按讚', likes: post ? post.likes : 0 });
+      });
+    });
   });
 });
 
 router.post('/api/notes/:id/report', (req, res) => {
-  db.run('UPDATE posts SET reports = reports + 1 WHERE id = ?', [req.params.id], (err) => {
+  const postId = req.params.id;
+  const userId = getUserId(req);
+  const sessionId = getSessionId(req);
+  db.get('SELECT * FROM post_reports WHERE post_id = ? AND user_id = ? AND session_id = ?', [postId, userId, sessionId], (err, existing) => {
     if (err) return res.status(500).json({ error: err.message });
-    res.json({ message: "已檢舉" });
+    if (existing) return res.json({ message: '您已經檢舉過', already: true });
+    db.run('INSERT INTO post_reports (post_id, user_id, session_id) VALUES (?, ?, ?)', [postId, userId, sessionId], function(err) {
+      if (err) return res.status(500).json({ error: err.message });
+      db.run('UPDATE posts SET reports = reports + 1 WHERE id = ?', [postId]);
+      res.json({ message: '已檢舉，感謝您的回報' });
+    });
   });
 });
 
@@ -707,6 +836,15 @@ router.delete('/api/news/commentary/:id', (req, res) => {
   });
 });
 
+// ===== View Count API =====
+
+router.get('/api/posts/:id/views', (req, res) => {
+  db.get('SELECT views FROM posts WHERE id = ?', [req.params.id], (err, post) => {
+    if (err || !post) return res.json({ views: 0 });
+    res.json({ views: post.views || 0 });
+  });
+});
+
 // ===== Market Data (Crypto / TW Stock / US Stock) =====
 
 router.get('/api/market/crypto', async (req, res) => {
@@ -798,6 +936,17 @@ app.use(BASE, router);
 app.get('/', (req, res) => res.redirect(BASE + '/'));
 app.get('/notes', (req, res) => res.redirect(BASE + '/notes'));
 
+// ===== Error Pages =====
+
+app.use((req, res) => {
+  res.status(404).render('error', { title: '頁面不存在', message: '您尋找的頁面不存在，可能已被移除或連結有誤。', statusCode: 404 });
+});
+
+app.use((err, req, res, next) => {
+  console.error('❌ 伺服器錯誤：', err);
+  res.status(500).render('error', { title: '伺服器錯誤', message: '伺服器發生錯誤，請稍後再試。如果問題持續發生，請聯絡管理員。', statusCode: 500 });
+});
+
 function startServer(port) {
   const server = app.listen(port, '0.0.0.0');
   server.on('error', (err) => {
@@ -811,9 +960,16 @@ function startServer(port) {
   server.on('listening', () => {
     const nets = os.networkInterfaces();
     const ips = Object.values(nets).flat().filter(n => n.family === 'IPv4' && !n.internal).map(n => n.address);
-    console.log(`「墨」伺服器運行中：http://localhost:${port}${BASE}/`);
-    ips.forEach(ip => console.log(`  區域網路：http://${ip}:${port}${BASE}/`));
-    console.log(`  連接埠 ${port}（設定 PORT 環境變數可更改）`);
+    console.log('');
+    console.log('  ╔═══════════════════════╗');
+    console.log('  ║    「墨」部落格        ║');
+    console.log('  ║    伺服器已啟動        ║');
+    console.log('  ╚═══════════════════════╝');
+    console.log('');
+    console.log(`  📍 本機：http://localhost:${port}${BASE}/`);
+    ips.forEach(ip => console.log(`  🌐 區域網路：http://${ip}:${port}${BASE}/`));
+    console.log(`  🔌 連接埠 ${port}（設定 PORT 環境變數可更改）`);
+    console.log('');
   });
 }
 startServer(PORT);
