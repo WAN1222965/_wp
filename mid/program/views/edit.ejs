@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="zh-TW" data-theme="light">
+<html lang="<%= lang %>" data-theme="light">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>編輯文章 - 墨</title>
+  <title><%= t('site_title_edit') %></title>
   <meta name="robots" content="noindex">
   <link rel="canonical" href="<%= baseUrl %>/post/<%= post.id %>">
   <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;700&display=swap" rel="stylesheet">
@@ -100,21 +100,21 @@
 <body>
   <div class="container">
     <%- include('partials/navbar') %>
-    <h1>✏️ 編輯文章</h1>
+    <h1>✏️ <%= t('edit_title') %></h1>
     <form action="<%= baseUrl %>/post/<%= post.id %>/update" method="POST">
-      <label>標題</label>
+      <label><%= t('new_label_title') %></label>
       <input type="text" name="title" value="<%= post.title %>" required>
 
-      <label>標籤 (逗號分隔)</label>
+      <label><%= t('new_label_tags') %></label>
       <input type="text" name="tags" value="<%= post.tags ? post.tags.join(', ') : '' %>">
 
-      <label>AI 摘要 (選填，100 字內)</label>
-      <textarea name="summary" style="min-height:60px;" placeholder="簡短描述文章重點..."><%= post.summary || '' %></textarea>
+      <label><%= t('new_label_summary') %></label>
+      <textarea name="summary" style="min-height:60px;" placeholder="<%= t('new_placeholder_summary') %>"><%= post.summary || '' %></textarea>
 
-      <label>Meta 描述 (選填，SEO 用)</label>
-      <input type="text" name="meta_description" value="<%= post.meta_description || '' %>" placeholder="搜尋結果中顯示的摘要，約 150 字" style="font-size:0.9rem;">
+      <label><%= t('new_label_meta') %></label>
+      <input type="text" name="meta_description" value="<%= post.meta_description || '' %>" placeholder="<%= t('new_placeholder_meta') %>" style="font-size:0.9rem;">
 
-      <label>內文 (Markdown)</label>
+      <label><%= t('new_label_content') %></label>
       <div class="toolbar">
         <button type="button" onclick="insertMarkdown('**','**')"><b>B</b></button>
         <button type="button" onclick="insertMarkdown('*','*')"><i>I</i></button>
@@ -125,13 +125,13 @@
         <button type="button" onclick="insertMarkdown('```\n','\n```')">代码</button>
         <button type="button" onclick="insertMarkdown('[','](url)')">🔗</button>
         <button type="button" onclick="insertMarkdown('![alt](',')')">🖼</button>
-        <button type="button" onclick="document.getElementById('imageUpload').click()">📎 上傳圖片</button>
+        <button type="button" onclick="document.getElementById('imageUpload').click()">📎 <%= t('new_btn_upload') %></button>
         <button type="button" onclick="insertMarkdown('> ','')">❝</button>
         <input type="file" id="imageUpload" accept="image/*" style="display:none" onchange="uploadImage(this)">
       </div>
       <div class="editor-tabs">
-        <div class="editor-tab active" onclick="switchTab('edit')">✏️ 編輯</div>
-        <div class="editor-tab" onclick="switchTab('preview')">👁 預覽</div>
+        <div class="editor-tab active" onclick="switchTab('edit')">✏️ <%= t('new_tab_edit') %></div>
+        <div class="editor-tab" onclick="switchTab('preview')">👁 <%= t('new_tab_preview') %></div>
       </div>
       <div class="editor-pane active" id="editPane">
         <textarea id="contentEditor" name="content" required><%= post.content %></textarea>
@@ -141,8 +141,8 @@
       </div>
 
       <div class="btn-group">
-        <button type="submit" class="btn">儲存變更</button>
-        <a href="<%= baseUrl %>/post/<%= post.id %>" class="btn btn-outline">取消</a>
+        <button type="submit" class="btn"><%= t('edit_btn_save') %></button>
+        <a href="<%= baseUrl %>/post/<%= post.id %>" class="btn btn-outline"><%= t('edit_btn_cancel') %></a>
       </div>
     </form>
   </div>
@@ -191,7 +191,7 @@
       const file = input.files[0];
       if (!file) return;
       const btn = document.querySelector('.toolbar button[onclick*="imageUpload"]');
-      btn.textContent = '⏳ 上傳中...';
+      btn.textContent = '⏳ <%= t('new_btn_uploading') %>';
       btn.disabled = true;
       const formData = new FormData();
       formData.append('image', file);
@@ -203,13 +203,13 @@
           const start = editor.selectionStart, end = editor.selectionEnd;
           editor.value = editor.value.substring(0, start) + md + editor.value.substring(end);
           updatePreview();
-          showToast('✅ 圖片上傳成功');
+          showToast('✅ <%= t('new_toast_success') %>');
         } else {
-          showToast('❌ 上傳失敗：伺服器未回傳圖片網址');
+          showToast('❌ <%= t('new_toast_fail') %>');
         }
-      } catch (e) { showToast('❌ 上傳失敗：' + e.message); }
+      } catch (e) { showToast('❌ <%= t('new_toast_fail2') %>：' + e.message); }
       input.value = '';
-      btn.textContent = '📎 上傳圖片';
+      btn.textContent = '📎 <%= t('new_btn_upload') %>';
       btn.disabled = false;
     }
 
@@ -234,7 +234,7 @@
         const raw = localStorage.getItem(DRAFT_KEY);
         if (!raw) return;
         const data = JSON.parse(raw);
-        if (data.content && data.content !== editor.value && confirm('📝 偵測到未儲存的變更，是否還原？')) {
+        if (data.content && data.content !== editor.value && confirm('📝 <%= t('new_draft_changes') %>')) {
           document.querySelector('[name="title"]').value = data.title || '';
           editor.value = data.content || '';
           document.querySelector('[name="tags"]').value = data.tags || '';

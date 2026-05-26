@@ -12,25 +12,25 @@
     <div class="main-container">
         <header>
             <h1>墨</h1>
-            <p class="subtitle">排行榜</p>
+            <p class="subtitle" data-i18n="leaderboard_subtitle">排行榜</p>
             <div style="margin-top: 16px; display: flex; justify-content: center; gap: 10px; flex-wrap: wrap;">
-                <button onclick="toggleTheme()" id="themeBtn" class="theme-toggle">🌙 深色</button>
+                <button onclick="toggleTheme()" id="themeBtn" class="theme-toggle" data-i18n="leaderboard_theme_toggle">🌙 深色</button>
             </div>
             <nav class="nav-links" id="leaderNav">
-                <a href="" class="nav-pill">📝 網誌</a>
-                <a href="" class="nav-pill">🐍 貪吃蛇</a>
-                <a href="" class="nav-pill">🎯 捕墨</a>
-                <a href="" class="nav-pill">🏃 墨陣</a>
-                <a href="" class="nav-pill">📰 新聞</a>
+                <a href="" class="nav-pill" data-i18n="nav_blog">📝 網誌</a>
+                <a href="" class="nav-pill" data-i18n="nav_snake">🐍 貪吃蛇</a>
+                <a href="" class="nav-pill" data-i18n="nav_whack">🎯 捕墨</a>
+                <a href="" class="nav-pill" data-i18n="nav_maze">🏃 墨陣</a>
+                <a href="" class="nav-pill" data-i18n="nav_news">📰 新聞</a>
             </nav>
         </header>
 
         <div class="leaderboard">
-            <h2>墨跡排行</h2>
+            <h2 data-i18n="leaderboard_title">墨跡排行</h2>
             <div id="scoresList"></div>
         </div>
 
-        <a href="" class="back-link" id="backLink">開始遊戲 →</a>
+        <a href="" class="back-link" id="backLink" data-i18n="leaderboard_back">開始遊戲 →</a>
     </div>
     <script>
         const BASE = window.location.pathname.replace(/\/leaderboard.*$/, '') || '/s111410509';
@@ -39,6 +39,8 @@
         document.querySelectorAll('#leaderNav a').forEach((a, i) => { a.href = BASE + '/' + navPaths[i]; });
         document.getElementById('backLink').href = BASE + '/snake.html';
     </script>
+    <script src="" id="i18nScript"></script>
+    <script>document.getElementById('i18nScript').src = BASE + '/i18n.js';</script>
     <script>
         function loadScript(url) {
             var s = document.createElement('script');
@@ -55,15 +57,16 @@
             const sys = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
             document.documentElement.setAttribute('data-theme', t || sys);
             const btn = document.getElementById('themeBtn');
-            if (btn) btn.textContent = (t || sys) === 'dark' ? '☀️ 淺色' : '🌙 深色';
+            if (btn) btn.textContent = (t || sys) === 'dark' ? '☀️ ' + (__('notes_theme_light', '淺色')) : '🌙 ' + (__('notes_theme_dark', '深色'));
         })();
+        function __(key, fallback) { return (window.__i18nT && window.__i18nT[key]) || fallback; }
         window.toggleTheme = function() {
             const c = document.documentElement.getAttribute('data-theme');
             const t = c === 'dark' ? 'light' : 'dark';
             document.documentElement.setAttribute('data-theme', t);
             localStorage.setItem('theme', t);
             const btn = document.getElementById('themeBtn');
-            if (btn) btn.textContent = t === 'dark' ? '☀️ 淺色' : '🌙 深色';
+            if (btn) btn.textContent = t === 'dark' ? ('☀️ ' + __('notes_theme_light', '淺色')) : ('🌙 ' + __('notes_theme_dark', '深色'));
             if (window.inkBg && window.inkBg.updateTheme) window.inkBg.updateTheme();
         };
 
@@ -73,18 +76,20 @@
             const list = document.getElementById('scoresList');
             
             if (scores.length === 0) {
-                list.innerHTML = '<p style="text-align:center;color:var(--text-muted);padding:20px;">尚無紀錄</p>';
+                list.innerHTML = '<p style="text-align:center;color:var(--text-muted);padding:20px;">' + __('leaderboard_empty', '尚無紀錄') + '</p>';
                 return;
             }
             
-            list.innerHTML = scores.map((s, i) => `
-                <div class="score-item">
-                    <span class="score-rank">${i + 1}</span>
-                    <span class="score-name">${s.name}</span>
-                    <span class="score-value">${s.score} 分</span>
-                    <span class="score-date">${s.date}</span>
-                </div>
-            `).join('');
+            list.innerHTML = scores.map((s, i) => {
+                var localeMap = { 'zh-TW': 'zh-TW', 'en': 'en-US', 'ja': 'ja-JP' };
+                var loc = localeMap[window.__i18nLang] || 'zh-TW';
+                return '<div class="score-item">' +
+                    '<span class="score-rank">' + (i + 1) + '</span>' +
+                    '<span class="score-name">' + s.name + '</span>' +
+                    '<span class="score-value">' + s.score + __('leaderboard_points', ' 分') + '</span>' +
+                    '<span class="score-date">' + (s.date ? new Date(s.date).toLocaleDateString(loc) : '') + '</span>' +
+                '</div>';
+            }).join('');
         }
         loadScores();
     </script>

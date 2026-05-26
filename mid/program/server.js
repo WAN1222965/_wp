@@ -16,6 +16,7 @@ const SQLiteStore = require('connect-sqlite3')(session);
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const morgan = require('morgan');
+const cookieParser = require('cookie-parser');
 
 // Multer config — local file storage (swap to S3 by changing storage)
 const storage = multer.diskStorage({
@@ -66,12 +67,12 @@ app.use(morgan('[:date[iso]] :method :url :status :res[content-length] - :respon
 const apiLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 100,
-  message: { error: '請求次數過多，請稍後再試' }
+  message: { error: 'Too many requests' }
 });
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 20,
-  message: { error: '登入/註冊嘗試次數過多，請稍後再試' }
+  message: { error: 'Too many auth attempts' }
 });
 app.use(BASE + '/api/', apiLimiter);
 app.use(BASE + '/api/auth/', authLimiter);
@@ -98,10 +99,79 @@ if (!fs.existsSync(uploadsDir)) {
   fs.mkdirSync(uploadsDir, { recursive: true });
 }
 
+app.use(cookieParser());
+
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 app.locals.baseUrl = BASE;
 app.locals.gaId = process.env.GA_ID || '';
+
+// ===== i18n Setup =====
+const locales = {};
+const SUPPORTED_LANGS = ['zh-TW', 'en', 'ja'];
+const DEFAULT_LANG = 'zh-TW';
+
+// Load translation files
+SUPPORTED_LANGS.forEach(lang => {
+  const filePath = path.join(__dirname, 'locales', `${lang}.json`);
+  try {
+    locales[lang] = JSON.parse(fs.readFileSync(filePath, 'utf-8'));
+  } catch (e) {
+    console.error(`Failed to load locale ${lang}:`, e.message);
+    locales[lang] = {};
+  }
+});
+
+// Translation function
+function t(key, lang) {
+  const keys = key.split('.');
+  let val = locales[lang];
+  for (const k of keys) {
+    if (val && typeof val === 'object' && k in val) {
+      val = val[k];
+    } else {
+      // Fallback to zh-TW
+      val = locales[DEFAULT_LANG];
+      for (const k2 of keys) {
+        if (val && typeof val === 'object' && k2 in val) {
+          val = val[k2];
+        } else {
+          return key;
+        }
+      }
+      return typeof val === 'string' ? val : key;
+    }
+  }
+  return typeof val === 'string' ? val : key;
+}
+
+// Language detection middleware
+function detectLanguage(req) {
+  if (req.cookies && req.cookies.lang && SUPPORTED_LANGS.includes(req.cookies.lang)) {
+    return req.cookies.lang;
+  }
+  if (req.headers['accept-language']) {
+    const acceptLang = req.headers['accept-language'].split(',')[0].split('-')[0];
+    if (acceptLang === 'ja') return 'ja';
+    if (acceptLang === 'en') return 'en';
+    if (acceptLang === 'zh') return 'zh-TW';
+  }
+  return DEFAULT_LANG;
+}
+
+// Make t() available in all views
+app.locals.t = function(key) { return t(key, this.lang || DEFAULT_LANG); };
+app.locals.lang = DEFAULT_LANG;
+
+// Apply i18n to all EJS routes
+app.use((req, res, next) => {
+  const lang = detectLanguage(req);
+  req.lang = lang;
+  res.locals.lang = lang;
+  res.locals.t = function(key) { return t(key, lang); };
+  res.locals.supportedLangs = SUPPORTED_LANGS;
+  next();
+});
 
 const router = express.Router();
 
@@ -308,7 +378,7 @@ router.post('/posts', (req, res) => {
 router.get('/post/:id', (req, res) => {
   db.get('SELECT * FROM posts WHERE id = ?', [req.params.id], (err, post) => {
     if (err || !post) {
-      res.status(404).render('error', { title: '文章不存在', message: '找不到您要瀏覽的文章，可能已被刪除或連結有誤。', statusCode: 404 });
+      res.status(404).render('error', { title: t('server_post_not_found_title', req.lang), message: t('server_post_not_found_msg', req.lang), statusCode: 404 });
       return;
     }
     // Increment view count
@@ -454,13 +524,16 @@ router.get('/rss.xml', (req, res) => {
       <guid>${baseUrl}/post/${p.id}</guid>
     </item>`;
     }).join('\n');
+    const rssLang = t('rss_language', req.lang || DEFAULT_LANG);
+    const rssTitle = t('rss_title', req.lang || DEFAULT_LANG);
+    const rssDesc = t('rss_desc', req.lang || DEFAULT_LANG);
     const rss = `<?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>墨 - 網誌</title>
+    <title>${rssTitle}</title>
     <link>${baseUrl}/</link>
-    <description>墨 - 紀錄瞬間的思緒</description>
-    <language>zh-TW</language>
+    <description>${rssDesc}</description>
+    <language>${rssLang}</language>
     <lastBuildDate>${buildDate}</lastBuildDate>
     <atom:link href="${baseUrl}/rss.xml" rel="self" type="application/rss+xml"/>
     ${items}
@@ -845,6 +918,29 @@ router.get('/api/posts/:id/views', (req, res) => {
   });
 });
 
+// ===== i18n API & Language Switcher =====
+
+router.get('/lang/:lang', (req, res) => {
+  const targetLang = req.params.lang;
+  if (SUPPORTED_LANGS.includes(targetLang)) {
+    res.cookie('lang', targetLang, { maxAge: 365 * 24 * 60 * 60 * 1000, httpOnly: true, sameSite: 'lax' });
+  }
+  const referer = req.get('Referer') || `${BASE}/`;
+  res.redirect(referer);
+});
+
+router.get('/api/locale/:lang', (req, res) => {
+  const lang = req.params.lang;
+  if (!SUPPORTED_LANGS.includes(lang)) {
+    return res.status(400).json({ error: 'Unsupported language' });
+  }
+  res.json(locales[lang] || {});
+});
+
+router.get('/api/locale', (req, res) => {
+  res.json(locales);
+});
+
 // ===== Market Data (Crypto / TW Stock / US Stock) =====
 
 router.get('/api/market/crypto', async (req, res) => {
@@ -939,12 +1035,12 @@ app.get('/notes', (req, res) => res.redirect(BASE + '/notes'));
 // ===== Error Pages =====
 
 app.use((req, res) => {
-  res.status(404).render('error', { title: '頁面不存在', message: '您尋找的頁面不存在，可能已被移除或連結有誤。', statusCode: 404 });
+  res.status(404).render('error', { title: t('nav_not_found', req.lang), message: t('nav_not_found_msg', req.lang), statusCode: 404 });
 });
 
 app.use((err, req, res, next) => {
-  console.error('❌ 伺服器錯誤：', err);
-  res.status(500).render('error', { title: '伺服器錯誤', message: '伺服器發生錯誤，請稍後再試。如果問題持續發生，請聯絡管理員。', statusCode: 500 });
+  console.error('❌ ', err);
+  res.status(500).render('error', { title: t('nav_server_error', req.lang), message: t('nav_server_error_msg', req.lang), statusCode: 500 });
 });
 
 function startServer(port) {

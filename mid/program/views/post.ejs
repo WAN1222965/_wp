@@ -1,34 +1,34 @@
 <!DOCTYPE html>
-<html lang="zh-TW" data-theme="light">
+<html lang="<%= lang %>" data-theme="light">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title><%= post.title %> - 墨</title>
+  <title><%= post.title %> - <%= t('site_name') %></title>
   <meta name="description" content="<%= (post.meta_description || post.summary || '').substring(0, 160) || (post.content || '').replace(/<[^>]*>/g, '').substring(0, 160) %>">
   <meta name="keywords" content="<%= post.tags ? post.tags.join(',') : '' %>">
-  <meta property="og:title" content="<%= post.title %> - 墨">
-  <meta property="og:description" content="<%= (post.meta_description || post.summary || '').substring(0, 160) || '墨 - 紀錄瞬間的思緒' %>">
+  <meta property="og:title" content="<%= post.title %> - <%= t('site_name') %>">
+  <meta property="og:description" content="<%= (post.meta_description || post.summary || '').substring(0, 160) || t('site_desc') %>">
   <meta property="og:type" content="article">
   <meta property="og:url" content="<%= baseUrl %>/post/<%= post.id %>">
   <meta property="article:published_time" content="<%= new Date(post.created_at).toISOString() %>">
   <meta property="article:modified_time" content="<%= new Date(post.updated_at || post.created_at).toISOString() %>">
-  <meta property="article:author" content="墨">
+  <meta property="article:author" content="<%= t('site_name') %>">
   <% (post.tags || []).forEach(tag => { %>
   <meta property="article:tag" content="<%= tag %>">
   <% }) %>
   <meta name="twitter:card" content="summary">
-  <meta name="twitter:title" content="<%= post.title %> - 墨">
-  <meta name="twitter:description" content="<%= (post.meta_description || post.summary || '').substring(0, 160) || '墨 - 紀錄瞬間的思緒' %>">
+  <meta name="twitter:title" content="<%= post.title %> - <%= t('site_name') %>">
+  <meta name="twitter:description" content="<%= (post.meta_description || post.summary || '').substring(0, 160) || t('site_desc') %>">
   <link rel="canonical" href="<%= baseUrl %>/post/<%= post.id %>">
-  <link rel="alternate" type="application/rss+xml" title="墨 - 網誌 RSS" href="<%= baseUrl %>/rss.xml">
+  <link rel="alternate" type="application/rss+xml" title="<%= t('site_rss_title') %>" href="<%= baseUrl %>/rss.xml">
   <link rel="sitemap" type="application/xml" title="Sitemap" href="<%= baseUrl %>/sitemap.xml">
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
     "@type": "Article",
     "headline": "<%= post.title %>",
-    "description": "<%= (post.summary || '').replace(/"/g, '&quot;') || '墨 - 紀錄瞬間的思緒' %>",
-    "author": { "@type": "Person", "name": "墨" },
+    "description": "<%= (post.summary || '').replace(/"/g, '&quot;') || t('site_desc') %>",
+    "author": { "@type": "Person", "name": "<%= t('site_name') %>" },
     "datePublished": "<%= new Date(post.created_at).toISOString() %>",
     "dateModified": "<%= new Date(post.updated_at || post.created_at).toISOString() %>",
     "mainEntityOfPage": { "@type": "WebPage", "@id": "<%= baseUrl %>/post/<%= post.id %>" }
@@ -300,20 +300,27 @@
   <div id="progressBar"></div>
 
   <div class="top-bar">
-    <a href="<%= baseUrl %>/" class="nav-brand" style="font-weight:700;letter-spacing:2px;">墨</a>
-    <a href="<%= baseUrl %>/">📝 網誌</a>
-    <a href="<%= baseUrl %>/about">ℹ️ 關於</a>
-    <a href="<%= baseUrl %>/contact">✉️ 聯絡</a>
-    <a href="<%= baseUrl %>/post/<%= post.id %>/edit">✏️ 編輯</a>
-    <button class="search-toggle" onclick="toggleSearch()">🔍 搜尋</button>
-    <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn">🌙 深色</button>
-    <button class="theme-toggle" onclick="deletePost()" style="color:#e74c3c;">🗑 刪除</button>
+    <div class="top-lang" style="display:flex;gap:4px;align-items:center;font-size:0.8rem;">
+      <a href="<%= baseUrl %>/lang/zh-TW" style="<%= lang === 'zh-TW' ? 'color:#fff;font-weight:bold;' : '' %>">繁體中文</a>
+      <span style="color:#555;">|</span>
+      <a href="<%= baseUrl %>/lang/en" style="<%= lang === 'en' ? 'color:#fff;font-weight:bold;' : '' %>">English</a>
+      <span style="color:#555;">|</span>
+      <a href="<%= baseUrl %>/lang/ja" style="<%= lang === 'ja' ? 'color:#fff;font-weight:bold;' : '' %>">日本語</a>
+    </div>
+    <a href="<%= baseUrl %>/" class="nav-brand" style="font-weight:700;letter-spacing:2px;"><%= t('post_topbar_brand') %></a>
+    <a href="<%= baseUrl %>/">📝 <%= t('post_topbar_blog') %></a>
+    <a href="<%= baseUrl %>/about">ℹ️ <%= t('post_topbar_about') %></a>
+    <a href="<%= baseUrl %>/contact">✉️ <%= t('post_topbar_contact') %></a>
+    <a href="<%= baseUrl %>/post/<%= post.id %>/edit">✏️ <%= t('post_topbar_edit') %></a>
+    <button class="search-toggle" onclick="toggleSearch()">🔍 <%= t('post_topbar_search') %></button>
+    <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn">🌙 <%= t('post_topbar_dark') %></button>
+    <button class="theme-toggle" onclick="deletePost()" style="color:#e74c3c;">🗑 <%= t('post_topbar_delete') %></button>
   </div>
 
   <!-- Search Overlay -->
   <div class="search-overlay" id="searchOverlay" onclick="if(event.target===this)closeSearch()">
     <div class="search-panel">
-      <input type="text" id="searchInput" placeholder="搜尋文章..." oninput="doSearch(this.value)" autofocus>
+      <input type="text" id="searchInput" placeholder="<%= t('post_search_placeholder') %>" oninput="doSearch(this.value)" autofocus>
       <div class="search-results" id="searchResults"></div>
     </div>
   </div>
@@ -321,7 +328,7 @@
   <div class="layout">
     <!-- Floating TOC -->
     <nav class="toc-sidebar" id="tocSidebar">
-      <div class="toc-title">目錄</div>
+      <div class="toc-title"><%= t('post_toc_title') %></div>
       <div id="tocList"></div>
     </nav>
 
@@ -330,12 +337,12 @@
       <header class="post-header">
         <h1><%= post.title %></h1>
         <div class="post-meta">
-          <span><%= new Date(post.created_at).toLocaleDateString('zh-TW') %></span>
+          <span><%= new Date(post.created_at).toLocaleDateString(lang === 'en' ? 'en-US' : lang === 'ja' ? 'ja-JP' : 'zh-TW') %></span>
           <% if (post.updated_at && post.updated_at !== post.created_at) { %>
-          <span style="color:var(--text-secondary);font-size:0.8rem;">（更新：<%= new Date(post.updated_at).toLocaleDateString('zh-TW') %>）</span>
+          <span style="color:var(--text-secondary);font-size:0.8rem;">（<%= t('post_updated') %>：<%= new Date(post.updated_at).toLocaleDateString(lang === 'en' ? 'en-US' : lang === 'ja' ? 'ja-JP' : 'zh-TW') %>）</span>
           <% } %>
-          <span class="reading-time" id="readingTime">⏱ <span id="readTimeMinutes">?</span> 分鐘</span>
-          <span>👤 墨</span>
+          <span class="reading-time" id="readingTime">⏱ <span id="readTimeMinutes">?</span> <%= t('post_reading_time') %></span>
+          <span>👤 <%= t('post_author') %></span>
           <span>👁 <span id="viewCount">?</span></span>
           <% if (post.tags && post.tags.length > 0) { %>
           <div class="tags">
@@ -350,7 +357,7 @@
       <!-- AI Summary -->
       <% if (post.summary) { %>
       <div class="ai-summary">
-        <div class="ai-summary-label">📋 AI 摘要</div>
+        <div class="ai-summary-label">📋 <%= t('post_ai_summary') %></div>
         <p><%= post.summary %></p>
       </div>
       <% } %>
@@ -362,14 +369,14 @@
         </div>
         <div class="article-fade" id="articleFade"></div>
       </div>
-      <button class="article-toggle" id="articleToggle" onclick="toggleArticle()">顯示更多 ▾</button>
+      <button class="article-toggle" id="articleToggle" onclick="toggleArticle()"><%= t('post_show_more') %></button>
 
       <!-- Share -->
       <div class="share-section">
-        <span>分享這篇文章</span>
-        <a class="share-btn facebook" href="https://www.facebook.com/sharer/sharer.php?u=<%= encodeURIComponent(baseUrl + '/post/' + post.id) %>" target="_blank" rel="noopener">📘 Facebook</a>
-        <a class="share-btn line" href="https://social-plugins.line.me/lineit/share?url=<%= encodeURIComponent(baseUrl + '/post/' + post.id) %>" target="_blank" rel="noopener">💬 LINE</a>
-        <a class="share-btn twitter" href="https://twitter.com/intent/tweet?text=<%= encodeURIComponent(post.title + ' - 墨') %>&url=<%= encodeURIComponent(baseUrl + '/post/' + post.id) %>" target="_blank" rel="noopener"> 𝕏 Twitter</a>
+        <span><%= t('post_share_title') %></span>
+        <a class="share-btn facebook" href="https://www.facebook.com/sharer/sharer.php?u=<%= encodeURIComponent(baseUrl + '/post/' + post.id) %>" target="_blank" rel="noopener">📘 <%= t('post_share_facebook') %></a>
+        <a class="share-btn line" href="https://social-plugins.line.me/lineit/share?url=<%= encodeURIComponent(baseUrl + '/post/' + post.id) %>" target="_blank" rel="noopener">💬 <%= t('post_share_line') %></a>
+        <a class="share-btn twitter" href="https://twitter.com/intent/tweet?text=<%= encodeURIComponent(post.title + ' - ' + t('site_name')) %>&url=<%= encodeURIComponent(baseUrl + '/post/' + post.id) %>" target="_blank" rel="noopener"> 𝕏 <%= t('post_share_twitter') %></a>
       </div>
 
       <!-- Playground (if code present) -->
@@ -377,14 +384,14 @@
 
       <!-- Tag Cloud -->
       <div class="tag-cloud" id="tagCloudContainer">
-        <h3>🏷️ 標籤雲</h3>
+        <h3>🏷️ <%= t('post_tag_cloud') %></h3>
         <div class="tag-cloud-items" id="tagCloudItems"></div>
       </div>
 
       <!-- Related Posts -->
       <% if (relatedPosts && relatedPosts.length > 0) { %>
       <div class="related-posts">
-        <h3>📌 你可能也會感興趣</h3>
+        <h3>📌 <%= t('post_related_title') %></h3>
         <div class="related-list">
           <% relatedPosts.forEach(rp => { %>
           <a href="<%= baseUrl %>/post/<%= rp.id %>" class="related-item">
@@ -397,34 +404,34 @@
 
       <!-- Comments -->
       <div class="comments-section" id="commentsSection">
-        <h3>💬 留言</h3>
+        <h3>💬 <%= t('post_comments_title') %></h3>
         <div id="commentsList"></div>
         <div class="comment-form">
-          <input type="text" id="commentName" placeholder="你的名稱">
-          <input type="text" id="commentInput" placeholder="寫下留言...">
-          <button onclick="postComment()">送出</button>
+          <input type="text" id="commentName" placeholder="<%= t('post_comment_name_placeholder') %>">
+          <input type="text" id="commentInput" placeholder="<%= t('post_comment_placeholder') %>">
+          <button onclick="postComment()"><%= t('post_comment_btn') %></button>
         </div>
       </div>
 
       <!-- GitHub Discussions -->
       <div class="github-discussions">
-        <h3>📢 在 GitHub 上討論</h3>
+        <h3>📢 <%= t('post_github_discussions') %></h3>
         <div id="githubDiscussions">
           <p style="color:var(--text-secondary);font-size:0.9rem;">
-            要啟用 GitHub Discussions 留言，請在
-            <a href="https://github.com/settings/apps" target="_blank" style="color:var(--accent);">GitHub Settings</a>
-            中設定您的 repository 並替換下方的 giscus / utterances 程式碼。
+            <%= t('post_github_desc') %>
+            <a href="https://github.com/settings/apps" target="_blank" style="color:var(--accent);"><%= t('post_github_settings') %></a>
+            <%= t('post_github_code') %>
           </p>
         </div>
       </div>
 
       <!-- Newsletter -->
       <div class="newsletter-box">
-        <h3>📬 訂閱電子報</h3>
-        <p>每當有新文章發布，第一時間通知你</p>
+        <h3>📬 <%= t('post_newsletter_title') %></h3>
+        <p><%= t('post_newsletter_desc') %></p>
         <div class="newsletter-form">
-          <input type="email" id="newsletterEmail" placeholder="你的 Email">
-          <button onclick="subscribeNewsletter()">訂閱</button>
+          <input type="email" id="newsletterEmail" placeholder="<%= t('post_newsletter_placeholder') %>">
+          <button onclick="subscribeNewsletter()"><%= t('post_newsletter_btn') %></button>
         </div>
         <p id="newsletterMsg" style="font-size:0.8rem;margin-top:8px;"></p>
       </div>
@@ -484,7 +491,7 @@
     }
 
     function deletePost() {
-      if (!confirm('⚠️ 確定要刪除這篇文章嗎？此操作無法還原。')) return;
+      if (!confirm('⚠️ <%= t('post_delete_confirm') %>')) return;
       const form = document.createElement('form');
       form.method = 'POST';
       form.action = BASE_URL + '/post/<%= post.id %>/delete';

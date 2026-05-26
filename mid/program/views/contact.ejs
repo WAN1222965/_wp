@@ -1,12 +1,12 @@
 <!DOCTYPE html>
-<html lang="zh-TW" data-theme="light">
+<html lang="<%= lang %>" data-theme="light">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>聯絡我們 - 墨</title>
-  <meta name="description" content="透過聯絡表單與墨交流，提供合作邀約、建議或任何想法。">
-  <meta property="og:title" content="聯絡我們 - 墨">
-  <meta property="og:description" content="透過聯絡表單與墨交流。">
+  <title><%= t('site_title_contact') %></title>
+  <meta name="description" content="<%= t('contact_subtitle') %>">
+  <meta property="og:title" content="<%= t('site_title_contact') %>">
+  <meta property="og:description" content="<%= t('contact_subtitle') %>">
   <meta property="og:url" content="<%= baseUrl %>/contact">
   <link rel="canonical" href="<%= baseUrl %>/contact">
   <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;700&display=swap" rel="stylesheet">
@@ -119,11 +119,11 @@
 <body>
   <div class="container">
     <%- include('partials/navbar') %>
-    <h1>✉️ 聯絡我們</h1>
-    <p class="subtitle">有任何合作邀約、建議或想法？歡迎與我交流。</p>
+    <h1>✉️ <%= t('contact_title') %></h1>
+    <p class="subtitle"><%= t('contact_subtitle') %></p>
 
     <% if (locals.success) { %>
-    <div class="success-msg">✅ 感謝你的訊息！我會盡快回覆。</div>
+    <div class="success-msg">✅ <%= t('contact_success') %></div>
     <% } %>
     <% if (locals.error) { %>
     <div class="error-msg">❌ <%= error %></div>
@@ -131,33 +131,33 @@
 
     <div class="contact-grid">
       <div class="contact-info">
-        <h2>📬 其他聯繫方式</h2>
-        <p>除了填寫表單，也可以透過以下管道找到我：</p>
+        <h2>📬 <%= t('contact_info_title') %></h2>
+        <p><%= t('contact_info_desc') %></p>
         <div class="contact-links">
-          <a href="<%= baseUrl %>/rss.xml" target="_blank">📡 RSS 訂閱</a>
-          <a href="https://github.com" target="_blank">💻 GitHub</a>
+          <a href="<%= baseUrl %>/rss.xml" target="_blank">📡 <%= t('contact_rss') %></a>
+          <a href="https://github.com" target="_blank">💻 <%= t('contact_github') %></a>
         </div>
         <p style="margin-top:24px;font-size:0.85rem;color:var(--text-secondary);">
-          💡 通常會在 2–3 個工作日內回覆。
+          💡 <%= t('contact_response_time') %>
         </p>
       </div>
 
       <div class="form-card">
         <form action="<%= baseUrl %>/contact" method="POST">
-          <label for="name">你的名稱</label>
-          <input type="text" id="name" name="name" required placeholder="如何稱呼你？">
+          <label for="name"><%= t('contact_label_name') %></label>
+          <input type="text" id="name" name="name" required placeholder="<%= t('contact_placeholder_name') %>">
 
-          <label for="email">電子信箱</label>
-          <input type="email" id="email" name="email" required placeholder="your@email.com">
-          <p class="help-text">不會公開顯示，僅供回覆使用</p>
+          <label for="email"><%= t('contact_label_email') %></label>
+          <input type="email" id="email" name="email" required placeholder="<%= t('contact_placeholder_email') %>">
+          <p class="help-text"><%= t('contact_help_email') %></p>
 
-          <label for="subject">主旨</label>
-          <input type="text" id="subject" name="subject" required placeholder="合作邀約 / 建議 / 問題回報...">
+          <label for="subject"><%= t('contact_label_subject') %></label>
+          <input type="text" id="subject" name="subject" required placeholder="<%= t('contact_placeholder_subject') %>">
 
-          <label for="message">訊息內容</label>
-          <textarea id="message" name="message" required placeholder="請詳細描述你的想法..."></textarea>
+          <label for="message"><%= t('contact_label_message') %></label>
+          <textarea id="message" name="message" required placeholder="<%= t('contact_placeholder_message') %>"></textarea>
 
-          <button type="submit">送出訊息</button>
+          <button type="submit"><%= t('contact_btn_submit') %></button>
         </form>
       </div>
     </div>

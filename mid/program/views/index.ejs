@@ -1,17 +1,17 @@
 <!DOCTYPE html>
-<html lang="zh-TW">
+<html lang="<%= lang %>">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>墨 - 網誌</title>
-  <meta name="description" content="墨 - 紀錄瞬間的思緒。以專業視角解析技術與時事，在資訊爆炸的時代提供沉澱後的觀點。">
-  <meta name="keywords" content="部落格,技術部落格,程式設計,網頁開發,JavaScript">
-  <meta property="og:title" content="墨 - 網誌">
-  <meta property="og:description" content="墨 - 紀錄瞬間的思緒。以專業視角解析技術與時事，在資訊爆炸的時代提供沉澱後的觀點。">
+  <title><%= t('site_title_blog') %></title>
+  <meta name="description" content="<%= t('site_desc') %>">
+  <meta name="keywords" content="<%= t('index_hot_tags') %>,JavaScript">
+  <meta property="og:title" content="<%= t('site_title_blog') %>">
+  <meta property="og:description" content="<%= t('site_desc') %>">
   <meta property="og:type" content="website">
   <meta property="og:url" content="<%= baseUrl %>/">
   <link rel="canonical" href="<%= baseUrl %>/">
-  <link rel="alternate" type="application/rss+xml" title="墨 - 網誌 RSS" href="<%= baseUrl %>/rss.xml">
+  <link rel="alternate" type="application/rss+xml" title="<%= t('site_rss_title') %>" href="<%= baseUrl %>/rss.xml">
   <link rel="sitemap" type="application/xml" title="Sitemap" href="<%= baseUrl %>/sitemap.xml">
   <style>
     body.classic-bg {
@@ -35,6 +35,7 @@
       justify-content: space-between;
       align-items: flex-end;
     }
+
     .site-title {
       font-family: "Georgia", serif;
       font-size: 34px;
@@ -357,9 +358,9 @@
   <div class="site-container">
 
     <header class="site-header">
-      <h1 class="site-title">紀錄瞬間的思緒</h1>
-      <p class="site-description">以專業視角解析技術與時事，在資訊爆炸的時代提供沉澱後的觀點。</p>
-      <img src="https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=940&h=198&fit=crop&q=80" alt="水墨意境橫幅" class="header-banner" loading="lazy">
+      <h1 class="site-title"><%= t('index_title') %></h1>
+      <p class="site-description"><%= t('index_subtitle') %></p>
+      <img src="https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1200&h=250&fit=crop&q=80" alt="<%= t('index_banner_alt') %>" class="header-banner" loading="lazy">
     </header>
 
     <%- include('partials/navbar') %>
@@ -369,8 +370,8 @@
 
         <% if (tagFilter) { %>
         <div class="filter-bar">
-          篩選標籤：<strong><%= tagFilter %></strong>
-          <a href="<%= baseUrl %>/">✕ 清除篩選</a>
+          <%= t('index_filter_tag') %>：<strong><%= tagFilter %></strong>
+          <a href="<%= baseUrl %>/">✕ <%= t('index_filter_clear') %></a>
         </div>
         <% } %>
 
@@ -379,7 +380,7 @@
         <% posts.forEach(post => { %>
         <article class="post">
           <h2 class="post-title"><a href="<%= baseUrl %>/post/<%= post.id %>"><%= post.title %></a></h2>
-          <div class="post-meta">Posted on <%= new Date(post.created_at).toLocaleDateString('zh-TW') %> <% if (post.views) { %><span style="margin-left:12px;">👁 <%= post.views %></span><% } %></div>
+          <div class="post-meta"><%= t('index_posted_on') %> <%= new Date(post.created_at).toLocaleDateString(lang === 'en' ? 'en-US' : lang === 'ja' ? 'ja-JP' : 'zh-TW') %> <% if (post.views) { %><span style="margin-left:12px;">👁 <%= post.views %></span><% } %></div>
           <% if (post.tags && post.tags.length > 0) { %>
           <div class="post-tags">
             <% post.tags.forEach(tag => { %>
@@ -388,14 +389,14 @@
           </div>
           <% } %>
           <div class="post-excerpt"><%= (post.html || '').replace(/<[^>]*>/g, '').substring(0, 200) %></div>
-          <a href="<%= baseUrl %>/post/<%= post.id %>" class="read-more">閱讀更多 &rarr;</a>
+          <a href="<%= baseUrl %>/post/<%= post.id %>" class="read-more"><%= t('index_read_more') %></a>
         </article>
         <% }) %>
 
         <% if (totalPages > 1) { %>
         <div class="pagination">
           <% if (currentPage > 1) { %>
-          <a href="<%= baseUrl %>/?page=<%= currentPage - 1 %><%= tagFilter ? '&tag=' + encodeURIComponent(tagFilter) : '' %>">‹ 上一頁</a>
+          <a href="<%= baseUrl %>/?page=<%= currentPage - 1 %><%= tagFilter ? '&tag=' + encodeURIComponent(tagFilter) : '' %>"><%= t('index_prev_page') %></a>
           <% } %>
           <% for (let i = 1; i <= totalPages; i++) { %>
             <% if (i === currentPage) { %>
@@ -405,7 +406,7 @@
             <% } %>
           <% } %>
           <% if (currentPage < totalPages) { %>
-          <a href="<%= baseUrl %>/?page=<%= currentPage + 1 %><%= tagFilter ? '&tag=' + encodeURIComponent(tagFilter) : '' %>">下一頁 &rsaquo;</a>
+          <a href="<%= baseUrl %>/?page=<%= currentPage + 1 %><%= tagFilter ? '&tag=' + encodeURIComponent(tagFilter) : '' %>"><%= t('index_next_page') %></a>
           <% } %>
         </div>
         <% } %>
@@ -415,31 +416,31 @@
       <aside class="sidebar">
         <div class="widget">
           <div class="search-form">
-            <input type="text" id="sidebarSearch" placeholder="搜尋文章..." class="search-input">
-            <button class="search-btn" onclick="doSearch(document.getElementById('sidebarSearch').value)">Search</button>
+            <input type="text" id="sidebarSearch" placeholder="<%= t('index_search_placeholder') %>" class="search-input">
+            <button class="search-btn" onclick="doSearch(document.getElementById('sidebarSearch').value)"><%= t('index_search_btn') %></button>
           </div>
         </div>
         
         <div class="widget">
-          <h3>熱門標籤</h3>
+          <h3><%= t('index_hot_tags') %></h3>
           <div class="tag-cloud-items" id="tagCloudItems"></div>
         </div>
 
         <div class="widget market-widget">
-          <h3>📊 市場行情</h3>
-          <div id="marketLoading" style="font-size:12px;color:#888;">載入中...</div>
+          <h3>📊 <%= t('index_market_title') %></h3>
+          <div id="marketLoading" style="font-size:12px;color:#888;"><%= t('index_market_loading') %></div>
           <div id="marketError" style="font-size:12px;color:#c00;display:none;"></div>
           <div id="marketContent" style="display:none;">
             <div class="market-section">
-              <a href="<%= baseUrl %>/market.html#crypto" class="market-section-title" style="text-decoration:none;cursor:pointer;">加密貨幣 ›</a>
+              <a href="<%= baseUrl %>/market.html#crypto" class="market-section-title" style="text-decoration:none;cursor:pointer;"><%= t('index_crypto') %> ›</a>
               <div id="cryptoList"></div>
             </div>
             <div class="market-section">
-              <a href="<%= baseUrl %>/market.html#tw-stock" class="market-section-title" style="text-decoration:none;cursor:pointer;">台股 ›</a>
+              <a href="<%= baseUrl %>/market.html#tw-stock" class="market-section-title" style="text-decoration:none;cursor:pointer;"><%= t('index_tw_stock') %> ›</a>
               <div id="twStockList"></div>
             </div>
             <div class="market-section">
-              <a href="<%= baseUrl %>/market.html#us-stocks" class="market-section-title" style="text-decoration:none;cursor:pointer;">美股 ›</a>
+              <a href="<%= baseUrl %>/market.html#us-stocks" class="market-section-title" style="text-decoration:none;cursor:pointer;"><%= t('index_us_stock') %> ›</a>
               <div id="usStockList"></div>
             </div>
           </div>
@@ -449,10 +450,10 @@
 
     <footer class="site-footer">
       <div class="footer-left">
-        <strong>墨</strong>
+        <strong><%= t('site_name') %></strong>
       </div>
       <div class="footer-right">
-        &copy; <%= new Date().getFullYear() %> 墨. All rights reserved.
+        &copy; <%= new Date().getFullYear() %> <%= t('site_name') %>. All rights reserved.
       </div>
     </footer>
 
@@ -514,9 +515,14 @@
                 <a href="${BASE}/post/${s.item.id}" style="color:#333;text-decoration:none;font-weight:bold;">${s.item.title}</a>
                 <p style="margin:4px 0 0;font-size:12px;color:#888;">${(s.item.excerpt || '').substring(0, 120)}</p>
               </div>`).join('')
-            : '<p style="font-size:12px;color:#888;padding:8px 0;">找不到相關文章</p>';
+            : '<p style="font-size:12px;color:#888;padding:8px 0;"><%= t('index_no_results') %></p>';
         } catch { results.innerHTML = ''; }
       }, 150);
+    };
+
+    const i18nData = {
+      noData: '<%= t("index_market_no_data") %>',
+      marketErrorText: '<%= t("index_market_error") %>'
     };
 
     // Tag Cloud
@@ -556,7 +562,7 @@
             return '<div class="market-item"><span class="sym">' + c.symbol + '</span><span class="price">$' + c.price.toLocaleString() + '</span><span class="change ' + cls + '">' + (c.change >= 0 ? '+' : '') + c.change.toFixed(2) + '%</span></div>';
           }).join('');
         } else {
-          cryptoList.innerHTML = '<div style="font-size:11px;color:#999;">暫無資料</div>';
+          cryptoList.innerHTML = '<div style="font-size:11px;color:#999;">' + i18nData.noData + '</div>';
         }
 
         function renderItems(list, data, max) {
@@ -569,7 +575,7 @@
               return '<div class="market-item"><span class="sym">' + name + '</span><span class="price">' + (s.price != null ? s.price.toLocaleString(undefined,{maximumFractionDigits:2}) : '-') + '</span><span class="change ' + cls + '">' + (s.change >= 0 ? '+' : '') + (s.change != null ? s.change.toFixed(2) : '0') + '%</span></div>';
             }).join('');
           } else {
-            list.innerHTML = '<div style="font-size:11px;color:#999;">暫無資料</div>';
+            list.innerHTML = '<div style="font-size:11px;color:#999;">' + i18nData.noData + '</div>';
           }
         }
 
@@ -578,7 +584,7 @@
       } catch (err) {
         loading.style.display = 'none';
         error.style.display = 'block';
-        error.textContent = '行情資料暫時無法取得';
+        error.textContent = i18nData.marketErrorText;
       }
     }
     loadMarketData();

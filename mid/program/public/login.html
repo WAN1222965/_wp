@@ -8,6 +8,8 @@
     <script>
         const BASE = window.location.pathname.replace(/\/login.*$/, '') || '/s111410509';
     </script>
+    <script src="" id="i18nScript"></script>
+    <script>document.getElementById('i18nScript').src = BASE + '/i18n.js';</script>
     <link rel="stylesheet" href="" id="styleLink">
     <style>
         .login-header {
@@ -27,12 +29,12 @@
 
     <header class="login-header">
         <nav class="nav-links" id="loginNav">
-            <a href="" class="nav-pill">📝 網誌</a>
-            <a href="" class="nav-pill">🐍 貪吃蛇</a>
-            <a href="" class="nav-pill">🎯 捕墨</a>
-            <a href="" class="nav-pill">🏃 墨陣</a>
-            <a href="" class="nav-pill">🏆 排行</a>
-            <a href="" class="nav-pill">📰 新聞</a>
+            <a href="" class="nav-pill" data-i18n="nav_blog">📝 網誌</a>
+            <a href="" class="nav-pill" data-i18n="nav_snake">🐍 貪吃蛇</a>
+            <a href="" class="nav-pill" data-i18n="nav_whack">🎯 捕墨</a>
+            <a href="" class="nav-pill" data-i18n="nav_maze">🏃 墨陣</a>
+            <a href="" class="nav-pill" data-i18n="nav_leaderboard">🏆 排行</a>
+            <a href="" class="nav-pill" data-i18n="nav_news">📰 新聞</a>
         </nav>
     </header>
     <script>
@@ -46,41 +48,41 @@
     <div id="authContainer">
         <div class="auth-container" id="loginForm">
             <h1>墨</h1>
-            <p class="subtitle">落筆之前，先留名</p>
+            <p class="subtitle" data-i18n="login_subtitle">落筆之前，先留名</p>
             <p class="error-msg" id="loginError"></p>
             <div class="form-group">
-                <label>帳號</label>
-                <input type="text" id="loginUsername" placeholder="輸入帳號">
+                <label data-i18n="login_username_label">帳號</label>
+                <input type="text" id="loginUsername" placeholder="輸入帳號" data-i18n="login_username_placeholder">
             </div>
             <div class="form-group">
-                <label>密碼</label>
-                <input type="password" id="loginPassword" placeholder="輸入密碼">
+                <label data-i18n="login_password_label">密碼</label>
+                <input type="password" id="loginPassword" placeholder="輸入密碼" data-i18n="login_password_placeholder">
             </div>
             <div class="btn-group">
-                <button onclick="login()">登入</button>
-                <button onclick="showRegister()">註冊</button>
+                <button onclick="login()" data-i18n="login_btn_login">登入</button>
+                <button onclick="showRegister()" data-i18n="login_btn_register">註冊</button>
             </div>
         </div>
 
         <div class="auth-container" id="registerForm" style="display:none;">
             <h1>墨</h1>
-            <p class="subtitle">留下你的墨寶</p>
+            <p class="subtitle" data-i18n="register_subtitle">留下你的墨寶</p>
             <p class="error-msg" id="registerError"></p>
             <div class="form-group">
-                <label>暱稱</label>
-                <input type="text" id="regNickname" placeholder="設定暱稱">
+                <label data-i18n="register_nickname_label">暱稱</label>
+                <input type="text" id="regNickname" placeholder="設定暱稱" data-i18n="register_nickname_placeholder">
             </div>
             <div class="form-group">
-                <label>帳號</label>
-                <input type="text" id="regUsername" placeholder="設定帳號">
+                <label data-i18n="register_username_label">帳號</label>
+                <input type="text" id="regUsername" placeholder="設定帳號" data-i18n="register_username_placeholder">
             </div>
             <div class="form-group">
-                <label>密碼</label>
-                <input type="password" id="regPassword" placeholder="設定密碼">
+                <label data-i18n="register_password_label">密碼</label>
+                <input type="password" id="regPassword" placeholder="設定密碼" data-i18n="register_password_placeholder">
             </div>
             <div class="btn-group">
-                <button onclick="register()">註冊</button>
-                <button onclick="showLogin()">返回登入</button>
+                <button onclick="register()" data-i18n="register_btn_register">註冊</button>
+                <button onclick="showLogin()" data-i18n="register_btn_back">返回登入</button>
             </div>
         </div>
     </div>
@@ -99,6 +101,7 @@
             document.documentElement.setAttribute('data-theme', t || sys);
         })();
 
+    function __(key, fallback) { return (window.__i18nT && window.__i18nT[key]) || fallback; }
     let currentUser = null;
     try { currentUser = JSON.parse(localStorage.getItem('user')); } catch {}
 
@@ -136,10 +139,10 @@
       document.getElementById('authContainer').innerHTML = `
         <div class="auth-container" style="text-align:center;">
           <h1>墨</h1>
-          <p class="subtitle">你已登入為 <strong>${escapeHtml(user.nickname || user.username)}</strong></p>
+          <p class="subtitle">${__('login_logged_in_as', '你已登入為')} <strong>${escapeHtml(user.nickname || user.username)}</strong></p>
           <div class="btn-group" style="justify-content:center;">
-            <button onclick="window.location.href=BASE+'/notes'">前往隨筆</button>
-            <button onclick="doLogout()" style="background:transparent;border:1px solid var(--border);">登出</button>
+            <button onclick="window.location.href=BASE+'/notes'">${__('login_go_notes', '前往隨筆')}</button>
+            <button onclick="doLogout()" style="background:transparent;border:1px solid var(--border);">${__('login_logout', '登出')}</button>
           </div>
         </div>
       `;
@@ -167,17 +170,17 @@
         const errEl = document.getElementById('loginError');
 
         if (!username || !password) {
-            errEl.textContent = '請輸入帳號和密碼';
+            errEl.textContent = __('login_required', '請輸入帳號和密碼');
             errEl.style.display = 'block';
             return;
         }
         if (password.length < 6) {
-            errEl.textContent = '密碼至少需要 6 個字元';
+            errEl.textContent = __('login_password_short', '密碼至少需要 6 個字元');
             errEl.style.display = 'block';
             return;
         }
         const btn = document.querySelector('#loginForm .btn-group button');
-        btn.textContent = '登入中...';
+        btn.textContent = __('login_logging_in', '登入中...');
         btn.disabled = true;
         try {
             const res = await fetch(BASE + '/api/auth/login', {
@@ -188,18 +191,18 @@
             if (res.ok) {
                 const user = await res.json();
                 localStorage.setItem('user', JSON.stringify(user));
-                showToast('登入成功！', 'success');
+                showToast(__('login_success', '登入成功！'), 'success');
                 setTimeout(function() { window.location.href = BASE + '/notes'; }, 500);
             } else {
                 const err = await res.json();
-                errEl.textContent = err.error || '登入失敗';
+                errEl.textContent = err.error || __('login_fail', '登入失敗');
                 errEl.style.display = 'block';
             }
         } catch {
-            errEl.textContent = '網路錯誤，請稍後再試';
+            errEl.textContent = __('login_network_error', '網路錯誤，請稍後再試');
             errEl.style.display = 'block';
         }
-        btn.textContent = '登入';
+        btn.textContent = __('login_btn_login', '登入');
         btn.disabled = false;
     }
 
@@ -210,22 +213,22 @@
         const errEl = document.getElementById('registerError');
 
         if (!username || !password) {
-            errEl.textContent = '請輸入帳號和密碼';
+            errEl.textContent = __('register_required', '請輸入帳號和密碼');
             errEl.style.display = 'block';
             return;
         }
         if (username.length < 3) {
-            errEl.textContent = '帳號至少需要 3 個字元';
+            errEl.textContent = __('register_username_short', '帳號至少需要 3 個字元');
             errEl.style.display = 'block';
             return;
         }
         if (password.length < 6) {
-            errEl.textContent = '密碼至少需要 6 個字元';
+            errEl.textContent = __('register_password_short', '密碼至少需要 6 個字元');
             errEl.style.display = 'block';
             return;
         }
         const btn = document.querySelector('#registerForm .btn-group button');
-        btn.textContent = '註冊中...';
+        btn.textContent = __('register_registering', '註冊中...');
         btn.disabled = true;
         try {
             const res = await fetch(BASE + '/api/auth/register', {
@@ -236,18 +239,18 @@
             if (res.ok) {
                 const user = await res.json();
                 localStorage.setItem('user', JSON.stringify(user));
-                showToast('註冊成功！', 'success');
+                showToast(__('register_success', '註冊成功！'), 'success');
                 setTimeout(function() { window.location.href = BASE + '/notes'; }, 500);
             } else {
                 const err = await res.json();
-                errEl.textContent = err.error || '註冊失敗';
+                errEl.textContent = err.error || __('register_fail', '註冊失敗');
                 errEl.style.display = 'block';
             }
         } catch {
-            errEl.textContent = '網路錯誤，請稍後再試';
+            errEl.textContent = __('register_network_error', '網路錯誤，請稍後再試');
             errEl.style.display = 'block';
         }
-        btn.textContent = '註冊';
+        btn.textContent = __('register_btn_register', '註冊');
         btn.disabled = false;
     }
     </script>

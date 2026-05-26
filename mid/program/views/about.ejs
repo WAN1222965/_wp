@@ -1,12 +1,12 @@
 <!DOCTYPE html>
-<html lang="zh-TW" data-theme="light">
+<html lang="<%= lang %>" data-theme="light">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>關於 - 墨</title>
-  <meta name="description" content="了解墨 - 這個網誌的寫作初衷、主題定位與作者背景。">
-  <meta property="og:title" content="關於 - 墨">
-  <meta property="og:description" content="了解墨 - 這個網誌的寫作初衷、主題定位與作者背景。">
+  <title><%= t('site_title_about') %></title>
+  <meta name="description" content="<%= t('about_subtitle') %>">
+  <meta property="og:title" content="<%= t('site_title_about') %>">
+  <meta property="og:description" content="<%= t('about_subtitle') %>">
   <meta property="og:url" content="<%= baseUrl %>/about">
   <link rel="canonical" href="<%= baseUrl %>/about">
   <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;700&display=swap" rel="stylesheet">
@@ -93,39 +93,39 @@
 <body>
   <div class="container">
     <%- include('partials/navbar') %>
-    <h1>ℹ️ 關於本站</h1>
-    <p class="subtitle">用文字記錄思緒，以專業剖析世界。</p>
+    <h1>ℹ️ <%= t('about_title') %></h1>
+    <p class="subtitle"><%= t('about_subtitle') %></p>
 
     <section>
-      <h2>📖 寫作初衷</h2>
-      <p>「墨」誕生於對技術與人文的熱愛。在資訊爆炸的時代，我希望提供一個經過沉澱、帶有個人觀點的閱讀空間。</p>
-      <p>這裡的文章圍繞三大主軸：<strong>技術深度解析</strong>、<strong>時事評論</strong> 與 <strong>生活反思</strong>。每篇文章都力求在資訊量與可讀性之間取得平衡，讓不同背景的讀者都能獲得啟發。</p>
+      <h2>📖 <%= t('about_origin_title') %></h2>
+      <p><%= t('about_origin_p1') %></p>
+      <p><%= t('about_origin_p2') %></p>
     </section>
 
     <section>
-      <h2>🎯 這個網誌適合誰</h2>
+      <h2>🎯 <%= t('about_audience_title') %></h2>
       <div class="values">
         <div class="value-card">
-          <h3>👨‍💻 技術從業者</h3>
-          <p>程式設計、系統架構、資安等實戰經驗分享</p>
+          <h3><%= t('about_card1_title') %></h3>
+          <p><%= t('about_card1_desc') %></p>
         </div>
         <div class="value-card">
-          <h3>📚 知識追求者</h3>
-          <p>時事分析、深度評論，從專業視角看世界</p>
+          <h3><%= t('about_card2_title') %></h3>
+          <p><%= t('about_card2_desc') %></p>
         </div>
         <div class="value-card">
-          <h3>✍️ 寫作愛好者</h3>
-          <p>觀察如何組織想法、建構論述與表達觀點</p>
+          <h3><%= t('about_card3_title') %></h3>
+          <p><%= t('about_card3_desc') %></p>
         </div>
         <div class="value-card">
-          <h3>🎮 遊戲愛好者</h3>
-          <p>貪吃蛇、捕墨、墨陣等小遊戲放鬆片刻</p>
+          <h3><%= t('about_card4_title') %></h3>
+          <p><%= t('about_card4_desc') %></p>
         </div>
       </div>
     </section>
 
     <section>
-      <h2>🛠️ 技術棧</h2>
+      <h2>🛠️ <%= t('about_tech_title') %></h2>
       <div class="skills">
         <span class="skill-tag">Node.js</span>
         <span class="skill-tag">Express</span>
@@ -139,8 +139,8 @@
     </section>
 
     <section>
-      <h2>📬 與我聯繫</h2>
-      <p>有任何想法、合作邀約或建議，歡迎透過 <a href="<%= baseUrl %>/contact" style="color:var(--accent);">聯絡表單</a> 與我交流。</p>
+      <h2>📬 <%= t('about_contact_title') %></h2>
+      <p><%= t('about_contact_desc') %> <a href="<%= baseUrl %>/contact" style="color:var(--accent);"><%= t('about_contact_link') %></a><%= t('about_contact_suffix') %></p>
     </section>
   </div>
 

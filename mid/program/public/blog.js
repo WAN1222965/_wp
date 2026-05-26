@@ -1,6 +1,7 @@
 (function () {
   const BASE = window.BASE_URL || '';
   const postId = window.location.pathname.match(/\/post\/(\d+)/)?.[1];
+  function __(key, fallback) { return (window.__i18nT && window.__i18nT[key]) || fallback; }
 
   // ===== THEME =====
   function getSystemTheme() {
@@ -10,7 +11,7 @@
     document.documentElement.setAttribute('data-theme', theme);
     localStorage.setItem('theme', theme);
     const btn = document.getElementById('themeBtn');
-    if (btn) btn.textContent = theme === 'dark' ? '☀️ 淺色' : '🌙 深色';
+    if (btn) btn.textContent = theme === 'dark' ? ('☀️ ' + __('notes_theme_light', '淺色')) : ('🌙 ' + __('notes_theme_dark', '深色'));
   }
   window.toggleTheme = function () {
     const current = document.documentElement.getAttribute('data-theme');
@@ -85,14 +86,14 @@
 
       const copyBtn = document.createElement('button');
       copyBtn.className = 'copy-btn';
-      copyBtn.textContent = '複製';
+      copyBtn.textContent = __('blog_copy', '複製');
       copyBtn.addEventListener('click', () => {
         const text = code.textContent;
         if (navigator.clipboard && window.isSecureContext) {
           navigator.clipboard.writeText(text).then(() => {
-            copyBtn.textContent = '已複製!';
+            copyBtn.textContent = __('blog_copied', '已複製!');
             copyBtn.classList.add('copied');
-            setTimeout(() => { copyBtn.textContent = '複製'; copyBtn.classList.remove('copied'); }, 2000);
+            setTimeout(() => { copyBtn.textContent = __('blog_copy', '複製'); copyBtn.classList.remove('copied'); }, 2000);
           });
         } else {
           const ta = document.createElement('textarea');
@@ -102,9 +103,9 @@
           ta.select();
           document.execCommand('copy');
           document.body.removeChild(ta);
-          copyBtn.textContent = '已複製!';
+          copyBtn.textContent = __('blog_copied', '已複製!');
           copyBtn.classList.add('copied');
-          setTimeout(() => { copyBtn.textContent = '複製'; copyBtn.classList.remove('copied'); }, 2000);
+          setTimeout(() => { copyBtn.textContent = __('blog_copy', '複製'); copyBtn.classList.remove('copied'); }, 2000);
         }
       });
       header.appendChild(copyBtn);
@@ -149,7 +150,7 @@
         '<div class="playground-editor" data-playground="' + id + '" data-type="js">',
         '<textarea id="' + id + '-js"></textarea>',
         '</div>',
-        '<button class="playground-run" onclick="runPlayground(\'' + id + '\')">▶ 執行程式碼</button>',
+        '<button class="playground-run" onclick="runPlayground(\'' + id + '\')">▶ ' + __('blog_run_code', '執行程式碼') + '</button>',
         '<div class="playground-output" id="' + id + '-output"></div>',
         '</div>'
       ].join('');
@@ -258,7 +259,7 @@
             '<p>' + highlight(s.item.excerpt || '', q) + '</p>',
             '</div>'
           ].join(''))
-          : '<p style="color:var(--text-secondary);font-size:0.9rem;">找不到相關文章</p>';
+          : '<p style="color:var(--text-secondary);font-size:0.9rem;">' + __('blog_search_empty', '找不到相關文章') + '</p>';
       } catch { results.innerHTML = ''; }
     }, 150);
   };
@@ -302,18 +303,18 @@
       list.innerHTML = comments.length
         ? comments.map(c => [
           '<div class="comment-card">',
-          '<div class="comment-author">' + escapeHtml(c.username || '匿名') + '</div>',
+          '<div class="comment-author">' + escapeHtml(c.username || __('notes_anonymous', '匿名')) + '</div>',
           '<div class="comment-text">' + escapeHtml(c.content) + '</div>',
-          '<div class="comment-date">' + new Date(c.created_at).toLocaleDateString('zh-TW') + '</div>',
+          '<div class="comment-date">' + new Date(c.created_at).toLocaleDateString(window.__i18nLang === 'ja' ? 'ja-JP' : window.__i18nLang === 'en' ? 'en-US' : 'zh-TW') + '</div>',
           '</div>'
         ].join(''))
-        : '<p style="color:var(--text-secondary);font-size:0.9rem;">尚無留言，成為第一個留言的人！</p>';
+        : '<p style="color:var(--text-secondary);font-size:0.9rem;">' + __('blog_no_comments', '尚無留言，成為第一個留言的人！') + '</p>';
     } catch { }
   }
 
   window.postComment = async function () {
     if (!postId) return;
-    const name = document.getElementById('commentName').value.trim() || '匿名';
+    const name = document.getElementById('commentName').value.trim() || __('notes_anonymous', '匿名');
     const content = document.getElementById('commentInput').value.trim();
     if (!content) return;
     let userId = 0;
@@ -325,7 +326,7 @@
       await fetch(BASE + '/api/notes/' + postId + '/comments', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ user_id: userId, content: name + '：' + content })
+        body: JSON.stringify({ user_id: userId, content: name + __('blog_colon', '：') + content })
       });
       document.getElementById('commentInput').value = '';
       loadComments();
@@ -336,7 +337,7 @@
   window.subscribeNewsletter = async function () {
     const email = document.getElementById('newsletterEmail').value.trim();
     const msg = document.getElementById('newsletterMsg');
-    if (!email || !email.includes('@')) { msg.textContent = '請輸入有效的 Email'; return; }
+    if (!email || !email.includes('@')) { msg.textContent = __('blog_email_invalid', '請輸入有效的 Email'); return; }
     try {
       const res = await fetch(BASE + '/api/subscribe', {
         method: 'POST',
@@ -344,9 +345,9 @@
         body: JSON.stringify({ email })
       });
       const data = await res.json();
-      msg.textContent = data.message || '訂閱成功！';
+      msg.textContent = data.message || __('blog_subscribe_success', '訂閱成功！');
       document.getElementById('newsletterEmail').value = '';
-    } catch { msg.textContent = '訂閱失敗，請稍後再試'; }
+    } catch { msg.textContent = __('blog_subscribe_fail', '訂閱失敗，請稍後再試'); }
   };
 
   // ===== TOAST SYSTEM =====
@@ -418,7 +419,7 @@
     if (e.target.matches('.needs-validation')) {
       if (!validateForm(e.target)) {
         e.preventDefault();
-        showToast('請填寫所有必填欄位', 'error');
+        showToast(__('blog_form_required', '請填寫所有必填欄位'), 'error');
       }
     }
   }, true);

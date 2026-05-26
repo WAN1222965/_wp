@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>時事評論 - 墨</title>
+    <title data-i18n="site_title_news">時事評論 - 墨</title>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;700&display=swap">
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -338,38 +338,38 @@
 <body>
     <div class="container">
         <header>
-            <h1>墨・時事評論</h1>
-            <div class="subtitle">以專業視角解析新聞，在合理範圍內引用、評論</div>
+            <h1 data-i18n="news_title">墨・時事評論</h1>
+            <div class="subtitle" data-i18n="news_subtitle">以專業視角解析新聞，在合理範圍內引用、評論</div>
             <nav class="news-nav">
-    <a href="" class="news-nav-blog">📝 網誌</a>
-    <a href="" class="news-nav-notes">✏️ 隨筆</a>
-    <a href="" class="news-nav-snake">🐍 貪吃蛇</a>
-    <a href="" class="news-nav-whack">🎯 捕墨</a>
-    <a href="" class="news-nav-maze">🏃 墨陣</a>
-    <a href="" class="news-nav-leaderboard">🏆 排行</a>
+    <a href="" class="news-nav-blog" data-i18n="news_nav_blog">📝 網誌</a>
+    <a href="" class="news-nav-notes" data-i18n="news_nav_notes">✏️ 隨筆</a>
+    <a href="" class="news-nav-snake" data-i18n="news_nav_snake">🐍 貪吃蛇</a>
+    <a href="" class="news-nav-whack" data-i18n="news_nav_whack">🎯 捕墨</a>
+    <a href="" class="news-nav-maze" data-i18n="news_nav_maze">🏃 墨陣</a>
+    <a href="" class="news-nav-leaderboard" data-i18n="news_nav_leaderboard">🏆 排行</a>
             </nav>
         </header>
 
         <div class="tabs">
-            <button class="tab-btn active" onclick="switchTab('taiwan', this)">台灣新聞評論</button>
-            <button class="tab-btn" onclick="switchTab('world', this)">國際新聞評論</button>
+            <button class="tab-btn active" onclick="switchTab('taiwan', this)" data-i18n="news_tab_taiwan">台灣新聞評論</button>
+            <button class="tab-btn" onclick="switchTab('world', this)" data-i18n="news_tab_world">國際新聞評論</button>
         </div>
 
         <div id="taiwan-section" class="news-section active">
             <div id="taiwan-admin-bar" class="write-btn-wrap" style="display:none;">
-                <button class="write-btn" onclick="openCreateModal('taiwan')">✏️ 撰寫評論</button>
+                <button class="write-btn" onclick="openCreateModal('taiwan')" data-i18n="news_write_btn">✏️ 撰寫評論</button>
             </div>
             <div id="taiwan-list" class="commentary-list">
-                <div class="loading">載入中...</div>
+                <div class="loading" data-i18n="news_loading">載入中...</div>
             </div>
         </div>
 
         <div id="world-section" class="news-section">
             <div id="world-admin-bar" class="write-btn-wrap" style="display:none;">
-                <button class="write-btn" onclick="openCreateModal('world')">✏️ 撰寫評論</button>
+                <button class="write-btn" onclick="openCreateModal('world')" data-i18n="news_write_btn">✏️ 撰寫評論</button>
             </div>
             <div id="world-list" class="commentary-list">
-                <div class="loading">載入中...</div>
+                <div class="loading" data-i18n="news_loading">載入中...</div>
             </div>
         </div>
     </div>
@@ -377,52 +377,54 @@
     <div id="modal-overlay" class="modal-overlay">
         <div class="modal">
             <button class="modal-close" onclick="closeModal()">&times;</button>
-            <h2 id="modal-title">撰寫新聞評論</h2>
+            <h2 id="modal-title" data-i18n="news_modal_title">撰寫新聞評論</h2>
             <form id="commentary-form" onsubmit="submitForm(event)">
                 <input type="hidden" id="form-id" value="">
                 <input type="hidden" id="form-category" value="taiwan">
 
                 <div class="form-group">
-                    <label>原始媒體名稱 <span class="hint">（如：UDN 聯合報、BBC）</span></label>
-                    <input type="text" id="form-source" placeholder="e.g. UDN 聯合報" required>
+                    <label data-i18n="news_form_source_label">原始媒體名稱 <span class="hint" data-i18n="news_form_source_hint">（如：UDN 聯合報、BBC）</span></label>
+                    <input type="text" id="form-source" placeholder="e.g. UDN 聯合報" required data-i18n="news_form_source_placeholder">
                 </div>
 
                 <div class="form-group">
-                    <label>原始新聞標題</label>
-                    <input type="text" id="form-original-title" placeholder="該新聞原本的標題" required>
+                    <label data-i18n="news_form_orig_title_label">原始新聞標題</label>
+                    <input type="text" id="form-original-title" placeholder="該新聞原本的標題" required data-i18n="news_form_orig_title_placeholder">
                 </div>
 
                 <div class="form-group">
-                    <label>原始新聞連結</label>
-                    <input type="url" id="form-original-link" placeholder="https://..." required>
+                    <label data-i18n="news_form_orig_link_label">原始新聞連結</label>
+                    <input type="url" id="form-original-link" placeholder="https://..." required data-i18n="news_form_orig_link_placeholder">
                 </div>
 
                 <div class="form-group">
-                    <label>你的改寫標題 <span class="hint">（用你自己的話重新擬定）</span></label>
-                    <input type="text" id="form-headline" placeholder="符合你網誌風格的標題" required>
+                    <label data-i18n="news_form_headline_label">你的改寫標題 <span class="hint" data-i18n="news_form_headline_hint">（用你自己的話重新擬定）</span></label>
+                    <input type="text" id="form-headline" placeholder="符合你網誌風格的標題" required data-i18n="news_form_headline_placeholder">
                 </div>
 
                 <div class="form-group">
-                    <label>事件簡述 <span class="hint">（10-20%，用自己的話極簡短概括）</span></label>
-                    <textarea id="form-summary" placeholder="時間、地點、發生了什麼事…" required></textarea>
+                    <label data-i18n="news_form_summary_label">事件簡述 <span class="hint" data-i18n="news_form_summary_hint">（10-20%，用自己的話極簡短概括）</span></label>
+                    <textarea id="form-summary" placeholder="時間、地點、發生了什麼事…" required data-i18n="news_form_summary_placeholder"></textarea>
                 </div>
 
                 <div class="form-group">
-                    <label>個人觀點與分析 <span class="hint">（80%以上，這才是你的價值所在）</span></label>
-                    <textarea id="form-analysis" placeholder="從你的專業角度深入分析…" required style="min-height:200px;"></textarea>
+                    <label data-i18n="news_form_analysis_label">個人觀點與分析 <span class="hint" data-i18n="news_form_analysis_hint">（80%以上，這才是你的價值所在）</span></label>
+                    <textarea id="form-analysis" placeholder="從你的專業角度深入分析…" required style="min-height:200px;" data-i18n="news_form_analysis_placeholder"></textarea>
                 </div>
 
                 <div class="form-group">
-                    <label>嵌入影片網址 <span class="hint">（選填，YouTube 嵌入網址）</span></label>
+                    <label data-i18n="news_form_embed_label">嵌入影片網址 <span class="hint" data-i18n="news_form_embed_hint">（選填，YouTube 嵌入網址）</span></label>
                     <input type="url" id="form-embed" placeholder="https://www.youtube.com/embed/...">
                 </div>
 
-                <button type="submit" class="form-submit">發佈評論</button>
+                <button type="submit" class="form-submit" data-i18n="news_form_submit">發佈評論</button>
             </form>
         </div>
     </div>
 
+    <script src="" id="i18nScript"></script>
     <script>
+        function __(key, fallback) { return (window.__i18nT && window.__i18nT[key]) || fallback; }
         let currentUser = null;
         try {
             const u = localStorage.getItem('user');
@@ -442,6 +444,7 @@
         }
 
         const BASE = window.location.pathname.replace(/\/news.*$/, '') || '/s111410509';
+        document.getElementById('i18nScript').src = BASE + '/i18n.js';
 
         document.querySelectorAll('.news-nav a').forEach(a => {
             const cls = Array.from(a.classList).find(c => c.startsWith('news-nav-'));
@@ -453,12 +456,12 @@
 
         async function loadCommentary(category) {
             const list = document.getElementById(category + '-list');
-            list.innerHTML = '<div class="loading">載入中...</div>';
+            list.innerHTML = '<div class="loading" data-i18n="news_loading">' + __('news_loading', '載入中...') + '</div>';
             try {
                 const res = await fetch(BASE + '/api/news/commentary/' + category);
                 const posts = await res.json();
                 if (posts.length === 0) {
-                    list.innerHTML = '<div class="empty-state"><p>尚無評論文章</p><div class="sub">等待筆者撰寫深入分析…</div></div>';
+                    list.innerHTML = '<div class="empty-state"><p data-i18n="news_empty">' + __('news_empty', '尚無評論文章') + '</p><div class="sub" data-i18n="news_empty_sub">' + __('news_empty_sub', '等待筆者撰寫深入分析…') + '</div></div>';
                     return;
                 }
                 list.innerHTML = '';
@@ -467,7 +470,7 @@
                     list.appendChild(card);
                 }
             } catch (e) {
-                list.innerHTML = '<div class="empty-state"><p>載入失敗</p><div class="sub">' + esc(e.message) + '</div></div>';
+                list.innerHTML = '<div class="empty-state"><p>' + __('news_load_fail', '載入失敗') + '</p><div class="sub">' + esc(e.message) + '</div></div>';
             }
         }
 
@@ -477,19 +480,21 @@
             card.dataset.id = post.id;
 
             const embedId = getEmbedId(post.embed_url);
-            const pubDate = new Date(post.created_at).toLocaleDateString('zh-TW');
+            var localeMap = { 'zh-TW': 'zh-TW', 'en': 'en-US', 'ja': 'ja-JP' };
+            var locale = localeMap[window.__i18nLang] || 'zh-TW';
+            const pubDate = new Date(post.created_at).toLocaleDateString(locale);
 
             let html = '';
             html += '<div class="card-headline">' + esc(post.rewritten_headline) + '</div>';
-            html += '<div class="card-attribution">原文出自 <span class="source-name">' + esc(post.source_name) + '</span> 報導：<a href="' + esc(post.original_link) + '" target="_blank" style="color:#a0c4ff;">' + esc(post.original_title) + '</a></div>';
-            html += '<div class="card-summary"><span class="card-summary-label">📌 事件簡述</span>' + esc(post.event_summary) + '</div>';
-            html += '<div class="card-original-link">🔗 <a href="' + esc(post.original_link) + '" target="_blank">詳細案情可參考【' + esc(post.source_name) + '報導連結】</a></div>';
+            html += '<div class="card-attribution">' + __('news_from', '原文出自') + ' <span class="source-name">' + esc(post.source_name) + '</span> ' + __('news_report', '報導') + '：<a href="' + esc(post.original_link) + '" target="_blank" style="color:#a0c4ff;">' + esc(post.original_title) + '</a></div>';
+            html += '<div class="card-summary"><span class="card-summary-label">📌 ' + __('news_summary_label', '事件簡述') + '</span>' + esc(post.event_summary) + '</div>';
+            html += '<div class="card-original-link">🔗 <a href="' + esc(post.original_link) + '" target="_blank">' + __('news_detail_link', '詳細案情可參考【') + esc(post.source_name) + __('news_report_link', '報導連結】') + '</a></div>';
 
             if (embedId) {
                 html += '<div class="card-embed"><iframe src="https://www.youtube.com/embed/' + embedId + '" allowfullscreen></iframe></div>';
             }
 
-            html += '<div class="card-analysis"><span class="card-analysis-label">💡 個人觀點與分析</span>' + esc(post.analysis_content) + '</div>';
+            html += '<div class="card-analysis"><span class="card-analysis-label">💡 ' + __('news_analysis_label', '個人觀點與分析') + '</span>' + esc(post.analysis_content) + '</div>';
             html += '<div class="card-meta">🕒 ' + pubDate + '</div>';
 
             html += '<div class="card-actions">';
@@ -498,8 +503,8 @@
 
             if (isLoggedIn()) {
                 html += '<div class="admin-controls">';
-                html += '<button class="edit-btn" onclick="openEditModal(' + post.id + ')">✏️ 編輯</button>';
-                html += '<button class="delete-btn" onclick="deletePost(' + post.id + ')">🗑️ 刪除</button>';
+                html += '<button class="edit-btn" onclick="openEditModal(' + post.id + ')">✏️ ' + __('news_edit', '編輯') + '</button>';
+                html += '<button class="delete-btn" onclick="deletePost(' + post.id + ')">🗑️ ' + __('news_delete', '刪除') + '</button>';
                 html += '</div>';
             }
 
@@ -507,9 +512,9 @@
 
             html += '<div class="comment-section" style="display:none;">';
             html += '<div class="comment-form">';
-            html += '<input type="text" placeholder="暱稱" class="comment-username">';
-            html += '<input type="text" placeholder="留言..." class="comment-input">';
-            html += '<button onclick="addComment(this)">發送</button>';
+            html += '<input type="text" placeholder="' + __('news_comment_name', '暱稱') + '" class="comment-username">';
+            html += '<input type="text" placeholder="' + __('news_comment_placeholder', '留言...') + '" class="comment-input">';
+            html += '<button onclick="addComment(this)">' + __('news_comment_send', '發送') + '</button>';
             html += '</div>';
             html += '<div class="comments-list"></div>';
             html += '</div>';
@@ -528,7 +533,7 @@
                         if (item.likes > 0) btn.classList.add('liked');
                     });
                 });
-            } catch(e) { console.error('載入按讚失敗', e); }
+            } catch(e) { console.error(__('news_load_fail', '載入失敗'), e); }
         }
 
         async function toggleLike(btn) {
@@ -543,7 +548,7 @@
                 const data = await res.json();
                 btn.classList.add('liked');
                 btn.querySelector('.like-count').textContent = data.likes;
-            } catch(e) { alert('按讚失敗'); }
+            } catch(e) { alert(__('news_like_fail', '按讚失敗')); }
         }
 
         function getTitle(btn) { return btn.getAttribute('data-title'); }
@@ -569,11 +574,13 @@
                 const res = await fetch(BASE + '/api/news/comments?title=' + encodeURIComponent(title));
                 const comments = await res.json();
                 countSpan.textContent = comments.length;
-                list.innerHTML = comments.map(c =>
-                    '<div class="comment-item"><span class="comment-user">' + esc(c.username) + '</span><span class="comment-time">' + new Date(c.created_at).toLocaleDateString('zh-TW') + '</span><div>' + esc(c.content) + '</div></div>'
-                ).join('');
-                if (comments.length === 0) list.innerHTML = '<div style="color:#666;">尚無留言</div>';
-            } catch(e) { list.innerHTML = '<div style="color:#ff6b6b;">載入失敗</div>'; }
+                list.innerHTML = comments.map(function(c) {
+                    var localeMap = { 'zh-TW': 'zh-TW', 'en': 'en-US', 'ja': 'ja-JP' };
+                    var l = localeMap[window.__i18nLang] || 'zh-TW';
+                    return '<div class="comment-item"><span class="comment-user">' + esc(c.username) + '</span><span class="comment-time">' + new Date(c.created_at).toLocaleDateString(l) + '</span><div>' + esc(c.content) + '</div></div>';
+                }).join('');
+                if (comments.length === 0) list.innerHTML = '<div style="color:#666;">' + __('news_no_comments', '尚無留言') + '</div>';
+            } catch(e) { list.innerHTML = '<div style="color:#ff6b6b;">' + __('news_load_fail', '載入失敗') + '</div>'; }
         }
 
         async function addComment(btn) {
@@ -584,7 +591,7 @@
             const link = getLink(btn);
             const username = usernameInput.value.trim();
             const content = contentInput.value.trim();
-            if (!username || !content) { alert('請填寫暱稱和留言內容'); return; }
+            if (!username || !content) { alert(__('news_comment_required', '請填寫暱稱和留言內容')); return; }
             try {
                 const res = await fetch(BASE + '/api/news/comment', {
                     method: 'POST',
@@ -595,7 +602,7 @@
                     contentInput.value = '';
                     await loadComments(card, title, link);
                 }
-            } catch(e) { alert('留言失敗'); }
+            } catch(e) { alert(__('news_comment_fail', '留言失敗')); }
         }
 
         function autoFillNickname() {
@@ -615,7 +622,7 @@
         }
 
         function openCreateModal(category) {
-            document.getElementById('modal-title').textContent = '撰寫新聞評論';
+            document.getElementById('modal-title').textContent = __('news_modal_title', '撰寫新聞評論');
             document.getElementById('form-id').value = '';
             document.getElementById('form-category').value = category;
             document.getElementById('commentary-form').reset();
@@ -628,9 +635,9 @@
                 const res = await fetch(BASE + '/api/news/commentary/' + category);
                 const posts = await res.json();
                 const post = posts.find(p => p.id === id);
-                if (!post) { alert('找不到該文章'); return; }
-
-                document.getElementById('modal-title').textContent = '編輯評論';
+                if (!post) { alert(__('news_not_found', '找不到該文章')); return; }
+ 
+                document.getElementById('modal-title').textContent = __('news_edit_title', '編輯評論');
                 document.getElementById('form-id').value = post.id;
                 document.getElementById('form-category').value = post.category;
                 document.getElementById('form-source').value = post.source_name;
@@ -641,7 +648,7 @@
                 document.getElementById('form-analysis').value = post.analysis_content;
                 document.getElementById('form-embed').value = post.embed_url || '';
                 document.getElementById('modal-overlay').classList.add('show');
-            } catch(e) { alert('載入失敗'); }
+            } catch(e) { alert(__('news_load_fail', '載入失敗')); }
         }
 
         function closeModal() {
@@ -673,24 +680,24 @@
                 });
                 if (!res.ok) {
                     const err = await res.json();
-                    alert('操作失敗: ' + (err.error || ''));
+                    alert(__('news_op_fail', '操作失敗: ') + (err.error || ''));
                     return;
                 }
                 closeModal();
                 await loadCommentary(category);
                 await loadLikes();
                 autoFillNickname();
-            } catch(e) { alert('操作失敗: ' + e.message); }
+            } catch(e) { alert(__('news_op_fail', '操作失敗: ') + e.message); }
         }
 
         async function deletePost(id) {
-            if (!confirm('確定刪除此評論文章？')) return;
+            if (!confirm(__('news_delete_confirm', '確定刪除此評論文章？'))) return;
             const category = document.querySelector('.news-section.active').id.replace('-section', '');
             try {
                 const res = await fetch(BASE + '/api/news/commentary/' + id, { method: 'DELETE' });
-                if (!res.ok) { alert('刪除失敗'); return; }
+                if (!res.ok) { alert(__('news_delete_fail', '刪除失敗')); return; }
                 await loadCommentary(category);
-            } catch(e) { alert('刪除失敗'); }
+            } catch(e) { alert(__('news_delete_fail', '刪除失敗')); }
         }
 
         async function init() {

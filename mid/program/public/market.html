@@ -8,6 +8,8 @@
     <script>
         const BASE = window.location.pathname.replace(/\/market.*$/, '') || '/s111410509';
     </script>
+    <script src="" id="i18nScript"></script>
+    <script>document.getElementById('i18nScript').src = BASE + '/i18n.js';</script>
     <style>
         :root { --bg: #f2f0e9; --text: #1a1a1a; --border: rgba(0,0,0,0.1); --accent: #000; --card-bg: rgba(255,255,255,0.8); --tag-bg: #e8e6df; --text-secondary: #555; }
         [data-theme="dark"] { --bg: #1a1a1a; --text: #e0e0e0; --border: rgba(255,255,255,0.1); --accent: #fff; --card-bg: rgba(30,30,30,0.9); --tag-bg: #2a2a2a; --text-secondary: #999; }
@@ -64,32 +66,32 @@
 </head>
 <body>
     <div class="container">
-        <h1>📊 市場行情</h1>
-        <p class="subtitle">加密貨幣 · 台股 · 美股 即時報價</p>
+        <h1 data-i18n="market_title">📊 市場行情</h1>
+        <p class="subtitle" data-i18n="market_subtitle">加密貨幣 · 台股 · 美股 即時報價</p>
 
         <div class="section-nav">
-            <button class="section-btn" onclick="document.getElementById('crypto').scrollIntoView({behavior:'smooth'})">🪙 加密貨幣</button>
-            <button class="section-btn" onclick="document.getElementById('tw-stock').scrollIntoView({behavior:'smooth'})">🇹🇼 台股</button>
-            <button class="section-btn" onclick="document.getElementById('us-stocks').scrollIntoView({behavior:'smooth'})">🇺🇸 美股</button>
+            <button class="section-btn" onclick="document.getElementById('crypto').scrollIntoView({behavior:'smooth'})" data-i18n="market_crypto">🪙 加密貨幣</button>
+            <button class="section-btn" onclick="document.getElementById('tw-stock').scrollIntoView({behavior:'smooth'})" data-i18n="market_tw_stock">🇹🇼 台股</button>
+            <button class="section-btn" onclick="document.getElementById('us-stocks').scrollIntoView({behavior:'smooth'})" data-i18n="market_us_stock">🇺🇸 美股</button>
         </div>
 
-        <div class="loading" id="loading">載入市場數據中...</div>
+        <div class="loading" id="loading" data-i18n="market_loading">載入市場數據中...</div>
         <div class="error" id="error" style="display:none;"></div>
 
         <div id="content" style="display:none;">
 
             <div class="market-section" id="crypto">
-                <h2>🪙 加密貨幣</h2>
+                <h2 data-i18n="market_crypto">🪙 加密貨幣</h2>
                 <div class="market-grid" id="cryptoGrid"></div>
             </div>
 
             <div class="market-section" id="tw-stock">
-                <h2>🇹🇼 台股</h2>
+                <h2 data-i18n="market_tw_stock">🇹🇼 台股</h2>
                 <div class="market-grid" id="twGrid"></div>
             </div>
 
             <div class="market-section" id="us-stocks">
-                <h2>🇺🇸 美股</h2>
+                <h2 data-i18n="market_us_stock">🇺🇸 美股</h2>
                 <div class="market-grid" id="usGrid"></div>
             </div>
 
@@ -98,6 +100,7 @@
     </div>
 
     <script>
+        function __(key, fallback) { return (window.__i18nT && window.__i18nT[key]) || fallback; }
         function loadScript(url) {
             var s = document.createElement('script');
             s.src = url;
@@ -126,19 +129,19 @@
             var sign = item.change >= 0 ? '+' : '';
             var details = '';
             if (isCrypto && item.market_cap) {
-                details += '<span>市值 <span class="val">' + fmt(item.market_cap) + '</span></span>';
+                details += '<span>' + __('market_cap', '市值') + ' <span class="val">' + fmt(item.market_cap) + '</span></span>';
             }
             if (item.volume) {
-                details += '<span>成交量 <span class="val">' + fmt(item.volume) + '</span></span>';
+                details += '<span>' + __('market_volume', '成交量') + ' <span class="val">' + fmt(item.volume) + '</span></span>';
             }
             if (item.high != null) {
-                details += '<span>今日高 <span class="val">' + fmtPrice(item.high) + '</span></span>';
+                details += '<span>' + __('market_high', '今日高') + ' <span class="val">' + fmtPrice(item.high) + '</span></span>';
             }
             if (item.low != null) {
-                details += '<span>今日低 <span class="val">' + fmtPrice(item.low) + '</span></span>';
+                details += '<span>' + __('market_low', '今日低') + ' <span class="val">' + fmtPrice(item.low) + '</span></span>';
             }
             if (item.prevClose != null) {
-                details += '<span>前收盤 <span class="val">' + fmtPrice(item.prevClose) + '</span></span>';
+                details += '<span>' + __('market_prev_close', '前收盤') + ' <span class="val">' + fmtPrice(item.prevClose) + '</span></span>';
             }
             var name = item.label || item.symbol || '';
             var ticker = item.label && item.symbol ? '<span style="font-size:0.7rem;color:var(--text-secondary);font-weight:400;"> ' + item.symbol + '</span>' : '';
@@ -167,7 +170,7 @@
                 if (Array.isArray(crypto) && crypto.length) {
                     cg.innerHTML = crypto.map(function(c) { return cardHTML(c, true); }).join('');
                 } else {
-                    cg.innerHTML = '<div class="market-card" style="text-align:center;color:var(--text-secondary);">暫無資料</div>';
+                    cg.innerHTML = '<div class="market-card" style="text-align:center;color:var(--text-secondary);">' + __('market_no_data', '暫無資料') + '</div>';
                 }
 
                 // TW Stocks
@@ -177,7 +180,7 @@
                 } else if (twStock && twStock.price != null) {
                     tg.innerHTML = cardHTML(twStock, false);
                 } else {
-                    tg.innerHTML = '<div class="market-card" style="text-align:center;color:var(--text-secondary);">暫無資料</div>';
+                    tg.innerHTML = '<div class="market-card" style="text-align:center;color:var(--text-secondary);">' + __('market_no_data', '暫無資料') + '</div>';
                 }
 
                 // US Stocks
@@ -187,14 +190,16 @@
                 } else if (usStocks && usStocks.price != null) {
                     ug.innerHTML = cardHTML(usStocks, false);
                 } else {
-                    ug.innerHTML = '<div class="market-card" style="text-align:center;color:var(--text-secondary);">暫無資料</div>';
+                    ug.innerHTML = '<div class="market-card" style="text-align:center;color:var(--text-secondary);">' + __('market_no_data', '暫無資料') + '</div>';
                 }
 
-                document.getElementById('updateTime').textContent = '最後更新：' + new Date().toLocaleString('zh-TW');
+                var localeMap = { 'zh-TW': 'zh-TW', 'en': 'en-US', 'ja': 'ja-JP' };
+                var locale = localeMap[window.__i18nLang] || 'zh-TW';
+                document.getElementById('updateTime').textContent = __('market_last_update', '最後更新：') + new Date().toLocaleString(locale);
             } catch (err) {
                 loading.style.display = 'none';
                 error.style.display = 'block';
-                error.textContent = '無法取得市場數據，請稍後再試。';
+                error.textContent = __('market_error', '無法取得市場數據，請稍後再試。');
             }
         }
 

@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="zh-TW" data-theme="light">
+<html lang="<%= lang %>" data-theme="light">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>隱私權政策 - 墨</title>
+  <title><%= t('site_title_privacy') %></title>
   <meta name="robots" content="noindex">
   <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;700&display=swap" rel="stylesheet">
   <style>
@@ -21,27 +21,27 @@
 </head>
 <body>
   <div class="container">
-    <h1>🔒 隱私權政策</h1>
-    <p>最後更新：2026 年 1 月</p>
+    <h1>🔒 <%= t('privacy_title') %></h1>
+    <p><%= t('privacy_updated') %></p>
 
-    <h2>1. 資料收集</h2>
-    <p>本網站使用 Google Analytics 4 (GA4) 收集匿名瀏覽數據，包括但不限於：頁面瀏覽次數、來源網站、瀏覽器類型、裝置類型。這些資料無法識別個人身分。</p>
-    <p>當您透過聯絡表單提交訊息時，我們會收集您提供的姓名、Email 與訊息內容，僅用於回覆您的需求。</p>
-    <p>當您訂閱電子報時，您的 Email 僅用於發送新文章通知，不會分享給第三方。</p>
+    <h2><%= t('privacy_section1_title') %></h2>
+    <p><%= t('privacy_section1_p1') %></p>
+    <p><%= t('privacy_section1_p2') %></p>
+    <p><%= t('privacy_section1_p3') %></p>
 
-    <h2>2. Cookie 使用</h2>
-    <p>本網站使用 Google Analytics Cookie 來分析流量。您可以透過瀏覽器設定拒絕所有 Cookie。</p>
+    <h2><%= t('privacy_section2_title') %></h2>
+    <p><%= t('privacy_section2_p1') %></p>
 
-    <h2>3. 第三方服務</h2>
-    <p>本網站可能嵌入 YouTube 影片、GitHub 討論區等第三方內容，這些服務有其各自的隱私權政策。</p>
+    <h2><%= t('privacy_section3_title') %></h2>
+    <p><%= t('privacy_section3_p1') %></p>
 
-    <h2>4. 資料安全</h2>
-    <p>我們採取合理的技術措施保護您的個人資料，但無法保證網際網路傳輸的絕對安全。</p>
+    <h2><%= t('privacy_section4_title') %></h2>
+    <p><%= t('privacy_section4_p1') %></p>
 
-    <h2>5. 聯絡方式</h2>
-    <p>如對本政策有任何疑問，請透過 <a href="<%= baseUrl %>/contact">聯絡表單</a> 與我們聯繫。</p>
+    <h2><%= t('privacy_section5_title') %></h2>
+    <p><%= t('privacy_section5_p1') %> <a href="<%= baseUrl %>/contact"><%= t('privacy_section5_link') %></a><%= t('privacy_section5_suffix') %></p>
 
-    <p style="margin-top:32px;"><a href="<%= baseUrl %>/">&larr; 回到首頁</a></p>
+    <p style="margin-top:32px;"><a href="<%= baseUrl %>/"><%= t('privacy_back') %></a></p>
   </div>
   <script>(function(){const t=localStorage.getItem('theme');const s=window.matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light';document.documentElement.setAttribute('data-theme',t||s);})();</script>
 </body>

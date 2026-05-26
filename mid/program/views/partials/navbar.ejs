@@ -1,21 +1,28 @@
 <nav class="site-nav">
   <ul>
-    <li><a href="<%= baseUrl %>/"><span>📝</span> 網誌</a></li>
-    <li><a href="<%= baseUrl %>/about"><span>ℹ️</span> 關於</a></li>
-    <li><a href="<%= baseUrl %>/notes"><span>✏️</span> 隨筆</a></li>
+    <li><a href="<%= baseUrl %>/"><span>📝</span> <%= t('nav_blog') %></a></li>
+    <li><a href="<%= baseUrl %>/about"><span>ℹ️</span> <%= t('nav_about') %></a></li>
+    <li><a href="<%= baseUrl %>/notes"><span>✏️</span> <%= t('nav_notes') %></a></li>
     <li class="dropdown">
-      <a href="#" id="dropdownToggle"><span>🎮</span> 互動專案 <span class="arrow">▾</span></a>
+      <a href="#" id="dropdownToggle"><span>🎮</span> <%= t('nav_interactive') %> <span class="arrow">▾</span></a>
       <ul class="dropdown-menu">
-        <li><a href="<%= baseUrl %>/snake.html"><span>🐍</span> 貪吃蛇</a></li>
-        <li><a href="<%= baseUrl %>/whack.html"><span>🎯</span> 捕墨</a></li>
-        <li><a href="<%= baseUrl %>/maze.html"><span>🏃</span> 墨陣</a></li>
-        <li><a href="<%= baseUrl %>/leaderboard.html"><span>🏆</span> 排行</a></li>
+        <li><a href="<%= baseUrl %>/snake.html"><span>🐍</span> <%= t('nav_snake') %></a></li>
+        <li><a href="<%= baseUrl %>/whack.html"><span>🎯</span> <%= t('nav_whack') %></a></li>
+        <li><a href="<%= baseUrl %>/maze.html"><span>🏃</span> <%= t('nav_maze') %></a></li>
+        <li><a href="<%= baseUrl %>/leaderboard.html"><span>🏆</span> <%= t('nav_leaderboard') %></a></li>
       </ul>
     </li>
-    <li><a href="<%= baseUrl %>/news.html"><span>📰</span> 新聞</a></li>
-    <li><a href="<%= baseUrl %>/market.html"><span>📊</span> 行情</a></li>
-    <li><a href="<%= baseUrl %>/contact"><span>✉️</span> 聯絡</a></li>
-    <li><a href="<%= baseUrl %>/login.html"><span>🔑</span> 登入</a></li>
+    <li><a href="<%= baseUrl %>/news.html"><span>📰</span> <%= t('nav_news') %></a></li>
+    <li><a href="<%= baseUrl %>/market.html"><span>📊</span> <%= t('nav_market') %></a></li>
+    <li><a href="<%= baseUrl %>/contact"><span>✉️</span> <%= t('nav_contact') %></a></li>
+    <li><a href="<%= baseUrl %>/login.html"><span>🔑</span> <%= t('nav_login') %></a></li>
+    <li style="margin-left:auto;display:flex;align-items:center;gap:2px;padding:0 6px;">
+      <a href="<%= baseUrl %>/lang/zh-TW" style="<%= lang === 'zh-TW' ? 'color:#fff;font-weight:bold;' : 'color:#999;' %>;font-size:12px;padding:4px 4px;">繁</a>
+      <span style="color:#444;font-size:10px;">|</span>
+      <a href="<%= baseUrl %>/lang/en" style="<%= lang === 'en' ? 'color:#fff;font-weight:bold;' : 'color:#999;' %>;font-size:12px;padding:4px 4px;">EN</a>
+      <span style="color:#444;font-size:10px;">|</span>
+      <a href="<%= baseUrl %>/lang/ja" style="<%= lang === 'ja' ? 'color:#fff;font-weight:bold;' : 'color:#999;' %>;font-size:12px;padding:4px 4px;">日</a>
+    </li>
   </ul>
 </nav>
 <style>
@@ -85,10 +92,11 @@
 
   // IIFE auth check
   (function () {
+    var loginLabel = '<%= t('nav_login') %>';
     function updateNav(user) {
       var links = document.querySelectorAll('.site-nav a');
       for (var i = 0; i < links.length; i++) {
-        if (links[i].textContent.indexOf('登入') !== -1) {
+        if (links[i].textContent.indexOf(loginLabel) !== -1) {
           if (user) {
             links[i].innerHTML = '<span>👤</span> ' + (user.nickname || user.username);
             links[i].href = '<%= baseUrl %>/notes';
