@@ -130,6 +130,10 @@ dist
 .yarn/install-state.gz
 .pnp.*
 
+# Database
+blog.db
+sessions.db
+
 # Uploaded images
 public/uploads/
 !public/uploads/.gitkeep
