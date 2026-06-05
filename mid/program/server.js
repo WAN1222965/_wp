@@ -93,6 +93,13 @@ app.use(session({
 
 app.use(BASE, express.static(publicDir, { index: false }));
 
+// Serve sibling project directories for portfolio links
+const projectRoot = path.resolve(__dirname, '..', '..');
+app.use(BASE + '/homework', express.static(path.join(projectRoot, 'homework')));
+app.use(BASE + '/portfolio', express.static(path.join(projectRoot, 'portfolio')));
+app.use(BASE + '/mid', express.static(path.join(projectRoot, 'mid')));
+app.use(BASE + '/AI', express.static(path.join(projectRoot, 'AI')));
+
 // Ensure uploads directory exists
 const uploadsDir = path.join(__dirname, 'public', 'uploads');
 if (!fs.existsSync(uploadsDir)) {

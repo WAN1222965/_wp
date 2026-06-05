@@ -1,4 +1,5 @@
 #全部都用AI，我負責調整版面，以及新增需要的功能和伺服器的自動開啟、公開網址
+參考:https://zh-yue.wikipedia.org/wiki/%E7%B6%B2%E8%AA%8C#/media/File:Screenshot-A_WordPress_Weblog_with_TwentyTen_in_Epiphany.png
 # 墨 — 極簡部落格系統
 
 > 紀錄瞬間的思緒。一個融合部落格、隨筆小站與小遊戲的 Node.js 全端專案。
