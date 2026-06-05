@@ -966,3 +966,9 @@ server {
 ---
 
 *本專案為金門大學資訊工程系網頁設計課程作業，僅供學習用途。*
+
+---
+
+### 15. 參考
+
+https://tw.wordpress.org/themes/twentyten/ 布景格式
