@@ -1,3 +1,4 @@
+自己打程式雛形，由AI修改錯誤的程式
 <<<<<<< HEAD
 AI問答 https://gemini.google.com/share/6146ebd99297
 你可以每一題開一個新的 `.js` 檔案來練習。
